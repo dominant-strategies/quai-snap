@@ -167,6 +167,9 @@ export default class Accounts {
     // console.log(extendedPrivateKey);
     // const privateKey = extendedPrivateKey.slice(0, 32);
     // console.log('extendedPrivateKey');
+
+    // Issue with keyRecover -- this is coming from "@zondax/filecoin-signing-tools/js"
+    // https://github.com/Zondax/filecoin-signing-tools/blob/2e7b005b4733761de11d4a252cb481ca5aedb029/signer-npm/js/src/index.js#L43
     // const extendedKey = keyRecover(privateKey, !isMainnet);
 
     // const Account = {
