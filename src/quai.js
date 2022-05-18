@@ -1,8 +1,10 @@
+import Web3 from 'web3';
+
 export default class Quai {
   constructor(wallet, account) {
     this.wallet = wallet;
     this.account = account;
-    this.baseUrl = 'http://45.76.19.78';
+    this.baseUrl = 'http://45.76.19.78:9000';
     this.testnet = false;
   }
   getBaseUrl() {
@@ -25,6 +27,15 @@ export default class Quai {
       this.getBaseUrl() + '/balance?address=' + this.account.addr,
     );
     return Number(await balance.text());
+  }
+  async getBlockHeight() {
+    var web3Provider = new Web3.providers.HttpProvider(this.baseUrl);
+    var web3 = new Web3(web3Provider);
+    web3.eth.getBlockNumber().then((result) => {
+      console.log('Latest Quai Block is ', result);
+      return result;
+    });
+    return;
   }
   static validateAddress(address) {}
   async displayMnemonic() {

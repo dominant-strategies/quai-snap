@@ -28,6 +28,7 @@ export default class Accounts {
     });
 
     if (storedAccounts === null || Object.keys(storedAccounts).length === 0) {
+      console.log('no accounts found');
       const Account = await this.generateAccount(1);
       let extendedAccount = {};
       extendedAccount.type = 'generated';
@@ -142,38 +143,39 @@ export default class Accounts {
 
   // generateAccount creates a new account with a given path.
   async generateAccount(path) {
-    const derivationPath = "m/44'/3'/0'/0/" + path;
-    const [, , coinType, account, change, addressIndex] =
-      derivationPath.split('/');
-    const bip44Code = coinType.replace("'", '');
-    const isMainnet = bip44Code === '3';
-    const bip44Node = await this.wallet.request({
-      method: `snap_getBip44Entropy_${bip44Code}`,
-      params: [],
-    });
+    // const derivationPath = "m/44'/3'/0'/0/" + path;
+    // const [, , coinType, account, change, addressIndex] =
+    //   derivationPath.split('/');
+    // const bip44Code = coinType.replace("'", '');
+    // const isMainnet = bip44Code === '3';
+    // const bip44Node = await this.wallet.request({
+    //   method: `snap_getBip44Entropy_${bip44Code}`,
+    //   params: [],
+    // });
 
-    // metamask has supplied us with entropy for "m/purpose'/bip44Code'/"
-    // we need to derive the final "accountIndex'/change/addressIndex"
-    console.log('bip44Node');
-    console.log(bip44Node);
-    bip44Node.publicKey = bip44Node.ke;
-    const extendedPrivateKey = deriveBIP44AddressKey(bip44Node, {
-      account: parseInt(account),
-      address_index: parseInt(addressIndex),
-      change: parseInt(change),
-    });
-    console.log('extendedPrivateKey');
-    console.log(extendedPrivateKey);
-    const privateKey = extendedPrivateKey.slice(0, 32);
-    console.log('extendedPrivateKey');
-    const extendedKey = keyRecover(privateKey, !isMainnet);
+    // // metamask has supplied us with entropy for "m/purpose'/bip44Code'/"
+    // // we need to derive the final "accountIndex'/change/addressIndex"
+    // console.log('bip44Node');
+    // console.log(bip44Node);
+    // bip44Node.publicKey = bip44Node.ke;
+    // const extendedPrivateKey = deriveBIP44AddressKey(bip44Node, {
+    //   account: parseInt(account),
+    //   address_index: parseInt(addressIndex),
+    //   change: parseInt(change),
+    // });
+    // console.log('extendedPrivateKey');
+    // console.log(extendedPrivateKey);
+    // const privateKey = extendedPrivateKey.slice(0, 32);
+    // console.log('extendedPrivateKey');
+    // const extendedKey = keyRecover(privateKey, !isMainnet);
 
-    const Account = {
-      address: extendedKey.address,
-      privateKey: extendedKey.private_base64,
-      publicKey: extendedKey.public_hexstring,
-    };
+    // const Account = {
+    //   address: extendedKey.address,
+    //   privateKey: extendedKey.private_base64,
+    //   publicKey: extendedKey.public_hexstring,
+    // };
 
+    const Account = {};
     console.log(Account);
     return Account;
   }
