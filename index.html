@@ -26,6 +26,7 @@
 
     <button class="connect">Connect</button>
     <button class="sendHello">Send Hello</button>
+    <button class="getBalance">Get Balance</button>
     <button class="createAccount">Create Account</button>
   </body>
 
@@ -34,10 +35,12 @@
 
     const connectButton = document.querySelector('button.connect')
     const sendButton = document.querySelector('button.sendHello')
+    const getBalanceButton = document.querySelector('button.getBalance')
     const createButton = document.querySelector('button.createAccount')
 
     connectButton.addEventListener('click', connect)
     sendButton.addEventListener('click', send)
+    getBalanceButton.addEventListener('click', getBalance)
     createButton.addEventListener('click', create)
 
     // here we get permissions to interact with and install the snap
@@ -57,6 +60,22 @@
           method: 'wallet_invokeSnap',
           params: [snapId, {
             method: 'getAccounts'
+          }]
+        })
+        alert(response)
+      } catch (err) {
+        console.error(err)
+        alert('Problem happened: ' + err.message || err)
+      }
+    }
+
+    // here we call the snap's "hello" method
+    async function getBalance () {
+      try {
+        const response = await ethereum.request({
+          method: 'wallet_invokeSnap',
+          params: [snapId, {
+            method: 'displayBalance'
           }]
         })
         alert(response)
