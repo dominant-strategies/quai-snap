@@ -28,6 +28,7 @@
     <button class="sendHello">Send Hello</button>
     <button class="getBalance">Get Balance</button>
     <button class="createAccount">Create Account</button>
+    <button class="clearAccounts">Clear Accounts</button>
     <button class="blockHeight">Block Height</button>
   </body>
 
@@ -38,6 +39,7 @@
     const sendButton = document.querySelector('button.sendHello')
     const getBalanceButton = document.querySelector('button.getBalance')
     const createButton = document.querySelector('button.createAccount')
+    const clearButton = document.querySelector('button.clearAccounts')
     const blockHeightButton = document.querySelector('button.blockHeight')
 
 
@@ -45,6 +47,7 @@
     sendButton.addEventListener('click', send)
     getBalanceButton.addEventListener('click', getBalance)
     createButton.addEventListener('click', create)
+    clearButton.addEventListener('click', clearAccounts)
     blockHeightButton.addEventListener('click', blockHeight)
 
     // here we get permissions to interact with and install the snap
@@ -96,6 +99,21 @@
           method: 'wallet_invokeSnap',
           params: [snapId, {
             method: 'createAccount'
+          }]
+        })
+        alert(response)
+      } catch (err) {
+        console.error(err)
+        alert('Problem happened: ' + err.message || err)
+      }
+    }
+
+    async function clearAccounts () {
+      try {
+        const response = await ethereum.request({
+          method: 'wallet_invokeSnap',
+          params: [snapId, {
+            method: 'clearAccounts'
           }]
         })
         alert(response)

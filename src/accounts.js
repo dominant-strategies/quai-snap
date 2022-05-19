@@ -21,7 +21,6 @@ export default class Accounts {
 
   async load() {
     //load acount Data
-    console.log('load function called');
     const storedAccounts = await this.wallet.request({
       method: 'snap_manageState',
       params: ['get'],
@@ -29,11 +28,11 @@ export default class Accounts {
 
     if (storedAccounts === null || Object.keys(storedAccounts).length === 0) {
       console.log('no accounts found');
-      const Account = await this.generateAccount(1);
+      const Account = await this.generateAccount(0);
       let extendedAccount = {};
       extendedAccount.type = 'generated';
       extendedAccount.addr = Account.addr;
-      extendedAccount.path = 2;
+      extendedAccount.path = 1;
       extendedAccount.name = 'Account 1';
       const address = Account.addr;
       const accounts = {};
@@ -45,20 +44,22 @@ export default class Accounts {
       this.currentAccountId = address;
       this.accounts = accounts;
       this.loaded = true;
-
+      console.log('setting this.accounts');
+      console.log(this.accounts);
       return { currentAccountId: address, Accounts: accounts };
     } else {
+      console.log('have stored accounts');
       this.accounts = storedAccounts.Accounts;
       this.currentAccountId = storedAccounts.currentAccountId;
       this.loaded = true;
-      console.log('storedAccounts');
-      console.log(storedAccounts);
+
       return storedAccounts;
     }
   }
 
   async unlockAccount(addr) {
     if (!this.loaded) {
+      console.log('not loaded in unlock account');
       await this.load();
     }
     if (this.accounts.hasOwnProperty(addr)) {
@@ -123,13 +124,18 @@ export default class Accounts {
     if (!this.loaded) {
       await this.load();
     }
+
+    const oldPath = Object.keys(this.accounts).length;
+
     if (!name) {
-      name = 'Account ' + (Object.keys(this.accounts).length + 1);
+      name = 'Account ' + (oldPath + 1);
     }
 
-    const Account = await this.generateAccount(this.accounts.length + 2);
+    console.log('accounts length', oldPath);
+
+    const Account = await this.generateAccount(oldPath + 1);
     const address = Account.addr;
-    const path = this.accounts.length + 2;
+    const path = oldPath + 1;
     this.accounts[address] = { type: 'generated', path: path, name: name };
     await this.wallet.request({
       method: 'snap_manageState',
@@ -143,43 +149,30 @@ export default class Accounts {
 
   // generateAccount creates a new account with a given path.
   async generateAccount(path) {
-    // const derivationPath = "m/44'/3'/0'/0/" + path;
-    // const [, , coinType, account, change, addressIndex] =
-    //   derivationPath.split('/');
-    // const bip44Code = coinType.replace("'", '');
-    // const isMainnet = bip44Code === '3';
-    // const bip44Node = await this.wallet.request({
-    //   method: `snap_getBip44Entropy_${bip44Code}`,
-    //   params: [],
-    // });
+    const bip44Code = '60';
+    const bip44Node = await this.wallet.request({
+      method: `snap_getBip44Entropy_${bip44Code}`,
+      params: [],
+    });
 
-    // // metamask has supplied us with entropy for "m/purpose'/bip44Code'/"
-    // // we need to derive the final "accountIndex'/change/addressIndex"
-    // console.log('bip44Node');
-    // console.log(bip44Node);
-    // bip44Node.publicKey = bip44Node.ke;
-    // const extendedPrivateKey = deriveBIP44AddressKey(bip44Node, {
-    //   account: parseInt(account),
-    //   address_index: parseInt(addressIndex),
-    //   change: parseInt(change),
-    // });
-    // console.log('extendedPrivateKey');
-    // console.log(extendedPrivateKey);
-    // const privateKey = extendedPrivateKey.slice(0, 32);
-    // console.log('extendedPrivateKey');
-
-    // Issue with keyRecover -- this is coming from "@zondax/filecoin-signing-tools/js"
-    // https://github.com/Zondax/filecoin-signing-tools/blob/2e7b005b4733761de11d4a252cb481ca5aedb029/signer-npm/js/src/index.js#L43
-    // const extendedKey = keyRecover(privateKey, !isMainnet);
-
-    // const Account = {
-    //   address: extendedKey.address,
-    //   privateKey: extendedKey.private_base64,
-    //   publicKey: extendedKey.public_hexstring,
-    // };
+    // metamask has supplied us with entropy for "m/purpose'/bip44Code'/"
+    // we need to derive the final "accountIndex'/change/addressIndex"
+    console.log(path);
+    const deriver = getBIP44AddressKeyDeriver(bip44Node);
 
     const Account = {};
+    const key = await this.toHexString(deriver(path).slice(0, 32));
+    Account.addr = ethers.utils.computeAddress(key);
+
     console.log(Account);
     return Account;
+  }
+
+  async toHexString(byteArray) {
+    var s = '0x';
+    byteArray.forEach(function (byte) {
+      s += ('0' + (byte & 0xff).toString(16)).slice(-2);
+    });
+    return s;
   }
 }
