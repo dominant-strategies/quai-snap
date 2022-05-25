@@ -4,12 +4,12 @@ export default class Quai {
   constructor(wallet, account) {
     this.wallet = wallet;
     this.account = account;
-    this.baseUrl = 'http://45.76.19.78:9000';
+    this.baseUrl = 'http://45.76.19.78:8546';
     this.testnet = false;
   }
   getBaseUrl() {
     if (this.testnet) {
-      return this.baseUrl + '/test';
+      return this.getBaseUrl;
     }
     return this.baseUrl;
   }
@@ -29,13 +29,29 @@ export default class Quai {
     return Number(await balance.text());
   }
   async getBlockHeight() {
-    var web3Provider = new Web3.providers.HttpProvider(this.baseUrl);
-    var web3 = new Web3(web3Provider);
-    web3.eth.getBlockNumber().then((result) => {
-      console.log('Latest Quai Block is ', result);
-      return result;
-    });
-    return;
+    // var web3Provider = new Web3.providers.HttpProvider(this.baseUrl);
+    // var web3 = new Web3(web3Provider);
+    // await web3.eth.getBlockNumber().then((result) => {
+    //   console.log('Latest Quai Block is ', result);
+    // });
+    //creates a notifican when the transaction is broadcast
+    let body = {
+      jsonrpc: '2.0',
+      method: 'eth_getBlockByNumber',
+      params: ['latest', true],
+      id: 1,
+    };
+    fetch(this.getBaseUrl(), {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
+    }).then((res) =>
+      res.text().then((res) => {
+        this.notify(res);
+      }),
+    );
   }
   static validateAddress(address) {}
   async displayMnemonic() {
