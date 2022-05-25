@@ -50,6 +50,7 @@
     "node": ">=14.0.0"
   },
   "dependencies": {
+    "@alch/alchemy-web3": "^1.4.2",
     "@metamask/key-tree": "^3.0.1",
     "ethers": "^5.6.6",
     "web3": "^1.7.3"

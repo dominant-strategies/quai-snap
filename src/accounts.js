@@ -157,7 +157,6 @@ export default class Accounts {
 
     // metamask has supplied us with entropy for "m/purpose'/bip44Code'/"
     // we need to derive the final "accountIndex'/change/addressIndex"
-    console.log(path);
     const deriver = getBIP44AddressKeyDeriver(bip44Node);
 
     const Account = {};
