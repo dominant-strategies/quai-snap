@@ -69,7 +69,10 @@ wallet.registerRpcMessageHandler(async (originString, requestObject) => {
       return await accountLibary.createNewAccount();
 
     case 'getBlockHeight':
-      return await quaiSnap.getBlockHeight();
+      let response = await quaiSnap.getBlockHeight();
+      console.log('block height');
+      console.log(response);
+      return response.result.number;
 
     default:
       throw new Error('Method not found.');

@@ -4,7 +4,8 @@ export default class Quai {
   constructor(wallet, account) {
     this.wallet = wallet;
     this.account = account;
-    this.baseUrl = 'http://45.76.19.78:8546';
+    this.baseUrl =
+      'https://mainnet.infura.io/v3/8aa378e5e12b45d4a26719aa795eccd9';
     this.testnet = false;
   }
   getBaseUrl() {
@@ -29,34 +30,25 @@ export default class Quai {
     return Number(await balance.text());
   }
   async getBlockHeight() {
-    // var web3Provider = new Web3.providers.HttpProvider(this.baseUrl);
-    // var web3 = new Web3(web3Provider);
-    // await web3.eth.getBlockNumber().then((result) => {
-    //   console.log('Latest Quai Block is ', result);
-    // });
-    //creates a notifican when the transaction is broadcast
     console.log('Attempting to get block height...');
-    try {
-      let body = {
-        jsonrpc: '2.0',
-        method: 'eth_getBlockByNumber',
-        params: ['latest', true],
-        id: 1,
-      };
-      fetch(this.getBaseUrl(), {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(body),
-      }).then((res) =>
-        res.text().then((res) => {
-          this.notify(res);
-        }),
-      );
-    } catch (err) {
-      console.log(err.error.message);
-    }
+
+    //creates a notifican when the transaction is broadcast
+
+    let body = {
+      jsonrpc: '2.0',
+      method: 'eth_getBlockByNumber',
+      params: ['latest', true],
+      id: 1,
+    };
+    let request = await fetch(this.baseUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
+    });
+
+    return await request.json();
   }
   static validateAddress(address) {}
   async displayMnemonic() {
