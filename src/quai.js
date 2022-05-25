@@ -35,23 +35,28 @@ export default class Quai {
     //   console.log('Latest Quai Block is ', result);
     // });
     //creates a notifican when the transaction is broadcast
-    let body = {
-      jsonrpc: '2.0',
-      method: 'eth_getBlockByNumber',
-      params: ['latest', true],
-      id: 1,
-    };
-    fetch(this.getBaseUrl(), {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(body),
-    }).then((res) =>
-      res.text().then((res) => {
-        this.notify(res);
-      }),
-    );
+    console.log('Attempting to get block height...');
+    try {
+      let body = {
+        jsonrpc: '2.0',
+        method: 'eth_getBlockByNumber',
+        params: ['latest', true],
+        id: 1,
+      };
+      fetch(this.getBaseUrl(), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+      }).then((res) =>
+        res.text().then((res) => {
+          this.notify(res);
+        }),
+      );
+    } catch (err) {
+      console.log(err.error.message);
+    }
   }
   static validateAddress(address) {}
   async displayMnemonic() {
