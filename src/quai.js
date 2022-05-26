@@ -1,6 +1,5 @@
 import Web3 from 'web3';
 const ethers = require('ethers');
-// const { createAlchemyWeb3 } = require('@alch/alchemy-web3');
 
 export default class Quai {
   constructor(wallet, account) {
@@ -126,19 +125,35 @@ export default class Quai {
     // TODO: Get suggested gas price
     // let params = await this.getParams();
 
-    // const web3 = createAlchemyWeb3(this.baseUrl);
-    // const nonce = await web3.eth.getTransactionCount(myAddress, 'latest'); // nonce starts counting from 0
+    console.log('Here');
+    let body = {
+      jsonrpc: '2.0',
+      method: 'eth_getTransactionCount',
+      params: [this.account.addr, 'latest'],
+      id: 1,
+    };
+    let request = await fetch(this.baseUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
+    });
+
+    let res = await request.json();
+    let nonce = res.result;
+    console.log('Nonce');
+    console.log(res.result);
 
     amount = BigInt(amount);
     //create a payment transaction
     let rawTx = {
-      from: this.account.addr,
       to: receiver,
-      gas: '0x76c0', // 30400
+      gasLimit: '0x76c0', // 30400
       gasPrice: '0x9184e72a000', // 10000000000000
       value: amount, // 2441406250
-      chainId: 3,
-      nonce: nonce,
+      chainId: 1,
+      nonce: 1,
     };
 
     //user confirmation
@@ -149,17 +164,28 @@ export default class Quai {
     if (!confirm) {
       return 'user rejected Transaction: error 4001';
     } else {
+      // With Quai Network, baseUrl and chainId will need to be set
+      // based on the sending address byte prefix.
+      let chainId = 1;
+      let web3Provider = new ethers.providers.JsonRpcProvider(
+        this.baseUrl,
+        chainId,
+      );
+
       // obtain private key
-      const bip44Code = '60';
-      const bip44Node = await this.wallet.request({
-        method: `snap_getBip44Entropy_${bip44Code}`,
-        params: [],
+      const privKey = await wallet.request({
+        method: 'snap_getAppKey',
       });
+      const ethWallet = new ethers.Wallet(privKey, web3Provider);
 
       //sign the transaction locally
-      // let signedTx = await web3.eth.accounts.signTransaction(rawTx, bip44Node);
-      // console.log(signedTx);
-      // return signedTx;
+      let sendTx = await ethWallet.sendTransaction(rawTx);
+      console.log(await sendTx);
+
+      //broadcast the transaction
+      // this.broadcastTransaction(signedTx);
+
+      return signedTx;
     }
   }
   async signTxns(txns) {}
