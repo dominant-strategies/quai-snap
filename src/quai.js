@@ -38,8 +38,9 @@ export default class Quai {
       },
       body: JSON.stringify(body),
     });
-
-    return await request.json();
+    let res = await request.json();
+    console.log(res);
+    return parseInt(res.result, 16);
   }
   async getBlockHeight() {
     console.log('Attempting to get block height...');
@@ -83,6 +84,8 @@ export default class Quai {
   getAddress() {
     return this.account.addr;
   }
+  // Get params needs to be modified to get Quai Network gas data
+  // for when we send transactions.
   async getParams() {
     let request = await fetch(this.getBaseUrl() + '/suggestedParams');
     return await request.json();
@@ -98,6 +101,8 @@ export default class Quai {
       ],
     });
   }
+  // Potentiall deprecated if we choose to use the ethers library
+  // for signing and sending transactions.
   async broadcastTransaction(txn) {
     //creates a notifican when the transaction is broadcast
 
@@ -181,10 +186,6 @@ export default class Quai {
       //sign the transaction locally
       let sendTx = await ethWallet.sendTransaction(rawTx);
       console.log(await sendTx);
-
-      //broadcast the transaction
-      // this.broadcastTransaction(signedTx);
-
       return signedTx;
     }
   }
