@@ -4,6 +4,8 @@ import {
 } from '@metamask/key-tree';
 const ethers = require('ethers');
 
+import { QUAI_CONTEXTS } from './constants';
+
 /*
  * The `wallet` API is a superset of the standard provider,
  * and can be used to initialize an ethers.js provider like this:
@@ -26,17 +28,13 @@ export default class Accounts {
       params: ['get'],
     });
 
+    console.log('Stored accounts');
+    console.log(storedAccounts);
+
     if (storedAccounts === null || Object.keys(storedAccounts).length === 0) {
       console.log('no accounts found');
-      const Account = await this.generateAccount(0);
-      let extendedAccount = {};
-      extendedAccount.type = 'generated';
-      extendedAccount.addr = Account.addr;
-      extendedAccount.path = 1;
-      extendedAccount.name = 'Account 1';
-      const address = Account.addr;
-      const accounts = {};
-      accounts[address] = extendedAccount;
+      const accounts = await this.generateAllAccounts();
+      const address = accounts[accounts.length - 1].addr;
       await this.wallet.request({
         method: 'snap_manageState',
         params: ['update', { currentAccountId: address, Accounts: accounts }],
@@ -133,10 +131,111 @@ export default class Accounts {
 
     console.log('accounts length', oldPath);
 
-    const Account = await this.generateAccount(oldPath + 1);
+    for (let i = 0; i < 1000; i++) {
+      const Account = await this.generateAccount(i + 1);
+    }
+    // const Account = await this.generateAccount(oldPath + 1);
     const address = Account.addr;
     const path = oldPath + 1;
     this.accounts[address] = { type: 'generated', path: path, name: name };
+    await this.wallet.request({
+      method: 'snap_manageState',
+      params: [
+        'update',
+        { currentAccountId: this.currentAccountId, Accounts: this.accounts },
+      ],
+    });
+    return { currentAccountId: address, Accounts: this.accounts };
+  }
+  // Chain is an indexable value into QUAI_CONTEXTS i.e prime, paxos, cyprus-1.
+  async createNewAccountByChain(name, chain) {
+    if (!this.loaded) {
+      await this.load();
+    }
+
+    const oldPath = Object.keys(this.accounts).length;
+
+    if (!name) {
+      name = 'Account ' + (oldPath + 1);
+    }
+
+    console.log('accounts length', oldPath);
+
+    let i = 0;
+    let found = false;
+    let Account = null;
+    while (!found) {
+      Account = await this.generateAccount(i + 1);
+      let addr = Account.addr;
+
+      let context = QUAI_CONTEXTS.filter((obj) => {
+        let num = parseInt(Number('0x' + addr.substring(2, 4)), 10);
+        let start = parseInt(Number('0x' + obj.byte[0]), 10);
+        let end = parseInt(Number('0x' + obj.byte[1]), 10);
+        return num >= start && num <= end;
+      });
+      if (context[0].value === chain) {
+        found = true;
+        break;
+      }
+    }
+
+    const address = Account.addr;
+    const path = oldPath + 1;
+    this.accounts[address] = { type: 'generated', path: path, name: name };
+    await this.wallet.request({
+      method: 'snap_manageState',
+      params: [
+        'update',
+        { currentAccountId: this.currentAccountId, Accounts: this.accounts },
+      ],
+    });
+    return { currentAccountId: address, Accounts: this.accounts };
+  }
+
+  // Creates all accounts that span the Quai Network shards.
+  async generateAllAccounts() {
+    console.log('accounts length', this.accounts.length);
+
+    let shardsToFind = {
+      prime: false,
+      cyprus: false,
+      'cyprus-1': false,
+      'cyprus-2': false,
+    };
+
+    let i = 0;
+    let found = false;
+    let Account = null;
+    let address = null;
+    while (!found) {
+      Account = await this.generateAccount(i + 1);
+      address = Account.addr;
+      this.accounts[address] = {
+        type: 'generated',
+        path: i,
+        name: 'Account' + (i + 1),
+      };
+
+      let context = QUAI_CONTEXTS.filter((obj) => {
+        let num = parseInt(Number('0x' + address.substring(2, 4)), 10);
+        let start = parseInt(Number('0x' + obj.byte[0]), 10);
+        let end = parseInt(Number('0x' + obj.byte[1]), 10);
+        return num >= start && num <= end;
+      });
+      if (context[0] != undefined) {
+        shardsToFind[context[0].value] = true;
+        found = true;
+        for (const [key, value] of Object.entries(shardsToFind)) {
+          console.log(`${key}: ${value}`);
+          if (value == false) {
+            found = false;
+          }
+        }
+      }
+      i++;
+    }
+
     await this.wallet.request({
       method: 'snap_manageState',
       params: [
@@ -155,6 +254,7 @@ export default class Accounts {
       params: [],
     });
 
+    // m/purpose'/bip44Code'/accountIndex'/change/addressIndex
     // metamask has supplied us with entropy for "m/purpose'/bip44Code'/"
     // we need to derive the final "accountIndex'/change/addressIndex"
     const deriver = getBIP44AddressKeyDeriver(bip44Node);

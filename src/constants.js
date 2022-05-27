@@ -30,7 +30,7 @@ export const QUAI_MAINNET_CHAIN_ID = {
   Hydra3: '0x2457',
 };
 
-export const QUAI_TEST_CONTEXTS = [
+export const QUAI_CONTEXTS = [
   {
     name: 'Prime',
     value: 'prime',
