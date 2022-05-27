@@ -198,10 +198,19 @@ export default class Accounts {
     console.log('accounts length', this.accounts.length);
 
     let shardsToFind = {
-      prime: false,
-      cyprus: false,
+      'prime': false,
+      'cyprus': false,
       'cyprus-1': false,
       'cyprus-2': false,
+      'cyprus-3': false,
+      'paxos': false,
+      'paxos-1': false,
+      'paxos-2': false,
+      'paxos-3': false,
+      'hydra': false,
+      'hydra-1': false,
+      'hydra-2': false,
+      'hydra-3': false
     };
 
     let i = 0;

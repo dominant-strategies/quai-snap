@@ -1,13 +1,13 @@
 {
   "version": "0.7.0",
-  "proposedName": "MetaMask Template Snap",
-  "description": "A MetaMask Snap template.",
+  "proposedName": "QuaiSnap",
+  "description": "QuaiSnap",
   "repository": {
     "type": "git",
-    "url": "https://github.com/MetaMask/snap-template.git"
+    "url": "https://github.com/spruce-solutions/quai-snap.git"
   },
   "source": {
-    "shasum": "+IsOR1iM//7Qvx8cCTmfUvMaAkrxfGdGa6WrR2DcNyA=",
+    "shasum": "szRI+YruRHiYOqyyqjAF7kAAagX+WNXjnn8152e+GSI=",
     "location": {
       "npm": {
         "filePath": "dist/bundle.js",
