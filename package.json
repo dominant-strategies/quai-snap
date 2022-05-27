@@ -1,7 +1,7 @@
 {
   "name": "@quai/snap",
   "version": "0.7.0",
-  "description": "Quai Snap",
+  "description": "QuaiSnap",
   "repository": {
     "type": "git",
     "url": "https://github.com/spruce-solutions/quai-snap.git"
