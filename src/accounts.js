@@ -33,22 +33,16 @@ export default class Accounts {
 
     if (storedAccounts === null || Object.keys(storedAccounts).length === 0) {
       console.log('no accounts found');
-      const accounts = await this.generateAllAccounts();
-      const address = accounts[accounts.length - 1].addr;
-      await this.wallet.request({
-        method: 'snap_manageState',
-        params: ['update', { currentAccountId: address, Accounts: accounts }],
-      });
-      this.currentAccountId = address;
-      this.accounts = accounts;
-      this.loaded = true;
-      console.log('setting this.accounts');
-      console.log(this.accounts);
-      return { currentAccountId: address, Accounts: accounts };
+      this.generateAllAccounts();
+      return {
+        currentAccountId: this.currentAccountId,
+        Accounts: this.accounts,
+      };
     } else {
       console.log('have stored accounts');
       this.accounts = storedAccounts.Accounts;
       this.currentAccountId = storedAccounts.currentAccountId;
+      this.currentAccount = this.accounts[this.currentAccountId];
       this.loaded = true;
 
       return storedAccounts;
@@ -131,10 +125,8 @@ export default class Accounts {
 
     console.log('accounts length', oldPath);
 
-    for (let i = 0; i < 1000; i++) {
-      const Account = await this.generateAccount(i + 1);
-    }
-    // const Account = await this.generateAccount(oldPath + 1);
+    const Account = await this.generateAccount(oldPath + 1);
+
     const address = Account.addr;
     const path = oldPath + 1;
     this.accounts[address] = { type: 'generated', path: path, name: name };
@@ -198,19 +190,19 @@ export default class Accounts {
     console.log('accounts length', this.accounts.length);
 
     let shardsToFind = {
-      'prime': false,
-      'cyprus': false,
-      'cyprus-1': false,
-      'cyprus-2': false,
-      'cyprus-3': false,
-      'paxos': false,
-      'paxos-1': false,
-      'paxos-2': false,
-      'paxos-3': false,
-      'hydra': false,
-      'hydra-1': false,
-      'hydra-2': false,
-      'hydra-3': false
+      // prime: false,
+      cyprus: false,
+      // 'cyprus-1': false,
+      // 'cyprus-2': false,
+      // 'cyprus-3': false,
+      // paxos: false,
+      // 'paxos-1': false,
+      // 'paxos-2': false,
+      // 'paxos-3': false,
+      // hydra: false,
+      // 'hydra-1': false,
+      // 'hydra-2': false,
+      // 'hydra-3': false,
     };
 
     let i = 0;
@@ -220,10 +212,13 @@ export default class Accounts {
     while (!found) {
       Account = await this.generateAccount(i + 1);
       address = Account.addr;
+
+      this.currentAccountId = address;
       this.accounts[address] = {
         type: 'generated',
         path: i,
         name: 'Account' + (i + 1),
+        addr: address,
       };
 
       let context = QUAI_CONTEXTS.filter((obj) => {

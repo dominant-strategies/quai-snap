@@ -7,7 +7,7 @@
     "url": "https://github.com/spruce-solutions/quai-snap.git"
   },
   "source": {
-    "shasum": "wfYYc5pP0fnfZ0NPfuSnCUDyrvWbLbvt48ULKZ9Oslo=",
+    "shasum": "SMdYF9WSDC7wnX5QGZD5ICYjCfgoutccvnmy2Y9/xM8=",
     "location": {
       "npm": {
         "filePath": "dist/bundle.js",
@@ -23,6 +23,7 @@
     "snap_getBip44Entropy_60": {},
     "snap_getBip44Entropy_3": {},
     "snap_getBip44Entropy_283": {},
+    "snap_getBip44Entropy_99999": {},
     "endowment:network-access": {},
     "snap_notify": {},
     "snap_manageState": {}

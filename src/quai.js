@@ -127,10 +127,6 @@ export default class Quai {
     return txn.txID;
   }
   async Transfer(receiver, amount) {
-    // TODO: Get suggested gas price
-    // let params = await this.getParams();
-
-    console.log('Here');
     let body = {
       jsonrpc: '2.0',
       method: 'eth_getTransactionCount',
@@ -147,8 +143,6 @@ export default class Quai {
 
     let res = await request.json();
     let nonce = res.result;
-    console.log('Nonce');
-    console.log(res.result);
 
     amount = BigInt(amount);
     //create a payment transaction
@@ -158,7 +152,7 @@ export default class Quai {
       gasPrice: '0x9184e72a000', // 10000000000000
       value: amount, // 2441406250
       chainId: 1,
-      nonce: 1,
+      nonce: nonce,
     };
 
     //user confirmation
@@ -185,8 +179,8 @@ export default class Quai {
 
       //sign the transaction locally
       let sendTx = await ethWallet.sendTransaction(rawTx);
-      console.log(await sendTx);
-      return signedTx;
+      res = await sendTx;
+      return res.result;
     }
   }
   async signTxns(txns) {}

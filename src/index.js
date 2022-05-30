@@ -9,11 +9,14 @@ wallet.registerRpcMessageHandler(async (originString, requestObject) => {
   console.log('accounts got : ');
   console.log(accounts);
   let currentAccount = await accountLibary.getCurrentAccount();
-
+  console.log('currentAccount');
+  console.log(currentAccount);
   let quaiSnap = new QuaiSnap(wallet, currentAccount);
   if (requestObject.hasOwnProperty('testnet')) {
     quaiSnap.setTestnet(requestObject.testnet);
   }
+
+  console.log(requestObject);
   switch (requestObject.method) {
     case 'getAccounts':
       return accountLibary.getAccounts();
@@ -47,9 +50,6 @@ wallet.registerRpcMessageHandler(async (originString, requestObject) => {
       );
 
     case 'signData':
-      let pk = account.sk;
-      console.log('request data');
-      console.log(requestObject.data);
       let out = nacl.sign(new Uint8Array(requestObject.data), account.sk);
       return out;
 
