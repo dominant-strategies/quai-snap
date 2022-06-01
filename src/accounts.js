@@ -48,7 +48,12 @@ export default class Accounts {
     } else {
       console.log('have stored accounts');
       this.accounts = storedAccounts.Accounts;
-      this.currentAccountId = storedAccounts.currentAccountId;
+      console.log(this.accounts);
+      this.currentAccount =
+        this.accounts[
+          Object.keys(this.accounts)[Object.keys(this.accounts).length - 1]
+        ];
+      this.currentAccountId = this.currentAccount.addr;
       this.loaded = true;
 
       return storedAccounts;
@@ -74,6 +79,7 @@ export default class Accounts {
     if (!this.loaded) {
       await this.load();
     }
+    console.log(this.currentAccount);
     if (this.currentAccount !== null) {
       return this.currentAccount;
     }
@@ -171,6 +177,7 @@ export default class Accounts {
 
     const address = Account.addr;
     this.currentAccountId = address;
+    this.currentAccount = Account;
     this.accounts[address] = { type: 'generated', path: i, name: name };
     await this.wallet.request({
       method: 'snap_manageState',
@@ -220,10 +227,13 @@ export default class Accounts {
         });
         // If this address exists in a shard, check to see if we haven't found it yet.
         if (context[0] != undefined) {
+          this.currentAccount = Account;
+          this.currentAccountId = Account.addr;
           this.accounts[address] = {
             type: 'generated',
             path: i,
             name: 'Account ' + (foundShard + 1),
+            addr: Account.addr,
           };
           foundShard++;
 
