@@ -9,7 +9,7 @@ wallet.registerRpcMessageHandler(async (originString, requestObject) => {
   console.log('accounts got : ');
   console.log(accounts);
   let currentAccount = await accountLibary.getCurrentAccount();
-
+  console.log(currentAccount);
   let quaiSnap = new QuaiSnap(wallet, currentAccount);
   if (requestObject.hasOwnProperty('testnet')) {
     quaiSnap.setTestnet(requestObject.testnet);
