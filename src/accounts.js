@@ -226,7 +226,10 @@ export default class Accounts {
           return num >= start && num <= end;
         });
         // If this address exists in a shard, check to see if we haven't found it yet.
-        if (context[0] != undefined) {
+        if (
+          context[0] != undefined &&
+          shardsToFind[context[0].value] === false
+        ) {
           this.currentAccount = Account;
           this.currentAccountId = Account.addr;
           let shard = context[0].value;
@@ -253,7 +256,7 @@ export default class Accounts {
       i++;
     }
 
-    console.log('# of shards that addresses were generated for:  ', foundShard);
+    console.log('# of addresses generated:  ', foundShard);
 
     await this.wallet.request({
       method: 'snap_manageState',
