@@ -229,11 +229,14 @@ export default class Accounts {
         if (context[0] != undefined) {
           this.currentAccount = Account;
           this.currentAccountId = Account.addr;
+          let shard = context[0].value;
+          let readableShard = shard.charAt(0).toUpperCase() + shard.slice(1);
           this.accounts[address] = {
             type: 'generated',
             path: i,
             name: 'Account ' + (foundShard + 1),
             addr: Account.addr,
+            shard: readableShard,
           };
           foundShard++;
 
@@ -249,6 +252,8 @@ export default class Accounts {
       }
       i++;
     }
+
+    console.log('# of shards that addresses were generated for:  ', foundShard);
 
     await this.wallet.request({
       method: 'snap_manageState',
