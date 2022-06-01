@@ -5,8 +5,7 @@ export default class Quai {
   constructor(wallet, account) {
     this.wallet = wallet;
     this.account = account;
-    this.baseUrl =
-      'https://mainnet.infura.io/v3/8aa378e5e12b45d4a26719aa795eccd9';
+    this.baseUrl = 'https://rpc.quaiscan.io';
     this.testnet = false;
   }
   getBaseUrl() {
