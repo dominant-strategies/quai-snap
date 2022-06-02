@@ -156,7 +156,7 @@ export default class Accounts {
     let found = false;
     let Account = null;
     while (!found) {
-      Account = await this.generateAccount(i + 1);
+      Account = await this.generateAccount(i);
       let addr = Account.addr;
 
       let context = QUAI_CONTEXTS.filter((obj) => {
@@ -215,7 +215,7 @@ export default class Accounts {
     let Account = null;
     let address = null;
     while (!found) {
-      Account = await this.generateAccount(i + 1);
+      Account = await this.generateAccount(i);
       if (Account.addr != null) {
         address = Account.addr;
 
