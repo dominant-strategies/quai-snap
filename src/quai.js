@@ -1,19 +1,18 @@
 import Web3 from 'web3';
 const ethers = require('ethers');
-import { GetShardFromAddress } from './constants';
+import { QUAI_MAINNET_NETWORK_ID, GetShardFromAddress } from './constants';
 
 export default class Quai {
   constructor(wallet, account) {
     this.wallet = wallet;
     this.account = account;
     this.baseUrl = 'rpc.quaiscan.io';
+    this.baseTestUrl = 'rpc.quaiscan-test.io';
     this.testnet = false;
   }
   getChainFromAddr(addr) {
     let chain = 'none';
     let context = GetShardFromAddress(addr);
-    console.log('Context for getChainFromAddr');
-    console.log(context);
     if (context[0] != undefined) {
       chain = context[0].chain;
     }
@@ -24,7 +23,7 @@ export default class Quai {
       chain = 'prime';
     }
     if (this.testnet) {
-      return this.getBaseUrl;
+      return 'https://' + chain + '.' + this.baseTestUrl;
     }
     return 'https://' + chain + '.' + this.baseUrl;
   }
@@ -144,7 +143,7 @@ export default class Quai {
     );
     return txn.txID;
   }
-  async Transfer(receiver, amount) {
+  async Transfer(receiver, amount, limit, price) {
     let body = {
       jsonrpc: '2.0',
       method: 'eth_getTransactionCount',
@@ -169,17 +168,19 @@ export default class Quai {
     }
 
     let shardChainId = QUAI_MAINNET_NETWORK_ID[context[0].value];
-
-    amount = BigInt(amount);
+    amount = BigInt(parseInt(amount));
     //create a payment transaction
     let rawTx = {
       to: receiver,
-      gasLimit: '0x76c0', // 30400
-      gasPrice: '0x9184e72a000', // 10000000000000
-      value: amount, // 2441406250
+      gasLimit: limit,
+      gasPrice: price,
+      value: amount,
       chainId: shardChainId,
       nonce: nonce,
     };
+
+    console.log('rawTx:');
+    console.log(rawTx);
 
     //user confirmation
     confirm = await this.sendConfirmation(
@@ -191,11 +192,9 @@ export default class Quai {
     } else {
       // With Quai Network, baseUrl and chainId will need to be set
       // based on the sending address byte prefix.
-      let chainId = 1;
-      let web3Provider = new ethers.providers.JsonRpcProvider(
-        this.getChainUrl(this.account.addr),
-        chainId,
-      );
+      let chainURL = this.getChainUrl(this.account.addr);
+      console.log('Calling ' + chainURL + ' for tx');
+      let web3Provider = new ethers.providers.JsonRpcProvider(chainURL, 'any');
 
       // obtain private key
       const privKey = await wallet.request({

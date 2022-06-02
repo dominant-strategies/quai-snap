@@ -167,7 +167,7 @@ export const QUAI_OPTIONS = [
 ];
 
 export function GetShardFromAddress(address) {
-  QUAI_CONTEXTS.filter((obj) => {
+  return QUAI_CONTEXTS.filter((obj) => {
     let num = parseInt(Number('0x' + address.substring(2, 4)), 10);
     let start = parseInt(Number('0x' + obj.byte[0]), 10);
     let end = parseInt(Number('0x' + obj.byte[1]), 10);
