@@ -67,6 +67,9 @@ wallet.registerRpcMessageHandler(async (originString, requestObject) => {
     case 'createAccount':
       return await accountLibary.createNewAccount();
 
+    case 'setCurrentAccount':
+      return await accountLibary.setCurrentAccount(requestObject.address);
+
     case 'getBlockHeight':
       let response = await quaiSnap.getBlockHeight();
       console.log('block height');

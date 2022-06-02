@@ -1,18 +1,36 @@
 import Web3 from 'web3';
 const ethers = require('ethers');
+import { GetShardFromAddress } from './constants';
 
 export default class Quai {
   constructor(wallet, account) {
     this.wallet = wallet;
     this.account = account;
-    this.baseUrl = 'https://rpc.quaiscan.io';
+    this.baseUrl = 'rpc.quaiscan.io';
     this.testnet = false;
   }
-  getBaseUrl() {
+  getChainFromAddr(addr) {
+    let chain = 'none';
+    let context = GetShardFromAddress(addr);
+    console.log('Context for getChainFromAddr');
+    console.log(context);
+    if (context[0] != undefined) {
+      chain = context[0].chain;
+    }
+    return chain;
+  }
+  getBaseUrl(chain) {
+    if (chain == undefined) {
+      chain = 'prime';
+    }
     if (this.testnet) {
       return this.getBaseUrl;
     }
-    return this.baseUrl;
+    return 'https://' + chain + '.' + this.baseUrl;
+  }
+  getChainUrl(addr) {
+    let chain = this.getChainFromAddr(addr);
+    return this.getBaseUrl(chain);
   }
   setTestnet(bool) {
     this.testnet = bool;
@@ -30,7 +48,8 @@ export default class Quai {
       params: [this.account.addr, 'latest'],
       id: 1,
     };
-    let request = await fetch(this.baseUrl, {
+
+    let request = await fetch(this.getChainUrl(this.account.addr), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -112,7 +131,7 @@ export default class Quai {
       id: 1,
     };
 
-    fetch(this.getBaseUrl() + '/broadcastV2', {
+    fetch(this.getChainUrl(this.account.addr) + '/broadcastV2', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -132,7 +151,7 @@ export default class Quai {
       params: [this.account.addr, 'latest'],
       id: 1,
     };
-    let request = await fetch(this.baseUrl, {
+    let request = await fetch(this.getChainUrl(this.account.addr), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -174,7 +193,7 @@ export default class Quai {
       // based on the sending address byte prefix.
       let chainId = 1;
       let web3Provider = new ethers.providers.JsonRpcProvider(
-        this.baseUrl,
+        this.getChainUrl(this.account.addr),
         chainId,
       );
 
