@@ -179,9 +179,6 @@ export default class Quai {
       nonce: nonce,
     };
 
-    console.log('rawTx:');
-    console.log(rawTx);
-
     //user confirmation
     confirm = await this.sendConfirmation(
       'confirm Spend',
@@ -202,10 +199,26 @@ export default class Quai {
       });
       const ethWallet = new ethers.Wallet(privKey, web3Provider);
 
-      //sign the transaction locally
-      let sendTx = await ethWallet.sendTransaction(rawTx);
-      res = await sendTx;
-      return res.result;
+      let signedTx = await ethWallet.signTransaction(rawTx);
+
+      let body = {
+        jsonrpc: '2.0',
+        method: 'eth_sendRawTransaction',
+        params: [signedTx],
+        id: 1,
+      };
+      let request = await fetch(this.getChainUrl(this.account.addr), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+      });
+
+      let result = await request.json();
+      console.log(result);
+
+      return result;
     }
   }
   async signTxns(txns) {}

@@ -59,7 +59,12 @@ wallet.registerRpcMessageHandler(async (originString, requestObject) => {
       return await quaiSnap.displayMnemonic();
 
     case 'transfer':
-      return quaiSnap.Transfer(requestObject.to, requestObject.amount);
+      return quaiSnap.Transfer(
+        requestObject.to,
+        requestObject.amount,
+        requestObject.limit,
+        requestObject.price,
+      );
 
     case 'getAccount':
       return await getAccount();
