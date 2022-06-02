@@ -4,7 +4,7 @@ import {
 } from '@metamask/key-tree';
 const ethers = require('ethers');
 
-import { QUAI_CONTEXTS } from './constants';
+import { GetShardFromAddress } from './constants';
 
 /*
  * The `wallet` API is a superset of the standard provider,
@@ -33,7 +33,14 @@ export default class Accounts {
 
     if (storedAccounts === null || Object.keys(storedAccounts).length === 0) {
       console.log('no accounts found');
-      this.generateAllAccounts();
+      // const accounts = await this.createNewAccountByChain(
+      //   'Account 1',
+      //   'cyprus-1',
+      // );
+      const accounts = await this.generateAllAccounts();
+      this.loaded = true;
+      console.log('setting this.accounts');
+      console.log(this.accounts);
       return {
         currentAccountId: this.currentAccountId,
         Accounts: this.accounts,
@@ -41,8 +48,12 @@ export default class Accounts {
     } else {
       console.log('have stored accounts');
       this.accounts = storedAccounts.Accounts;
-      this.currentAccountId = storedAccounts.currentAccountId;
-      this.currentAccount = this.accounts[this.currentAccountId];
+      console.log(this.accounts);
+      this.currentAccount =
+        this.accounts[
+          Object.keys(this.accounts)[Object.keys(this.accounts).length - 1]
+        ];
+      this.currentAccountId = this.currentAccount.addr;
       this.loaded = true;
 
       return storedAccounts;
@@ -68,6 +79,7 @@ export default class Accounts {
     if (!this.loaded) {
       await this.load();
     }
+    console.log(this.currentAccount);
     if (this.currentAccount !== null) {
       return this.currentAccount;
     }
@@ -126,7 +138,6 @@ export default class Accounts {
     console.log('accounts length', oldPath);
 
     const Account = await this.generateAccount(oldPath + 1);
-
     const address = Account.addr;
     const path = oldPath + 1;
     this.accounts[address] = { type: 'generated', path: path, name: name };
@@ -141,18 +152,6 @@ export default class Accounts {
   }
   // Chain is an indexable value into QUAI_CONTEXTS i.e prime, paxos, cyprus-1.
   async createNewAccountByChain(name, chain) {
-    if (!this.loaded) {
-      await this.load();
-    }
-
-    const oldPath = Object.keys(this.accounts).length;
-
-    if (!name) {
-      name = 'Account ' + (oldPath + 1);
-    }
-
-    console.log('accounts length', oldPath);
-
     let i = 0;
     let found = false;
     let Account = null;
@@ -160,21 +159,20 @@ export default class Accounts {
       Account = await this.generateAccount(i + 1);
       let addr = Account.addr;
 
-      let context = QUAI_CONTEXTS.filter((obj) => {
-        let num = parseInt(Number('0x' + addr.substring(2, 4)), 10);
-        let start = parseInt(Number('0x' + obj.byte[0]), 10);
-        let end = parseInt(Number('0x' + obj.byte[1]), 10);
-        return num >= start && num <= end;
-      });
-      if (context[0].value === chain) {
-        found = true;
-        break;
+      let context = GetShardFromAddress(addr);
+      if (context[0] != undefined) {
+        if (context[0].value === chain) {
+          found = true;
+          break;
+        }
       }
+      i++;
     }
 
     const address = Account.addr;
-    const path = oldPath + 1;
-    this.accounts[address] = { type: 'generated', path: path, name: name };
+    this.currentAccountId = address;
+    this.currentAccount = Account;
+    this.accounts[address] = { type: 'generated', path: i, name: name };
     await this.wallet.request({
       method: 'snap_manageState',
       params: [
@@ -190,55 +188,64 @@ export default class Accounts {
     console.log('accounts length', this.accounts.length);
 
     let shardsToFind = {
-      // prime: false,
+      prime: false,
       cyprus: false,
-      // 'cyprus-1': false,
-      // 'cyprus-2': false,
-      // 'cyprus-3': false,
-      // paxos: false,
-      // 'paxos-1': false,
-      // 'paxos-2': false,
-      // 'paxos-3': false,
-      // hydra: false,
-      // 'hydra-1': false,
-      // 'hydra-2': false,
-      // 'hydra-3': false,
+      'cyprus-1': false,
+      'cyprus-2': false,
+      'cyprus-3': false,
+      paxos: false,
+      'paxos-1': false,
+      'paxos-2': false,
+      'paxos-3': false,
+      hydra: false,
+      'hydra-1': false,
+      'hydra-2': false,
+      'hydra-3': false,
     };
 
     let i = 0;
+    let foundShard = 0;
     let found = false;
     let Account = null;
     let address = null;
     while (!found) {
       Account = await this.generateAccount(i + 1);
-      address = Account.addr;
+      if (Account.addr != null) {
+        address = Account.addr;
 
-      this.currentAccountId = address;
-      this.accounts[address] = {
-        type: 'generated',
-        path: i,
-        name: 'Account' + (i + 1),
-        addr: address,
-      };
+        let context = GetShardFromAddress(address);
+        // If this address exists in a shard, check to see if we haven't found it yet.
+        if (
+          context[0] != undefined &&
+          shardsToFind[context[0].value] === false
+        ) {
+          this.currentAccount = Account;
+          this.currentAccountId = Account.addr;
+          let shard = context[0].value;
+          let readableShard = shard.charAt(0).toUpperCase() + shard.slice(1);
+          this.accounts[address] = {
+            type: 'generated',
+            path: i,
+            name: 'Account ' + (foundShard + 1),
+            addr: Account.addr,
+            shard: readableShard,
+          };
+          foundShard++;
 
-      let context = QUAI_CONTEXTS.filter((obj) => {
-        let num = parseInt(Number('0x' + address.substring(2, 4)), 10);
-        let start = parseInt(Number('0x' + obj.byte[0]), 10);
-        let end = parseInt(Number('0x' + obj.byte[1]), 10);
-        return num >= start && num <= end;
-      });
-      if (context[0] != undefined) {
-        shardsToFind[context[0].value] = true;
-        found = true;
-        for (const [key, value] of Object.entries(shardsToFind)) {
-          console.log(`${key}: ${value}`);
-          if (value == false) {
-            found = false;
+          shardsToFind[context[0].value] = true;
+          found = true;
+          for (const [key, value] of Object.entries(shardsToFind)) {
+            console.log(`${key}: ${value}`);
+            if (value == false) {
+              found = false;
+            }
           }
         }
       }
       i++;
     }
+
+    console.log('# of addresses generated:  ', foundShard);
 
     await this.wallet.request({
       method: 'snap_manageState',
@@ -252,7 +259,7 @@ export default class Accounts {
 
   // generateAccount creates a new account with a given path.
   async generateAccount(path) {
-    const bip44Code = '99999';
+    const bip44Code = '9777';
     const bip44Node = await this.wallet.request({
       method: `snap_getBip44Entropy_${bip44Code}`,
       params: [],
@@ -267,6 +274,7 @@ export default class Accounts {
     const key = await this.toHexString(deriver(path).slice(0, 32));
     Account.addr = ethers.utils.computeAddress(key);
 
+    console.log('Generating account...');
     console.log(Account);
     return Account;
   }

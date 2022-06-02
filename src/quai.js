@@ -5,8 +5,7 @@ export default class Quai {
   constructor(wallet, account) {
     this.wallet = wallet;
     this.account = account;
-    this.baseUrl =
-      'https://mainnet.infura.io/v3/8aa378e5e12b45d4a26719aa795eccd9';
+    this.baseUrl = 'https://rpc.quaiscan.io';
     this.testnet = false;
   }
   getBaseUrl() {
@@ -144,6 +143,14 @@ export default class Quai {
     let res = await request.json();
     let nonce = res.result;
 
+    let context = GetShardFromAddress(this.account.addr);
+
+    if (context[0] == undefined) {
+      return 'Invalid Address';
+    }
+
+    let shardChainId = QUAI_MAINNET_NETWORK_ID[context[0].value];
+
     amount = BigInt(amount);
     //create a payment transaction
     let rawTx = {
@@ -151,7 +158,7 @@ export default class Quai {
       gasLimit: '0x76c0', // 30400
       gasPrice: '0x9184e72a000', // 10000000000000
       value: amount, // 2441406250
-      chainId: 1,
+      chainId: shardChainId,
       nonce: nonce,
     };
 

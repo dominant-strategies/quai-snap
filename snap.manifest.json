@@ -20,10 +20,6 @@
   "initialPermissions": {
     "snap_confirm": {},
     "snap_getBip44Entropy_9777": {},
-    "snap_getBip44Entropy_60": {},
-    "snap_getBip44Entropy_3": {},
-    "snap_getBip44Entropy_283": {},
-    "snap_getBip44Entropy_99999": {},
     "endowment:network-access": {},
     "snap_notify": {},
     "snap_manageState": {}
