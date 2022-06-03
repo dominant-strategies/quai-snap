@@ -4,7 +4,7 @@ import {
 } from '@metamask/key-tree';
 const ethers = require('ethers');
 
-import { QUAI_CONTEXTS } from './constants';
+import { GetShardFromAddress } from './constants';
 
 /*
  * The `wallet` API is a superset of the standard provider,
@@ -159,13 +159,7 @@ export default class Accounts {
       Account = await this.generateAccount(i);
       let addr = Account.addr;
 
-      let context = QUAI_CONTEXTS.filter((obj) => {
-        let num = parseInt(Number('0x' + addr.substring(2, 4)), 10);
-        let start = parseInt(Number('0x' + obj.byte[0]), 10);
-        let end = parseInt(Number('0x' + obj.byte[1]), 10);
-        return num >= start && num <= end;
-      });
-      console.log(context);
+      let context = GetShardFromAddress(addr);
       if (context[0] != undefined) {
         if (context[0].value === chain) {
           found = true;
@@ -219,12 +213,7 @@ export default class Accounts {
       if (Account.addr != null) {
         address = Account.addr;
 
-        let context = QUAI_CONTEXTS.filter((obj) => {
-          let num = parseInt(Number('0x' + address.substring(2, 4)), 10);
-          let start = parseInt(Number('0x' + obj.byte[0]), 10);
-          let end = parseInt(Number('0x' + obj.byte[1]), 10);
-          return num >= start && num <= end;
-        });
+        let context = GetShardFromAddress(address);
         // If this address exists in a shard, check to see if we haven't found it yet.
         if (
           context[0] != undefined &&

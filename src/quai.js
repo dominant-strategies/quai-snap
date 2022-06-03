@@ -1,24 +1,18 @@
 import Web3 from 'web3';
 const ethers = require('ethers');
-import { QUAI_CONTEXTS } from './constants';
+import { QUAI_MAINNET_NETWORK_ID, GetShardFromAddress } from './constants';
 
 export default class Quai {
   constructor(wallet, account) {
     this.wallet = wallet;
     this.account = account;
     this.baseUrl = 'rpc.quaiscan.io';
+    this.baseTestUrl = 'rpc.quaiscan-test.io';
     this.testnet = false;
   }
   getChainFromAddr(addr) {
     let chain = 'none';
-    let context = QUAI_CONTEXTS.filter((obj) => {
-      let num = parseInt(Number('0x' + addr.substring(2, 4)), 10);
-      let start = parseInt(Number('0x' + obj.byte[0]), 10);
-      let end = parseInt(Number('0x' + obj.byte[1]), 10);
-      return num >= start && num <= end;
-    });
-    console.log('Context for getChainFromAddr');
-    console.log(context);
+    let context = GetShardFromAddress(addr);
     if (context[0] != undefined) {
       chain = context[0].chain;
     }
@@ -29,7 +23,7 @@ export default class Quai {
       chain = 'prime';
     }
     if (this.testnet) {
-      return this.getBaseUrl;
+      return 'https://' + chain + '.' + this.baseTestUrl;
     }
     return 'https://' + chain + '.' + this.baseUrl;
   }
@@ -149,11 +143,7 @@ export default class Quai {
     );
     return txn.txID;
   }
-  async Transfer(receiver, amount) {
-    // TODO: Get suggested gas price
-    // let params = await this.getParams();
-
-    console.log('Here');
+  async Transfer(receiver, amount, limit, price) {
     let body = {
       jsonrpc: '2.0',
       method: 'eth_getTransactionCount',
@@ -170,18 +160,23 @@ export default class Quai {
 
     let res = await request.json();
     let nonce = res.result;
-    console.log('Nonce');
-    console.log(res.result);
 
-    amount = BigInt(amount);
+    let context = GetShardFromAddress(this.account.addr);
+
+    if (context[0] == undefined) {
+      return 'Invalid Address';
+    }
+
+    let shardChainId = QUAI_MAINNET_NETWORK_ID[context[0].value];
+    amount = BigInt(parseInt(amount));
     //create a payment transaction
     let rawTx = {
       to: receiver,
-      gasLimit: '0x76c0', // 30400
-      gasPrice: '0x9184e72a000', // 10000000000000
-      value: amount, // 2441406250
-      chainId: 1,
-      nonce: 1,
+      gasLimit: limit,
+      gasPrice: price,
+      value: amount,
+      chainId: shardChainId,
+      nonce: nonce,
     };
 
     //user confirmation
@@ -194,11 +189,9 @@ export default class Quai {
     } else {
       // With Quai Network, baseUrl and chainId will need to be set
       // based on the sending address byte prefix.
-      let chainId = 1;
-      let web3Provider = new ethers.providers.JsonRpcProvider(
-        this.getChainUrl(this.account.addr),
-        chainId,
-      );
+      let chainURL = this.getChainUrl(this.account.addr);
+      console.log('Calling ' + chainURL + ' for tx');
+      let web3Provider = new ethers.providers.JsonRpcProvider(chainURL, 'any');
 
       // obtain private key
       const privKey = await wallet.request({
@@ -206,10 +199,26 @@ export default class Quai {
       });
       const ethWallet = new ethers.Wallet(privKey, web3Provider);
 
-      //sign the transaction locally
-      let sendTx = await ethWallet.sendTransaction(rawTx);
-      console.log(await sendTx);
-      return signedTx;
+      let signedTx = await ethWallet.signTransaction(rawTx);
+
+      let body = {
+        jsonrpc: '2.0',
+        method: 'eth_sendRawTransaction',
+        params: [signedTx],
+        id: 1,
+      };
+      let request = await fetch(this.getChainUrl(this.account.addr), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+      });
+
+      let result = await request.json();
+      console.log(result);
+
+      return result;
     }
   }
   async signTxns(txns) {}

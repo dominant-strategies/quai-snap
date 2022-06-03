@@ -14,6 +14,8 @@ wallet.registerRpcMessageHandler(async (originString, requestObject) => {
   if (requestObject.hasOwnProperty('testnet')) {
     quaiSnap.setTestnet(requestObject.testnet);
   }
+
+  console.log(requestObject);
   switch (requestObject.method) {
     case 'getAccounts':
       return accountLibary.getAccounts();
@@ -47,9 +49,6 @@ wallet.registerRpcMessageHandler(async (originString, requestObject) => {
       );
 
     case 'signData':
-      let pk = account.sk;
-      console.log('request data');
-      console.log(requestObject.data);
       let out = nacl.sign(new Uint8Array(requestObject.data), account.sk);
       return out;
 
@@ -60,7 +59,12 @@ wallet.registerRpcMessageHandler(async (originString, requestObject) => {
       return await quaiSnap.displayMnemonic();
 
     case 'transfer':
-      return quaiSnap.Transfer(requestObject.to, requestObject.amount);
+      return quaiSnap.Transfer(
+        requestObject.to,
+        requestObject.amount,
+        requestObject.limit,
+        requestObject.price,
+      );
 
     case 'getAccount':
       return await getAccount();
