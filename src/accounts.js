@@ -296,6 +296,7 @@ export default class Accounts {
             shard: readableShard,
           };
           break;
+          foundShard++;
         }
       }
       i++;
