@@ -284,6 +284,7 @@ export default class Accounts {
           context[0] != undefined &&
           shardsToFind[context[0].value] === false
         ) {
+          foundShard++;
           this.currentAccount = Account;
           this.currentAccountId = Account.addr;
           let shard = context[0].value;
@@ -296,7 +297,6 @@ export default class Accounts {
             shard: readableShard,
           };
           break;
-          foundShard++;
         }
       }
       i++;
