@@ -33,11 +33,7 @@ export default class Accounts {
 
     if (storedAccounts === null || Object.keys(storedAccounts).length === 0) {
       console.log('no accounts found');
-      // const accounts = await this.createNewAccountByChain(
-      //   'Account 1',
-      //   'cyprus-1',
-      // );
-      const accounts = await this.generateAllAccounts();
+      const accounts = await this.generateZoneAccount();
       this.loaded = true;
       console.log('setting this.accounts');
       console.log(this.accounts);
@@ -240,6 +236,66 @@ export default class Accounts {
               found = false;
             }
           }
+        }
+      }
+      i++;
+    }
+
+    console.log('# of addresses generated:  ', foundShard);
+
+    await this.wallet.request({
+      method: 'snap_manageState',
+      params: [
+        'update',
+        { currentAccountId: this.currentAccountId, Accounts: this.accounts },
+      ],
+    });
+    return { currentAccountId: address, Accounts: this.accounts };
+  }
+  // Creates all accounts that span the Quai Network shards.
+  async generateZoneAccount() {
+    console.log('accounts length', this.accounts.length);
+
+    let shardsToFind = {
+      'cyprus-1': false,
+      'cyprus-2': false,
+      'cyprus-3': false,
+      'paxos-1': false,
+      'paxos-2': false,
+      'paxos-3': false,
+      'hydra-1': false,
+      'hydra-2': false,
+      'hydra-3': false,
+    };
+
+    let i = 0;
+    let foundShard = 0;
+    let found = false;
+    let Account = null;
+    let address = null;
+    while (!found) {
+      Account = await this.generateAccount(i);
+      if (Account.addr != null) {
+        address = Account.addr;
+
+        let context = GetShardFromAddress(address);
+        // If this address exists in a shard, check to see if we haven't found it yet.
+        if (
+          context[0] != undefined &&
+          shardsToFind[context[0].value] === false
+        ) {
+          this.currentAccount = Account;
+          this.currentAccountId = Account.addr;
+          let shard = context[0].value;
+          let readableShard = shard.charAt(0).toUpperCase() + shard.slice(1);
+          this.accounts[address] = {
+            type: 'generated',
+            path: i,
+            name: 'Account ' + (foundShard + 1),
+            addr: Account.addr,
+            shard: readableShard,
+          };
+          break;
         }
       }
       i++;
