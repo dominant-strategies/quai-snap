@@ -1,18 +1,18 @@
 {
   "version": "0.7.0",
-  "proposedName": "MetaMask Template Snap",
-  "description": "A MetaMask Snap template.",
+  "proposedName": "QuaiSnap",
+  "description": "QuaiSnap",
   "repository": {
     "type": "git",
-    "url": "https://github.com/MetaMask/snap-template.git"
+    "url": "https://github.com/spruce-solutions/quai-snap.git"
   },
   "source": {
-    "shasum": "GX3QfJ7j3tAoFJkRzCt+41yiovLE4QeUWRPsjlKirIA=",
+    "shasum": "ADMZKl1UR4nzsJoFJYVJKHvwrMmtMKA8PWAAjfG8xpY=",
     "location": {
       "npm": {
         "filePath": "dist/bundle.js",
         "iconPath": "images/icon.svg",
-        "packageName": "@metamask/template-snap",
+        "packageName": "@quai/snap",
         "registry": "https://registry.npmjs.org/"
       }
     }
@@ -20,9 +20,6 @@
   "initialPermissions": {
     "snap_confirm": {},
     "snap_getBip44Entropy_9777": {},
-    "snap_getBip44Entropy_60": {},
-    "snap_getBip44Entropy_3": {},
-    "snap_getBip44Entropy_283": {},
     "endowment:network-access": {},
     "snap_notify": {},
     "snap_manageState": {}

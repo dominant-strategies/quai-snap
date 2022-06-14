@@ -4,6 +4,20 @@ import {
 } from '@metamask/key-tree';
 const ethers = require('ethers');
 
+import { GetShardFromAddress } from './constants';
+
+let shardsToFind = {
+  'cyprus-1': false,
+  'cyprus-2': false,
+  'cyprus-3': false,
+  'paxos-1': false,
+  'paxos-2': false,
+  'paxos-3': false,
+  'hydra-1': false,
+  'hydra-2': false,
+  'hydra-3': false,
+};
+
 /*
  * The `wallet` API is a superset of the standard provider,
  * and can be used to initialize an ethers.js provider like this:
@@ -21,44 +35,42 @@ export default class Accounts {
 
   async load() {
     //load acount Data
-    console.log('load function called');
     const storedAccounts = await this.wallet.request({
       method: 'snap_manageState',
       params: ['get'],
     });
 
+    console.log('Stored accounts');
+    console.log(storedAccounts);
+
     if (storedAccounts === null || Object.keys(storedAccounts).length === 0) {
       console.log('no accounts found');
-      const Account = await this.generateAccount(1);
-      let extendedAccount = {};
-      extendedAccount.type = 'generated';
-      extendedAccount.addr = Account.addr;
-      extendedAccount.path = 2;
-      extendedAccount.name = 'Account 1';
-      const address = Account.addr;
-      const accounts = {};
-      accounts[address] = extendedAccount;
-      await this.wallet.request({
-        method: 'snap_manageState',
-        params: ['update', { currentAccountId: address, Accounts: accounts }],
-      });
-      this.currentAccountId = address;
-      this.accounts = accounts;
+      const accounts = await this.generateZoneAccount();
+      this.loaded = true;
+      console.log('setting this.accounts');
+      console.log(this.accounts);
+      return {
+        currentAccountId: this.currentAccountId,
+        Accounts: this.accounts,
+      };
+    } else {
+      console.log('have stored accounts');
+      this.accounts = storedAccounts.Accounts;
+      console.log(this.accounts);
+      this.currentAccount =
+        this.accounts[
+          Object.keys(this.accounts)[Object.keys(this.accounts).length - 1]
+        ];
+      this.currentAccountId = this.currentAccount.addr;
       this.loaded = true;
 
-      return { currentAccountId: address, Accounts: accounts };
-    } else {
-      this.accounts = storedAccounts.Accounts;
-      this.currentAccountId = storedAccounts.currentAccountId;
-      this.loaded = true;
-      console.log('storedAccounts');
-      console.log(storedAccounts);
       return storedAccounts;
     }
   }
 
   async unlockAccount(addr) {
     if (!this.loaded) {
+      console.log('not loaded in unlock account');
       await this.load();
     }
     if (this.accounts.hasOwnProperty(addr)) {
@@ -75,6 +87,7 @@ export default class Accounts {
     if (!this.loaded) {
       await this.load();
     }
+    console.log(this.currentAccount);
     if (this.currentAccount !== null) {
       return this.currentAccount;
     }
@@ -123,14 +136,190 @@ export default class Accounts {
     if (!this.loaded) {
       await this.load();
     }
+
+    const oldPath = Object.keys(this.accounts).length;
+
     if (!name) {
-      name = 'Account ' + (Object.keys(this.accounts).length + 1);
+      name = 'Account ' + (oldPath + 1);
     }
 
-    const Account = await this.generateAccount(this.accounts.length + 2);
+    console.log('accounts length', oldPath);
+
+    const Account = await this.generateAccount(oldPath + 1);
     const address = Account.addr;
-    const path = this.accounts.length + 2;
+    const path = oldPath + 1;
     this.accounts[address] = { type: 'generated', path: path, name: name };
+    await this.wallet.request({
+      method: 'snap_manageState',
+      params: [
+        'update',
+        { currentAccountId: this.currentAccountId, Accounts: this.accounts },
+      ],
+    });
+    return { currentAccountId: address, Accounts: this.accounts };
+  }
+  // Chain is an indexable value into QUAI_CONTEXTS i.e prime, paxos, cyprus-1.
+  async createNewAccountByChain(name, chain) {
+    let i = 0;
+    let found = false;
+    let Account = null;
+    while (!found) {
+      Account = await this.generateAccount(i);
+      let addr = Account.addr;
+
+      let context = GetShardFromAddress(addr);
+      if (context[0] != undefined) {
+        if (context[0].value === chain) {
+          found = true;
+          break;
+        }
+      }
+      i++;
+    }
+
+    const address = Account.addr;
+    this.currentAccountId = address;
+    this.currentAccount = Account;
+    this.accounts[address] = { type: 'generated', path: i, name: name };
+    await this.wallet.request({
+      method: 'snap_manageState',
+      params: [
+        'update',
+        { currentAccountId: this.currentAccountId, Accounts: this.accounts },
+      ],
+    });
+    return { currentAccountId: address, Accounts: this.accounts };
+  }
+
+  // Creates all accounts that span the Quai Network shards.
+  async generateAllAccounts() {
+    console.log('accounts length', this.accounts.length);
+
+    let i = 0;
+    let foundShard = 0;
+    let found = false;
+    let Account = null;
+    let address = null;
+    while (!found) {
+      Account = await this.generateAccount(i);
+      if (Account.addr != null) {
+        address = Account.addr;
+
+        let context = GetShardFromAddress(address);
+        // If this address exists in a shard, check to see if we haven't found it yet.
+        if (
+          context[0] != undefined &&
+          shardsToFind[context[0].value] === false
+        ) {
+          this.currentAccount = Account;
+          this.currentAccountId = Account.addr;
+          let shard = context[0].value;
+          let readableShard = shard.charAt(0).toUpperCase() + shard.slice(1);
+          this.accounts[address] = {
+            type: 'generated',
+            path: i,
+            name: 'Account ' + (foundShard + 1),
+            addr: Account.addr,
+            shard: readableShard,
+          };
+          foundShard++;
+
+          shardsToFind[context[0].value] = true;
+          found = true;
+          for (const [key, value] of Object.entries(shardsToFind)) {
+            console.log(`${key}: ${value}`);
+            if (value == false) {
+              found = false;
+            }
+          }
+        }
+      }
+      i++;
+    }
+
+    console.log('# of addresses generated:  ', foundShard);
+
+    await this.wallet.request({
+      method: 'snap_manageState',
+      params: [
+        'update',
+        { currentAccountId: this.currentAccountId, Accounts: this.accounts },
+      ],
+    });
+    return { currentAccountId: address, Accounts: this.accounts };
+  }
+  // Creates accounts for an amount of paths.
+  async generateNumAccounts(amount) {
+    if (!this.loaded) {
+      await this.load();
+    }
+
+    let oldPath =
+      this.accounts[
+        Object.keys(this.accounts)[Object.keys(this.accounts).length - 1]
+      ].path;
+
+    for (var i = 0; i < amount; i++) {
+      const name = 'Account ' + (oldPath + 1);
+      const Account = await this.generateAccount(oldPath + 1);
+      const address = Account.addr;
+      console.log(address);
+      const path = oldPath + 1;
+      this.currentAccount = Account;
+      this.currentAccountId = address;
+      this.accounts[address] = { type: 'generated', path: path, name: name };
+      oldPath++;
+    }
+
+    await this.wallet.request({
+      method: 'snap_manageState',
+      params: [
+        'update',
+        { currentAccountId: this.currentAccountId, Accounts: this.accounts },
+      ],
+    });
+    return { currentAccountId: this.currentAccountId, Accounts: this.accounts };
+  }
+  // Creates all accounts that span the Quai Network shards.
+  async generateZoneAccount() {
+    console.log('accounts length', this.accounts.length);
+
+    let i = 0;
+    let foundShard = 0;
+    let found = false;
+    let Account = null;
+    let address = null;
+    while (!found) {
+      Account = await this.generateAccount(i);
+      if (Account.addr != null) {
+        address = Account.addr;
+
+        let context = GetShardFromAddress(address);
+        // If this address exists in a shard, check to see if we haven't found it yet.
+        if (
+          context[0] != undefined &&
+          shardsToFind[context[0].value] === false
+        ) {
+          foundShard++;
+          this.currentAccount = Account;
+          this.currentAccountId = Account.addr;
+          let shard = context[0].value;
+          let readableShard = shard.charAt(0).toUpperCase() + shard.slice(1);
+          this.accounts[address] = {
+            type: 'generated',
+            path: i,
+            name: 'Account ' + (foundShard + 1),
+            addr: Account.addr,
+            shard: readableShard,
+          };
+          break;
+        }
+      }
+      i++;
+    }
+
+    console.log('# of addresses generated:  ', foundShard);
+
     await this.wallet.request({
       method: 'snap_manageState',
       params: [
@@ -143,40 +332,31 @@ export default class Accounts {
 
   // generateAccount creates a new account with a given path.
   async generateAccount(path) {
-    // const derivationPath = "m/44'/3'/0'/0/" + path;
-    // const [, , coinType, account, change, addressIndex] =
-    //   derivationPath.split('/');
-    // const bip44Code = coinType.replace("'", '');
-    // const isMainnet = bip44Code === '3';
-    // const bip44Node = await this.wallet.request({
-    //   method: `snap_getBip44Entropy_${bip44Code}`,
-    //   params: [],
-    // });
+    const bip44Code = '9777';
+    const bip44Node = await this.wallet.request({
+      method: `snap_getBip44Entropy_${bip44Code}`,
+      params: [],
+    });
 
-    // // metamask has supplied us with entropy for "m/purpose'/bip44Code'/"
-    // // we need to derive the final "accountIndex'/change/addressIndex"
-    // console.log('bip44Node');
-    // console.log(bip44Node);
-    // bip44Node.publicKey = bip44Node.ke;
-    // const extendedPrivateKey = deriveBIP44AddressKey(bip44Node, {
-    //   account: parseInt(account),
-    //   address_index: parseInt(addressIndex),
-    //   change: parseInt(change),
-    // });
-    // console.log('extendedPrivateKey');
-    // console.log(extendedPrivateKey);
-    // const privateKey = extendedPrivateKey.slice(0, 32);
-    // console.log('extendedPrivateKey');
-    // const extendedKey = keyRecover(privateKey, !isMainnet);
-
-    // const Account = {
-    //   address: extendedKey.address,
-    //   privateKey: extendedKey.private_base64,
-    //   publicKey: extendedKey.public_hexstring,
-    // };
+    // m/purpose'/bip44Code'/accountIndex'/change/addressIndex
+    // metamask has supplied us with entropy for "m/purpose'/bip44Code'/"
+    // we need to derive the final "accountIndex'/change/addressIndex"
+    const deriver = getBIP44AddressKeyDeriver(bip44Node);
 
     const Account = {};
+    const key = await this.toHexString(deriver(path).slice(0, 32));
+    Account.addr = ethers.utils.computeAddress(key);
+
+    console.log('Generating account...');
     console.log(Account);
     return Account;
+  }
+
+  async toHexString(byteArray) {
+    var s = '0x';
+    byteArray.forEach(function (byte) {
+      s += ('0' + (byte & 0xff).toString(16)).slice(-2);
+    });
+    return s;
   }
 }

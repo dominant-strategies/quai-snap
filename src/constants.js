@@ -1,17 +1,17 @@
 export const QUAI_MAINNET_NETWORK_ID = {
-  Prime: '9000',
-  Cyprus: '9100',
-  Paxos: '9200',
-  Hydra: '9300',
-  Cyprus1: '9101',
-  Cyprus2: '9102',
-  Cyprus3: '9103',
-  Paxos1: '9201',
-  Paxos2: '9202',
-  Paxos3: '9203',
-  Hydra1: '9301',
-  Hydra2: '9302',
-  Hydra3: '9303',
+  prime: 9000,
+  cyprus: 9100,
+  paxos: 9200,
+  hydra: 9300,
+  'cyprus-1': 9101,
+  'cyprus-2': 9102,
+  'cyprus-3': 9103,
+  'paxos-1': 9201,
+  'paxos-2': 9202,
+  'paxos-3': 9203,
+  'hydra-1': 9301,
+  'hydra-2': 9302,
+  'hydra-3': 9303,
 };
 
 export const QUAI_MAINNET_CHAIN_ID = {
@@ -30,7 +30,7 @@ export const QUAI_MAINNET_CHAIN_ID = {
   Hydra3: '0x2457',
 };
 
-export const QUAI_TEST_CONTEXTS = [
+export const QUAI_CONTEXTS = [
   {
     name: 'Prime',
     value: 'prime',
@@ -165,3 +165,12 @@ export const QUAI_OPTIONS = [
   { name: 'Hydra Two', value: 'hydra-2' },
   { name: 'Hydra Three', value: 'hydra-3' },
 ];
+
+export function GetShardFromAddress(address) {
+  return QUAI_CONTEXTS.filter((obj) => {
+    let num = parseInt(Number('0x' + address.substring(2, 4)), 10);
+    let start = parseInt(Number('0x' + obj.byte[0]), 10);
+    let end = parseInt(Number('0x' + obj.byte[1]), 10);
+    return num >= start && num <= end;
+  });
+}
