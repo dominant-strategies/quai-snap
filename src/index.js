@@ -75,6 +75,9 @@ wallet.registerRpcMessageHandler(async (originString, requestObject) => {
     case 'generateAllAccounts':
       return await accountLibary.generateAllAccounts();
 
+    case 'generateNumAccounts':
+      return await accountLibary.generateNumAccounts(requestObject.amount);
+
     case 'setCurrentAccount':
       return await accountLibary.setCurrentAccount(requestObject.address);
 
