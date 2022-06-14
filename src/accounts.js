@@ -6,6 +6,18 @@ const ethers = require('ethers');
 
 import { GetShardFromAddress } from './constants';
 
+let shardsToFind = {
+  'cyprus-1': false,
+  'cyprus-2': false,
+  'cyprus-3': false,
+  'paxos-1': false,
+  'paxos-2': false,
+  'paxos-3': false,
+  'hydra-1': false,
+  'hydra-2': false,
+  'hydra-3': false,
+};
+
 /*
  * The `wallet` API is a superset of the standard provider,
  * and can be used to initialize an ethers.js provider like this:
@@ -183,22 +195,6 @@ export default class Accounts {
   async generateAllAccounts() {
     console.log('accounts length', this.accounts.length);
 
-    let shardsToFind = {
-      prime: false,
-      cyprus: false,
-      'cyprus-1': false,
-      'cyprus-2': false,
-      'cyprus-3': false,
-      paxos: false,
-      'paxos-1': false,
-      'paxos-2': false,
-      'paxos-3': false,
-      hydra: false,
-      'hydra-1': false,
-      'hydra-2': false,
-      'hydra-3': false,
-    };
-
     let i = 0;
     let foundShard = 0;
     let found = false;
@@ -252,21 +248,41 @@ export default class Accounts {
     });
     return { currentAccountId: address, Accounts: this.accounts };
   }
+  // Creates accounts for an amount of paths.
+  async generateNumAccounts(amount) {
+    if (!this.loaded) {
+      await this.load();
+    }
+
+    let oldPath =
+      this.accounts[
+        Object.keys(this.accounts)[Object.keys(this.accounts).length - 1]
+      ].path;
+
+    for (var i = 0; i < amount; i++) {
+      const name = 'Account ' + (oldPath + 1);
+      const Account = await this.generateAccount(oldPath + 1);
+      const address = Account.addr;
+      console.log(address);
+      const path = oldPath + 1;
+      this.currentAccount = Account;
+      this.currentAccountId = address;
+      this.accounts[address] = { type: 'generated', path: path, name: name };
+      oldPath++;
+    }
+
+    await this.wallet.request({
+      method: 'snap_manageState',
+      params: [
+        'update',
+        { currentAccountId: this.currentAccountId, Accounts: this.accounts },
+      ],
+    });
+    return { currentAccountId: this.currentAccountId, Accounts: this.accounts };
+  }
   // Creates all accounts that span the Quai Network shards.
   async generateZoneAccount() {
     console.log('accounts length', this.accounts.length);
-
-    let shardsToFind = {
-      'cyprus-1': false,
-      'cyprus-2': false,
-      'cyprus-3': false,
-      'paxos-1': false,
-      'paxos-2': false,
-      'paxos-3': false,
-      'hydra-1': false,
-      'hydra-2': false,
-      'hydra-3': false,
-    };
 
     let i = 0;
     let foundShard = 0;

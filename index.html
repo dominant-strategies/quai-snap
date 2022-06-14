@@ -33,6 +33,8 @@
     <!-- <input id="SendTo" value="0xD5813D46F74273048D485944DC7DE12FC1947f12" placeholder="reciver address"/>
     <input id="Amount" value="100000" placeholder="amount" type="number"/>
     <button class="transact">Transact</button> -->
+    <input id="NumAccounts" value="25" placeholder="amount" type="number"/>
+    <button class="generateNum">Generate N Accounts</button>
   </body>
 
   <script>
@@ -45,6 +47,7 @@
     const clearButton = document.querySelector('button.clearAccounts')
     const blockHeightButton = document.querySelector('button.blockHeight')
     const transactButton = document.querySelector('button.transact')
+    const generateNButton = document.querySelector('button.generateNum')
 
 
     connectButton.addEventListener('click', connect)
@@ -53,7 +56,8 @@
     createButton.addEventListener('click', create)
     clearButton.addEventListener('click', clearAccounts)
     blockHeightButton.addEventListener('click', blockHeight)
-    transactButton.addEventListener('click', transact)
+    // transactButton.addEventListener('click', transact)
+    generateNButton.addEventListener('click', generateNumAccounts)
 
 
     // here we get permissions to interact with and install the snap
@@ -136,6 +140,23 @@
           method: 'wallet_invokeSnap',
           params: [snapId, {
             method: 'getBlockHeight'
+          }]
+        })
+        alert(response)
+      } catch (err) {
+        console.error(err)
+        alert('Problem happened: ' + err.message || err)
+      }
+    }
+
+    // generate N number of accounts
+    async function generateNumAccounts () {
+      try {
+        const response = await ethereum.request({
+          method: 'wallet_invokeSnap',
+          params: [snapId, {
+            method: 'generateNumAccounts',
+            amount: document.querySelector('#NumAccounts').value
           }]
         })
         alert(response)
