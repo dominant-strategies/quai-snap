@@ -14,7 +14,7 @@ export default class Quai {
     let chain = 'none';
     let context = GetShardFromAddress(addr);
     if (context[0] != undefined) {
-      chain = context[0].chain;
+      chain = context[0].value;
     }
     return chain;
   }
@@ -28,8 +28,12 @@ export default class Quai {
     return 'https://' + chain + '.' + this.baseUrl;
   }
   getChainUrl(addr) {
-    let chain = this.getChainFromAddr(addr);
-    return this.getBaseUrl(chain);
+    let url = this.getBaseUrl();
+    let context = GetShardFromAddress(addr);
+    if (context[0] != undefined) {
+      url = context[0].rpc;
+    }
+    return url;
   }
   setTestnet(bool) {
     this.testnet = bool;
@@ -144,6 +148,8 @@ export default class Quai {
     return txn.txID;
   }
   async Transfer(receiver, amount, limit, price) {
+    console.log('In Trasnfer');
+    console.log(this.account);
     let body = {
       jsonrpc: '2.0',
       method: 'eth_getTransactionCount',

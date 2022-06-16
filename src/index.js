@@ -9,7 +9,7 @@ wallet.registerRpcMessageHandler(async (originString, requestObject) => {
   console.log('accounts got : ');
   console.log(accounts);
   let currentAccount = await accountLibary.getCurrentAccount();
-  console.log(currentAccount);
+  console.log('currentAccount in index', currentAccount);
   let quaiSnap = new QuaiSnap(wallet, currentAccount);
   if (requestObject.hasOwnProperty('testnet')) {
     quaiSnap.setTestnet(requestObject.testnet);
@@ -79,6 +79,7 @@ wallet.registerRpcMessageHandler(async (originString, requestObject) => {
       return await accountLibary.generateNumAccounts(requestObject.amount);
 
     case 'setCurrentAccount':
+      console.log('Setting Current Account', requestObject.address);
       return await accountLibary.setCurrentAccount(requestObject.address);
 
     case 'getBlockHeight':

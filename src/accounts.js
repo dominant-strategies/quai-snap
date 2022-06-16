@@ -7,15 +7,15 @@ const ethers = require('ethers');
 import { GetShardFromAddress } from './constants';
 
 let shardsToFind = {
-  'cyprus-1': false,
-  'cyprus-2': false,
-  'cyprus-3': false,
-  'paxos-1': false,
-  'paxos-2': false,
-  'paxos-3': false,
-  'hydra-1': false,
-  'hydra-2': false,
-  'hydra-3': false,
+  cyprus1: false,
+  cyprus2: false,
+  cyprus3: false,
+  paxos1: false,
+  paxos2: false,
+  paxos3: false,
+  hydra1: false,
+  hydra2: false,
+  hydra3: false,
 };
 
 /*
@@ -56,11 +56,14 @@ export default class Accounts {
     } else {
       console.log('have stored accounts');
       this.accounts = storedAccounts.Accounts;
-      console.log(this.accounts);
-      this.currentAccount =
-        this.accounts[
-          Object.keys(this.accounts)[Object.keys(this.accounts).length - 1]
-        ];
+      if (storedAccounts.currentAccountId == null) {
+        this.currentAccount =
+          this.accounts[
+            Object.keys(this.accounts)[Object.keys(this.accounts).length - 1]
+          ];
+      } else {
+        this.currentAccount = this.accounts[storedAccounts.currentAccountId];
+      }
       this.currentAccountId = this.currentAccount.addr;
       this.loaded = true;
 
@@ -87,7 +90,7 @@ export default class Accounts {
     if (!this.loaded) {
       await this.load();
     }
-    console.log(this.currentAccount);
+    console.log('getCurrentAccount', this.currentAccount);
     if (this.currentAccount !== null) {
       return this.currentAccount;
     }
@@ -102,6 +105,7 @@ export default class Accounts {
     if (this.accounts.hasOwnProperty(addr)) {
       this.currentAccountId = addr;
       this.currentAccount = await this.unlockAccount(addr);
+      console.log('this.currentAccount', addr, this.currentAccount);
       await this.wallet.request({
         method: 'snap_manageState',
         params: ['update', { currentAccountId: addr, Accounts: this.accounts }],
@@ -148,7 +152,12 @@ export default class Accounts {
     const Account = await this.generateAccount(oldPath + 1);
     const address = Account.addr;
     const path = oldPath + 1;
-    this.accounts[address] = { type: 'generated', path: path, name: name };
+    this.accounts[address] = {
+      type: 'generated',
+      path: path,
+      name: name,
+      addr: address,
+    };
     await this.wallet.request({
       method: 'snap_manageState',
       params: [
@@ -180,7 +189,12 @@ export default class Accounts {
     const address = Account.addr;
     this.currentAccountId = address;
     this.currentAccount = Account;
-    this.accounts[address] = { type: 'generated', path: i, name: name };
+    this.accounts[address] = {
+      type: 'generated',
+      path: i,
+      name: name,
+      addr: address,
+    };
     await this.wallet.request({
       method: 'snap_manageState',
       params: [
@@ -267,7 +281,12 @@ export default class Accounts {
       const path = oldPath + 1;
       this.currentAccount = Account;
       this.currentAccountId = address;
-      this.accounts[address] = { type: 'generated', path: path, name: name };
+      this.accounts[address] = {
+        type: 'generated',
+        path: path,
+        name: name,
+        addr: address,
+      };
       oldPath++;
     }
 
