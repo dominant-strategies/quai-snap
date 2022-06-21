@@ -7,15 +7,15 @@ const ethers = require('ethers');
 import { GetShardFromAddress } from './constants';
 
 let shardsToFind = {
-  cyprus1: false,
-  cyprus2: false,
-  cyprus3: false,
-  paxos1: false,
-  paxos2: false,
-  paxos3: false,
-  hydra1: false,
-  hydra2: false,
-  hydra3: false,
+  'cyprus-1': false,
+  'cyprus-2': false,
+  'cyprus-3': false,
+  'paxos-1': false,
+  'paxos-2': false,
+  'paxos-3': false,
+  'hydra-1': false,
+  'hydra-2': false,
+  'hydra-3': false,
 };
 
 /*

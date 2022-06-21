@@ -171,7 +171,6 @@ export function GetShardFromAddress(address) {
     let num = parseInt(Number('0x' + address.substring(2, 4)), 10);
     let start = parseInt(Number('0x' + obj.byte[0]), 10);
     let end = parseInt(Number('0x' + obj.byte[1]), 10);
-    console.log(obj, num, start, end, num >= start && num <= end);
     return num >= start && num <= end;
   });
 }
