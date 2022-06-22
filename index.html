@@ -35,6 +35,8 @@
     <button class="transact">Transact</button>
     <input id="NumAccounts" value="25" placeholder="amount" type="number"/>
     <button class="generateNum">Generate N Accounts</button>
+    <input id="SignMessage" type="text">
+    <button class="messageSigner">Sign Message</button>
   </body>
 
   <script>
@@ -48,6 +50,7 @@
     const blockHeightButton = document.querySelector('button.blockHeight')
     const transactButton = document.querySelector('button.transact')
     const generateNButton = document.querySelector('button.generateNum')
+    const messageButton = document.querySelector('button.messageSigner')
 
 
     connectButton.addEventListener('click', connect)
@@ -58,6 +61,7 @@
     blockHeightButton.addEventListener('click', blockHeight)
     transactButton.addEventListener('click', transact)
     generateNButton.addEventListener('click', generateNumAccounts)
+    messageButton.addEventListener('click', sign)
 
 
     // here we get permissions to interact with and install the snap
@@ -178,6 +182,25 @@
         })
         alert(response)
         console.log("transaction returned");
+        console.log(response);
+      } catch (err) {
+        console.error(err)
+        alert('Problem happened: ' + err.message || err)
+      }
+    }
+
+    async function sign(){
+      try {
+        console.log(document.querySelector('#SignMessage').value);
+        const response = await ethereum.request({
+          method: 'wallet_invokeSnap',
+          params: [snapId, {
+            method: 'dataSigner',
+            data: document.querySelector('#SignMessage').value
+          }]
+        })
+        alert(response);
+        console.log("Message successfuly signed");
         console.log(response);
       } catch (err) {
         console.error(err)

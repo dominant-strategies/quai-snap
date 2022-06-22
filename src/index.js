@@ -88,6 +88,9 @@ wallet.registerRpcMessageHandler(async (originString, requestObject) => {
       console.log(response);
       return response.result.number;
 
+    case 'dataSigner':
+      return quaiSnap.dataSigner(requestObject.data);
+
     default:
       throw new Error('Method not found.');
   }

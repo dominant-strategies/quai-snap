@@ -1,6 +1,7 @@
 import Web3 from 'web3';
 const ethers = require('ethers');
 import { QUAI_MAINNET_NETWORK_ID, GetShardFromAddress } from './constants';
+import { deriveBIP44AddressKey } from '@metamask/key-tree';
 
 export default class Quai {
   constructor(wallet, account) {
@@ -148,7 +149,7 @@ export default class Quai {
     return txn.txID;
   }
   async Transfer(receiver, amount, limit, price) {
-    console.log('In Trasnfer');
+    console.log('In Transfer');
     console.log(this.account);
     let body = {
       jsonrpc: '2.0',
@@ -203,6 +204,8 @@ export default class Quai {
       const privKey = await wallet.request({
         method: 'snap_getAppKey',
       });
+      console.log('Private key:');
+      console.log(privKey)
       const ethWallet = new ethers.Wallet(privKey, web3Provider);
 
       let signedTx = await ethWallet.signTransaction(rawTx);
@@ -227,6 +230,51 @@ export default class Quai {
       return result;
     }
   }
+
+  //Use ethers wallet and signMessage()
+  async dataSigner(data){
+    console.log('Signing Data...: ' + data);
+    console.log(this.account);
+    //user confirmation for data signing
+    confirm = await this.sendConfirmation(
+      'Sign Data',
+      'Sign ' + data + ' using account address:  ' + this.account + ' ?',
+    );
+    
+    if (!confirm) {
+      return 'User rejected data signing: error 4001';
+    } else {
+      // With Quai Network, baseUrl and chainId will need to be set
+      // based on the sending address byte prefix.
+      let chainURL = this.getChainUrl(this.account.addr);
+      console.log('Calling ' + chainURL + ' for message signing');
+
+      let web3Provider = new ethers.providers.JsonRpcProvider(chainURL, 'any');
+      
+      const privKey = await wallet.request({
+        method: 'snap_getBip44Entropy_9777', //'snap_getAppKey'
+      });
+      
+      let PRIVATE_KEY = deriveBIP44AddressKey(privKey, {
+        account: 0,
+        change: 0,
+        address_index: 0,
+      }).slice(0, 32);
+
+      console.log('Got private key');
+      console.log(PRIVATE_KEY);
+      
+      const ethWallet = new ethers.Wallet(PRIVATE_KEY, web3Provider);
+      
+      let signature = await ethWallet.signMessage(data);
+      console.log('Signed data: ' + data);
+      console.log('Signature: ' + signature);
+      
+      return signature;
+    }
+  }
+
+
   async signTxns(txns) {}
 
   async sendConfirmation(prompt, description, textAreaContent) {
