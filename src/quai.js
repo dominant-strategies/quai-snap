@@ -207,8 +207,7 @@ export default class Quai {
       const privKey = await wallet.request({
         method: 'snap_getAppKey',
       });
-      console.log('Private key:');
-      console.log(privKey)
+
       const ethWallet = new ethers.Wallet(privKey, web3Provider);
 
       let signedTx = await ethWallet.signTransaction(rawTx);
