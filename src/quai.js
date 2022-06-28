@@ -45,6 +45,7 @@ export default class Quai {
     );
     return await transactions.json();
   }
+
   async getBalance() {
     let body = {
       jsonrpc: '2.0',
@@ -86,6 +87,8 @@ export default class Quai {
     return await request.json();
   }
   static validateAddress(address) {}
+
+
   async displayMnemonic() {
     const confirm = await this.sendConfirmation(
       'confirm',
@@ -232,7 +235,7 @@ export default class Quai {
   }
 
   //Use ethers wallet and signMessage()
-  async dataSigner(data){
+  async signData(data){
     console.log('Signing Data...: ' + data);
     console.log(this.account);
     //user confirmation for data signing
@@ -252,20 +255,18 @@ export default class Quai {
       let web3Provider = new ethers.providers.JsonRpcProvider(chainURL, 'any');
       
       const privKey = await wallet.request({
-        method: 'snap_getBip44Entropy_9777', //'snap_getAppKey'
+        method: 'snap_getBip44Entropy_994', //'snap_getAppKey'
       });
-      
+
       let PRIVATE_KEY = deriveBIP44AddressKey(privKey, {
         account: 0,
         change: 0,
         address_index: 0,
       }).slice(0, 32);
-
-      console.log('Got private key');
-      console.log(PRIVATE_KEY);
       
       const ethWallet = new ethers.Wallet(PRIVATE_KEY, web3Provider);
-      
+      //console.log('Mnemonic Phrase:');
+      //console.log(ethWallet.mnemonic);
       let signature = await ethWallet.signMessage(data);
       console.log('Signed data: ' + data);
       console.log('Signature: ' + signature);
