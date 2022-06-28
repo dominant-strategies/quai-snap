@@ -1,6 +1,7 @@
 import {
   getBIP44AddressKeyDeriver,
   deriveBIP44AddressKey,
+  JsonBIP44CoinTypeNode,
 } from '@metamask/key-tree';
 const ethers = require('ethers');
 
@@ -351,10 +352,9 @@ export default class Accounts {
 
   // generateAccount creates a new account with a given path.
   async generateAccount(path) {
-    const bip44Code = '9777';
+    const bip44Code = '994';
     const bip44Node = await this.wallet.request({
       method: `snap_getBip44Entropy_${bip44Code}`,
-      params: [],
     });
 
     // m/purpose'/bip44Code'/accountIndex'/change/addressIndex
