@@ -1,7 +1,7 @@
 import Web3 from 'web3';
 const ethers = require('ethers');
 import { QUAI_MAINNET_NETWORK_ID, GetShardFromAddress } from './constants';
-import { deriveBIP44AddressKey } from '@metamask/key-tree';
+import { deriveBIP44AddressKey, getBIP44AddressKeyDeriver } from '@metamask/key-tree';
 
 export default class Quai {
   constructor(wallet, account) {
@@ -254,19 +254,17 @@ export default class Quai {
 
       let web3Provider = new ethers.providers.JsonRpcProvider(chainURL, 'any');
       
-      const privKey = await wallet.request({
-        method: 'snap_getBip44Entropy_994', //'snap_getAppKey'
+      const bip44Code = '994';
+      const bip44Node = await this.wallet.request({
+        method: `snap_getBip44Entropy_${bip44Code}`,
+        params: [],
       });
 
-      let PRIVATE_KEY = deriveBIP44AddressKey(privKey, {
-        account: 0,
-        change: 0,
-        address_index: 0,
-      }).slice(0, 32);
+      const deriver = await getBIP44AddressKeyDeriver(bip44Node);
+      const privkey = deriver(this.account.path).slice(0, 32);
       
-      const ethWallet = new ethers.Wallet(PRIVATE_KEY, web3Provider);
-      //console.log('Mnemonic Phrase:');
-      //console.log(ethWallet.mnemonic);
+      
+      const ethWallet = new ethers.Wallet(privkey, web3Provider);
       let signature = await ethWallet.signMessage(data);
       console.log('Signed data: ' + data);
       console.log('Signature: ' + signature);

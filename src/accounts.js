@@ -356,12 +356,11 @@ export default class Accounts {
       method: `snap_getBip44Entropy_${bip44Code}`,
       params: [],
     });
-    console.log("BIP44 Node:");
-    console.log(bip44Node);
+
     // m/purpose'/bip44Code'/accountIndex'/change/addressIndex
     // metamask has supplied us with entropy for "m/purpose'/bip44Code'/"
     // we need to derive the final "accountIndex'/change/addressIndex"
-    const deriver = getBIP44AddressKeyDeriver(bip44Node);
+    const deriver = await getBIP44AddressKeyDeriver(bip44Node);
 
     const Account = {};
     const key = await this.toHexString(deriver(path).slice(0, 32));
