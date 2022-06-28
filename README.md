@@ -25,7 +25,7 @@ Returns user account
 ```javascript
 const response = await ethereum.request({
     method: 'wallet_invokeSnap',
-    params: [snapId, {
+    params: ['npm:@quainetwork/quai-snap', {
             method: 'getAccount'
         }]
 })
