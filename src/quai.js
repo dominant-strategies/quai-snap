@@ -3,6 +3,10 @@ const ethers = require('ethers');
 import { QUAI_MAINNET_NETWORK_ID, GetShardFromAddress } from './constants';
 import { deriveBIP44AddressKey, getBIP44AddressKeyDeriver } from '@metamask/key-tree';
 
+import english from './wordlists/english';
+import nacl from 'tweetnacl';
+import sha512 from 'js-sha512';
+
 export default class Quai {
   constructor(wallet, account) {
     this.wallet = wallet;
@@ -88,6 +92,34 @@ export default class Quai {
   }
   static validateAddress(address) {}
 
+  //Mnemonic phrase helper
+  async toUint11Array(secretKey){
+    const buffer11 = [];
+    let acc = 0;
+    let accBits = 0;
+    function add(octet) {
+      acc |= octet << accBits;
+      accBits += 8;
+      if (accBits >= 11) {
+        buffer11.push(acc & 0x7ff);
+        acc >>= 11;
+        accBits -= 11;
+      }
+    }
+    function flush() {
+      if (accBits) {
+        buffer11.push(acc);
+      }
+    }
+  
+    secretKey.forEach(add);
+    flush();
+    return buffer11;
+  }
+  //helper for displayMnemonic
+  async applyWords(nums) {
+    return nums.map((n) => english[n]);
+  }
 
   async displayMnemonic() {
     const confirm = await this.sendConfirmation(
@@ -95,17 +127,50 @@ export default class Quai {
       'Are you sure you want to display your mnemonic?',
       'anyone with this mnemonic can spend your funds',
     );
+
+    const bip44Code = '994';
+    const bip44Node = await this.wallet.request({
+      method: `snap_getBip44Entropy_${bip44Code}`,
+      params: [],
+    });
+    const deriver = await getBIP44AddressKeyDeriver(bip44Node);
+    const privkey = deriver(this.account.path).slice(0, 32);
+
+    const mnemonic = await this.secretKeyToMnemonic(privkey);
+
     if (confirm) {
       this.sendConfirmation(
         'mnemonic',
         this.account.addr,
-        algo.secretKeyToMnemonic(this.account.sk),
+        mnemonic,
       );
       return true;
     } else {
       return false;
     }
   }
+
+  //Helper for displayMnemonic. Computes the final checksum word
+  async computeChecksum(secretKey) {
+    const hashBuffer = await this.genericHash(secretKey);
+    const uint11Hash = await this.toUint11Array(hashBuffer);
+    const words = await this.applyWords(uint11Hash);
+    return words[0];
+  }
+
+  //Helper for computeCheckSum
+  async genericHash(secretKey){
+    return sha512.sha512_256.array(secretKey);
+  }
+
+  //Helper for display the mnemonic phrase by transforming a secret key to mnemonic
+  async secretKeyToMnemonic(secretKey){
+    const uint11Array = await this.toUint11Array(secretKey);
+    const words = await this.applyWords(uint11Array);
+    const checksumWord = await this.computeChecksum(secretKey);
+    return `${words.join(' ')} ${checksumWord}`;
+  }
+
   getAddress() {
     return this.account.addr;
   }
