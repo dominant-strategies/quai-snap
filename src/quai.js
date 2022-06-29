@@ -1,6 +1,7 @@
 import Web3 from 'web3';
 const ethers = require('ethers');
 import { QUAI_MAINNET_NETWORK_ID, GetShardFromAddress } from './constants';
+import { deriveBIP44AddressKey, getBIP44AddressKeyDeriver } from '@metamask/key-tree';
 
 export default class Quai {
   constructor(wallet, account) {
@@ -44,6 +45,7 @@ export default class Quai {
     );
     return await transactions.json();
   }
+
   async getBalance() {
     let body = {
       jsonrpc: '2.0',
@@ -85,6 +87,8 @@ export default class Quai {
     return await request.json();
   }
   static validateAddress(address) {}
+
+
   async displayMnemonic() {
     const confirm = await this.sendConfirmation(
       'confirm',
@@ -148,7 +152,7 @@ export default class Quai {
     return txn.txID;
   }
   async Transfer(receiver, amount, limit, price) {
-    console.log('In Trasnfer');
+    console.log('In Transfer');
     console.log(this.account);
     let body = {
       jsonrpc: '2.0',
@@ -203,6 +207,7 @@ export default class Quai {
       const privKey = await wallet.request({
         method: 'snap_getAppKey',
       });
+
       const ethWallet = new ethers.Wallet(privKey, web3Provider);
 
       let signedTx = await ethWallet.signTransaction(rawTx);
@@ -227,6 +232,47 @@ export default class Quai {
       return result;
     }
   }
+
+  //Use ethers wallet and signMessage()
+  async signData(data){
+    console.log('Signing Data...: ' + data);
+    console.log(this.account);
+    //user confirmation for data signing
+    confirm = await this.sendConfirmation(
+      'Sign Data',
+      'Sign ' + data + ' using account address:  ' + this.account + ' ?',
+    );
+    
+    if (!confirm) {
+      return 'User rejected data signing: error 4001';
+    } else {
+      // With Quai Network, baseUrl and chainId will need to be set
+      // based on the sending address byte prefix.
+      let chainURL = this.getChainUrl(this.account.addr);
+      console.log('Calling ' + chainURL + ' for message signing');
+
+      let web3Provider = new ethers.providers.JsonRpcProvider(chainURL, 'any');
+      
+      const bip44Code = '994';
+      const bip44Node = await this.wallet.request({
+        method: `snap_getBip44Entropy_${bip44Code}`,
+        params: [],
+      });
+
+      const deriver = await getBIP44AddressKeyDeriver(bip44Node);
+      const privkey = deriver(this.account.path).slice(0, 32);
+      
+      
+      const ethWallet = new ethers.Wallet(privkey, web3Provider);
+      let signature = await ethWallet.signMessage(data);
+      console.log('Signed data: ' + data);
+      console.log('Signature: ' + signature);
+      
+      return signature;
+    }
+  }
+
+
   async signTxns(txns) {}
 
   async sendConfirmation(prompt, description, textAreaContent) {

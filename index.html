@@ -25,7 +25,7 @@
     <br/>
 
     <button class="connect">Connect</button>
-    <button class="sendHello">Generate Accounts</button>
+    <button class="genaccounts">Generate Accounts</button>
     <button class="getBalance">Get Balance</button>
     <button class="createAccount">Create Account</button>
     <button class="clearAccounts">Clear Accounts</button>
@@ -35,30 +35,44 @@
     <button class="transact">Transact</button>
     <input id="NumAccounts" value="25" placeholder="amount" type="number"/>
     <button class="generateNum">Generate N Accounts</button>
+    <input id="SignMessage" type="text">
+    <button class="messageSigner">Sign Message</button>
+    <button class="getTransactions">Get Transactions</button>
+    <button class="getAddress">Get Address</button>
+    <button class="mnemonic">Mnemonic</button>
+    <button class="getAccount">Get Account</button>
   </body>
 
   <script>
     const snapId = `local:${window.location.href}`;
 
     const connectButton = document.querySelector('button.connect')
-    const sendButton = document.querySelector('button.sendHello')
+    const sendButton = document.querySelector('button.genaccounts')
     const getBalanceButton = document.querySelector('button.getBalance')
     const createButton = document.querySelector('button.createAccount')
     const clearButton = document.querySelector('button.clearAccounts')
     const blockHeightButton = document.querySelector('button.blockHeight')
     const transactButton = document.querySelector('button.transact')
     const generateNButton = document.querySelector('button.generateNum')
-
+    const messageButton = document.querySelector('button.messageSigner')
+    const transactionsButton = document.querySelector('button.getTransactions')
+    const addressButton = document.querySelector('button.getAddress')
+    const mnemonicButton = document.querySelector('button.mnemonic')
+    const getaccountButton = document.querySelector('button.getAccount')
 
     connectButton.addEventListener('click', connect)
-    sendButton.addEventListener('click', send)
+    sendButton.addEventListener('click', genAccounts)
     getBalanceButton.addEventListener('click', getBalance)
     createButton.addEventListener('click', create)
     clearButton.addEventListener('click', clearAccounts)
     blockHeightButton.addEventListener('click', blockHeight)
     transactButton.addEventListener('click', transact)
     generateNButton.addEventListener('click', generateNumAccounts)
-
+    messageButton.addEventListener('click', sign)
+    transactionsButton.addEventListener('click', getTransactions)
+    addressButton.addEventListener('click', getAddress)
+    mnemonicButton.addEventListener('click', getMnemonic)
+    getaccountButton.addEventListener('click', getAccount)
 
     // here we get permissions to interact with and install the snap
     async function connect () {
@@ -71,7 +85,7 @@
     }
 
     // here we call the snap's "hello" method
-    async function send () {
+    async function genAccounts () {
       try {
         const response = await ethereum.request({
           method: 'wallet_invokeSnap',
@@ -178,6 +192,98 @@
         })
         alert(response)
         console.log("transaction returned");
+        console.log(response);
+      } catch (err) {
+        console.error(err)
+        alert('Problem happened: ' + err.message || err)
+      }
+    }
+
+    async function sign(){
+      try {
+        console.log("Signing message:" + document.querySelector('#SignMessage').value);
+        const response = await ethereum.request({
+          method: 'wallet_invokeSnap',
+          params: [snapId, {
+            method: 'signData',
+            data: document.querySelector('#SignMessage').value
+          }]
+        })
+        alert(response);
+        console.log("Message successfuly signed");
+        console.log(response);
+      } catch (err) {
+        console.error(err)
+        alert('Problem happened: ' + err.message || err)
+      }
+    }
+
+    //Getting user transactions
+    async function getTransactions(){
+      try {
+        console.log("Getting transactions....");
+        const response = await ethereum.request({
+          method: 'wallet_invokeSnap',
+          params: [snapId, {
+            method: 'getTransactions'
+          }]
+        })
+        alert(response);
+        console.log("Got Transactions");
+        console.log(response);
+      } catch (err) {
+        console.error(err)
+        alert('Problem happened: ' + err.message || err)
+      }
+    }
+
+    //Get and display user address
+    async function getAddress(){
+      try {
+        const response = await ethereum.request({
+          method: 'wallet_invokeSnap',
+          params: [snapId, {
+            method: 'getAddress'
+          }]
+        })
+        alert(response);
+        console.log("Got Address");
+        console.log(response);
+      } catch (err) {
+        console.error(err)
+        alert('Problem happened: ' + err.message || err)
+      }  
+    }
+
+    //Display mnemonic phrase
+    async function getMnemonic(){
+      try {
+        const response = await ethereum.request({
+          method: 'wallet_invokeSnap',
+          params: [snapId, {
+            method: 'displayMnemonic'
+          }]
+        })
+        alert(response);
+        console.log("Got Mnemonic Phrase");
+        console.log(response);
+      } catch (err) {
+        console.error(err)
+        alert('Problem happened: ' + err.message || err)
+      }
+    }
+
+    //GetAccount api call test
+    async function getAccount(){
+      try {
+        const response = await ethereum.request({
+          method: 'wallet_invokeSnap',
+          params: [snapId, {
+            method: 'getAccount'
+          }]
+        })
+        alert(response);
+        console.log("Got Account");
         console.log(response);
       } catch (err) {
         console.error(err)

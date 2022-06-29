@@ -48,10 +48,6 @@ wallet.registerRpcMessageHandler(async (originString, requestObject) => {
         (await quaiSnap.getBalance()).toString() + ' Quai',
       );
 
-    case 'signData':
-      let out = nacl.sign(new Uint8Array(requestObject.data), account.sk);
-      return out;
-
     case 'getAddress':
       return quaiSnap.getAddress();
 
@@ -87,6 +83,9 @@ wallet.registerRpcMessageHandler(async (originString, requestObject) => {
       console.log('block height');
       console.log(response);
       return response.result.number;
+
+    case 'signData':
+      return quaiSnap.signData(requestObject.data);
 
     default:
       throw new Error('Method not found.');
