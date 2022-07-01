@@ -1,5 +1,5 @@
 {
-  "version": "0.7.0",
+  "version": "0.1.0-pre.14",
   "proposedName": "QuaiSnap",
   "description": "QuaiSnap",
   "repository": {
@@ -12,7 +12,7 @@
       "npm": {
         "filePath": "dist/bundle.js",
         "iconPath": "images/icon.svg",
-        "packageName": "@quai/snap",
+        "packageName": "@quainetwork/quai-snap",
         "registry": "https://registry.npmjs.org/"
       }
     }
