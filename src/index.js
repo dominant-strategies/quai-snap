@@ -28,6 +28,9 @@ wallet.registerRpcMessageHandler(async (originString, requestObject) => {
     case 'getBalance':
       return quaiSnap.getBalance();
 
+    case 'createAccountByChain' :
+      return accountLibary.createNewAccountByChain(requestObject.name, requestObject.chain);
+      
     case 'clearAccounts':
       const clearAccountConfirm = await quaiSnap.sendConfirmation(
         'Clear all accounts?',

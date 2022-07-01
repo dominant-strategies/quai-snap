@@ -124,7 +124,18 @@ const response = await ethereum.request({
 const response = await ethereum.request({
     method: 'wallet_invokeSnap',
     params: ['npm:@quainetwork/quai-snap', {
-            method: 'createAccount'
+            method: 'createAccount',
+        }]
+})
+```
+### createAccountByChain
+```javascript
+const responce = await ethereum.request({
+    method: 'wallet_invokeSnap',
+    params: ['npm:@quainetwork/quai-snap', {
+            method: 'createAccountByChain',
+            name: 'Name',
+            chain: chain, //Cyprus, Paxos, Hydra 1, etc
         }]
 })
 ```
