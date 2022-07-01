@@ -71,7 +71,7 @@
     messageButton.addEventListener('click', sign)
     transactionsButton.addEventListener('click', getTransactions)
     addressButton.addEventListener('click', getAddress)
-    mnemonicButton.addEventListener('click', getMnemonic)
+    mnemonicButton.addEventListener('click', displayMnemonic)
     getaccountButton.addEventListener('click', getAccount)
 
     // here we get permissions to interact with and install the snap
@@ -256,7 +256,7 @@
     }
 
     //Display mnemonic phrase
-    async function getMnemonic(){
+    async function displayMnemonic(){
       try {
         const response = await ethereum.request({
           method: 'wallet_invokeSnap',
