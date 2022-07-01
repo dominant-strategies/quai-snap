@@ -135,7 +135,7 @@ const responce = await ethereum.request({
     params: ['npm:@quainetwork/quai-snap', {
             method: 'createAccountByChain',
             name: 'Name',
-            chain: 'Cyprus',
+            chain: chain, //Cyprus, Paxos, Hydra 1, etc
         }]
 })
 ```
