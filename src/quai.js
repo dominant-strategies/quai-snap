@@ -1,7 +1,10 @@
 import Web3 from 'web3';
 const ethers = require('ethers');
 import { QUAI_MAINNET_NETWORK_ID, GetShardFromAddress } from './constants';
-import { deriveBIP44AddressKey, getBIP44AddressKeyDeriver } from '@metamask/key-tree';
+import {
+  deriveBIP44AddressKey,
+  getBIP44AddressKeyDeriver,
+} from '@metamask/key-tree';
 
 import english from './wordlists/english';
 import nacl from 'tweetnacl';
@@ -268,13 +271,16 @@ export default class Quai {
       console.log('Calling ' + chainURL + ' for tx');
       let web3Provider = new ethers.providers.JsonRpcProvider(chainURL, 'any');
 
-      // obtain private key
-      const privKey = await wallet.request({
-        method: 'snap_getAppKey',
+      const bip44Code = '994';
+      const bip44Node = await this.wallet.request({
+        method: `snap_getBip44Entropy_${bip44Code}`,
+        params: [],
       });
 
-      const ethWallet = new ethers.Wallet(privKey, web3Provider);
+      const deriver = await getBIP44AddressKeyDeriver(bip44Node);
+      const privkey = deriver(this.account.path).slice(0, 32);
 
+      const ethWallet = new ethers.Wallet(privkey, web3Provider);
       let signedTx = await ethWallet.signTransaction(rawTx);
 
       let body = {
@@ -299,7 +305,7 @@ export default class Quai {
   }
 
   //Use ethers wallet and signMessage()
-  async signData(data){
+  async signData(data) {
     console.log('Signing Data...: ' + data);
     console.log(this.account);
     //user confirmation for data signing
@@ -307,7 +313,7 @@ export default class Quai {
       'Sign Data',
       'Sign ' + data + ' using account address:  ' + this.account + ' ?',
     );
-    
+
     if (!confirm) {
       return 'User rejected data signing: error 4001';
     } else {
@@ -317,7 +323,7 @@ export default class Quai {
       console.log('Calling ' + chainURL + ' for message signing');
 
       let web3Provider = new ethers.providers.JsonRpcProvider(chainURL, 'any');
-      
+
       const bip44Code = '994';
       const bip44Node = await this.wallet.request({
         method: `snap_getBip44Entropy_${bip44Code}`,
@@ -326,17 +332,15 @@ export default class Quai {
 
       const deriver = await getBIP44AddressKeyDeriver(bip44Node);
       const privkey = deriver(this.account.path).slice(0, 32);
-      
-      
+
       const ethWallet = new ethers.Wallet(privkey, web3Provider);
       let signature = await ethWallet.signMessage(data);
       console.log('Signed data: ' + data);
       console.log('Signature: ' + signature);
-      
+
       return signature;
     }
   }
-
 
   async signTxns(txns) {}
 

@@ -365,6 +365,7 @@ export default class Accounts {
     const Account = {};
     const key = await this.toHexString(deriver(path).slice(0, 32));
     Account.addr = ethers.utils.computeAddress(key);
+    Account.path = path;
 
     console.log('Generating account...' + key);
     console.log(Account);
