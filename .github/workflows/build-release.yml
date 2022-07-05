@@ -19,7 +19,7 @@ jobs:
       run: sudo snap install yq
 
     - name: install dependencies
-      run: yarn && npm i
+      run: yarn
 
     - name: Build
       run: yarn build
