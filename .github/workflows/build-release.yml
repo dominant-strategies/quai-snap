@@ -15,11 +15,16 @@ jobs:
       with:
         ref: ${{ github.ref }}
 
+    - uses: actions/setup-node@v3
+      with:
+        node-version: '16.x'
+        registry-url: 'https://registry.npmjs.org'
+
     - name: Install yq
       run: sudo snap install yq
 
     - name: install dependencies
-      run: yarn
+      run: npm ci && yarn
 
     - name: Build
       run: yarn build
