@@ -8,15 +8,19 @@ const ethers = require('ethers');
 import { GetShardFromAddress } from './constants';
 
 let shardsToFind = {
-  'cyprus-1': false,
-  'cyprus-2': false,
-  'cyprus-3': false,
-  'paxos-1': false,
-  'paxos-2': false,
-  'paxos-3': false,
-  'hydra-1': false,
-  'hydra-2': false,
-  'hydra-3': false,
+  'prime': [false, 1],
+  'cyprus': [false, 2],
+  'paxos': [false, 3],
+  'hydra': [false, 4],
+  'cyprus-1': [false, 5],
+  'cyprus-2': [false, 6],
+  'cyprus-3': [false, 7],
+  'paxos-1': [false, 8],
+  'paxos-2': [false, 9],
+  'paxos-3': [false, 10],
+  'hydra-1': [false, 11],
+  'hydra-2': [false, 12],
+  'hydra-3': [false, 13],
 };
 
 /*
@@ -46,7 +50,7 @@ export default class Accounts {
 
     if (storedAccounts === null || Object.keys(storedAccounts).length === 0) {
       console.log('no accounts found');
-      const accounts = await this.generateZoneAccount();
+      //const accounts = await this.generateZoneAccount();
       this.loaded = true;
       console.log('setting this.accounts');
       console.log(this.accounts);
@@ -121,8 +125,8 @@ export default class Accounts {
     if (!this.loaded) {
       await this.load();
     }
-
-    return this.accounts;
+    const arrayOfObj = Object.entries(this.accounts).map((e) => ( { [e[0]]: e[1] } ));
+    return arrayOfObj;
   }
   async clearAccounts() {
     await this.wallet.request({
@@ -217,6 +221,8 @@ export default class Accounts {
     let address = null;
     while (!found) {
       Account = await this.generateAccount(i);
+
+      console.log(Account);
       if (Account.addr != null) {
         address = Account.addr;
 
@@ -224,7 +230,7 @@ export default class Accounts {
         // If this address exists in a shard, check to see if we haven't found it yet.
         if (
           context[0] != undefined &&
-          shardsToFind[context[0].value] === false
+          shardsToFind[context[0].value][0] === false
         ) {
           this.currentAccount = Account;
           this.currentAccountId = Account.addr;
@@ -233,17 +239,17 @@ export default class Accounts {
           this.accounts[address] = {
             type: 'generated',
             path: i,
-            name: 'Account ' + (foundShard + 1),
+            name: 'Account ' + shardsToFind[shard][1],
             addr: Account.addr,
             shard: readableShard,
           };
           foundShard++;
 
-          shardsToFind[context[0].value] = true;
+          shardsToFind[context[0].value][0] = true;
           found = true;
           for (const [key, value] of Object.entries(shardsToFind)) {
             console.log(`${key}: ${value}`);
-            if (value == false) {
+            if (value[0] == false) {
               found = false;
             }
           }
@@ -318,7 +324,7 @@ export default class Accounts {
         // If this address exists in a shard, check to see if we haven't found it yet.
         if (
           context[0] != undefined &&
-          shardsToFind[context[0].value] === false
+          shardsToFind[context[0].value][0] === false
         ) {
           foundShard++;
           this.currentAccount = Account;
@@ -356,12 +362,13 @@ export default class Accounts {
     const bip44Node = await this.wallet.request({
       method: `snap_getBip44Entropy_${bip44Code}`,
     });
-
+    console.log("Here");
+    console.log(bip44Node);
     // m/purpose'/bip44Code'/accountIndex'/change/addressIndex
     // metamask has supplied us with entropy for "m/purpose'/bip44Code'/"
     // we need to derive the final "accountIndex'/change/addressIndex"
     const deriver = await getBIP44AddressKeyDeriver(bip44Node);
-
+    console.log(deriver);
     const Account = {};
     const key = await this.toHexString(deriver(path).slice(0, 32));
     Account.addr = ethers.utils.computeAddress(key);
