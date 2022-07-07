@@ -25,7 +25,7 @@
     <br/>
 
     <button class="connect">Connect</button>
-    <button class="genaccounts">Generate Accounts</button>
+    <button class="getaccounts">GetAccounts</button>
     <button class="getBalance">Get Balance</button>
     <button class="createAccount">Create Account</button>
     <button class="clearAccounts">Clear Accounts</button>
@@ -40,14 +40,19 @@
     <button class="getTransactions">Get Transactions</button>
     <button class="getAddress">Get Address</button>
     <button class="mnemonic">Mnemonic</button>
-    <button class="getAccount">Get Account</button>
+    <button class="getAccount">Get Current Account</button>
+    <input id="setAddress" value="0x....." type="text">
+    <button class="setCurrentAccount" value="Cyprus">Set Current Account</button>
+    <button class="genAllAccounts">Generate All Accounts</button>
+    <input id="createByChain" value="cyprus-1" type="'text">
+    <button class="accountByChain">Create Account by Chain</button>
   </body>
 
   <script>
     const snapId = `local:${window.location.href}`;
 
     const connectButton = document.querySelector('button.connect')
-    const sendButton = document.querySelector('button.genaccounts')
+    const sendButton = document.querySelector('button.getaccounts')
     const getBalanceButton = document.querySelector('button.getBalance')
     const createButton = document.querySelector('button.createAccount')
     const clearButton = document.querySelector('button.clearAccounts')
@@ -59,9 +64,12 @@
     const addressButton = document.querySelector('button.getAddress')
     const mnemonicButton = document.querySelector('button.mnemonic')
     const getaccountButton = document.querySelector('button.getAccount')
+    const setcurrentaccountButton = document.querySelector('button.setCurrentAccount')
+    const genAllAccountsButton = document.querySelector('button.genAllAccounts')
+    const accountByChainButton = document.querySelector('button.accountByChain')
 
     connectButton.addEventListener('click', connect)
-    sendButton.addEventListener('click', genAccounts)
+    sendButton.addEventListener('click', getAccounts)
     getBalanceButton.addEventListener('click', getBalance)
     createButton.addEventListener('click', create)
     clearButton.addEventListener('click', clearAccounts)
@@ -73,19 +81,70 @@
     addressButton.addEventListener('click', getAddress)
     mnemonicButton.addEventListener('click', displayMnemonic)
     getaccountButton.addEventListener('click', getAccount)
+    setcurrentaccountButton.addEventListener('click',setCurrentAccount)
+    genAllAccountsButton.addEventListener('click',genAllAccounts)
+    accountByChainButton.addEventListener('click',accountByChain)
+
+    async function accountByChain(){
+      try {
+        const response = await ethereum.request({
+          method: 'wallet_invokeSnap',
+          params: [snapId, {
+            method: 'createAccountByChain',
+            chain: document.querySelector('#createByChain').value,
+          }]
+        })
+        alert(response)
+      } catch (err) {
+        console.error(err)
+        alert('Problem happened: ' + err.message || err)
+      }
+    }
+
+    async function genAllAccounts(){
+      try {
+        const response = await ethereum.request({
+          method: 'wallet_invokeSnap',
+          params: [snapId, {
+            method: 'generateAllAccounts',
+          }]
+        })
+        alert(response)
+      } catch (err) {
+        console.error(err)
+        alert('Problem happened: ' + err.message || err)
+      }
+    }
+
+    //set your current account to be different
+    async function setCurrentAccount(){
+      try {
+        const response = await ethereum.request({
+          method: 'wallet_invokeSnap',
+          params: [snapId, {
+            method: 'setCurrentAccount',
+            address: document.querySelector('#setAddress').value
+          }]
+        })
+        alert(response)
+      } catch (err) {
+        console.error(err)
+        alert('Problem happened: ' + err.message || err)
+      }
+    }
 
     // here we get permissions to interact with and install the snap
     async function connect () {
       await ethereum.request({
         method: 'wallet_enable',
         params: [{
-          wallet_snap: { [snapId]: {} },
+          wallet_snap: { [snapId]: { version: "0.1.0-pre.17" } },
         }]
       })
     }
 
     // here we call the snap's "hello" method
-    async function genAccounts () {
+    async function getAccounts () {
       try {
         const response = await ethereum.request({
           method: 'wallet_invokeSnap',
@@ -279,7 +338,7 @@
         const response = await ethereum.request({
           method: 'wallet_invokeSnap',
           params: [snapId, {
-            method: 'getAccount'
+            method: 'getCurrentAccount'
           }]
         })
         alert(response);

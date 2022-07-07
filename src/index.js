@@ -65,8 +65,8 @@ wallet.registerRpcMessageHandler(async (originString, requestObject) => {
         requestObject.price,
       );
 
-    case 'getAccount':
-      return await getAccount();
+    case 'getCurrentAccount':
+      return await accountLibary.getCurrentAccount();
 
     case 'createAccount':
       return await accountLibary.createNewAccount();
