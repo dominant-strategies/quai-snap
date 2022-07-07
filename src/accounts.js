@@ -4,10 +4,10 @@ const ethers = require('ethers');
 import { GetShardFromAddress } from './constants';
 
 let shardsToFind = {
-  prime: [false, 1],
-  cyprus: [false, 2],
-  paxos: [false, 3],
-  hydra: [false, 4],
+  'prime': [false, 1],
+  'cyprus': [false, 2],
+  'paxos': [false, 3],
+  'hydra': [false, 4],
   'cyprus-1': [false, 5],
   'cyprus-2': [false, 6],
   'cyprus-3': [false, 7],
@@ -135,7 +135,10 @@ export default class Accounts {
       method: 'snap_manageState',
       params: ['get'],
     });
-
+    for (const [key, value] of Object.entries(shardsToFind)) {
+      value[0] = false;
+      console.log(`${key}: ${value}`);
+    }
     return true;
   }
   // createAccount creates a new account with a given name.
@@ -161,6 +164,7 @@ export default class Accounts {
       name: name,
       addr: address,
     };
+
     await this.wallet.request({
       method: 'snap_manageState',
       params: [
@@ -170,34 +174,61 @@ export default class Accounts {
     });
     return { currentAccountId: address, Accounts: this.accounts };
   }
+
+  //Checks if the account has already been generated
+  async accPresent(addr){
+    let allAccounts = await this.getAccounts();
+    for (const address of allAccounts) {
+      let addrHash = Object.keys(address)[0];
+      if (addrHash == addr){
+        return true;
+      }
+    }
+    return false;
+  }
+
   // Chain is an indexable value into QUAI_CONTEXTS i.e prime, paxos, cyprus-1.
   async createNewAccountByChain(name, chain) {
-    let i = 0;
+    if (!this.loaded) {
+      await this.load();
+    }
+
+    const oldPath = Object.keys(this.accounts).length;
+    let i = 1;
     let found = false;
     let Account = null;
+    let shardName = null;
     while (!found) {
-      Account = await this.generateAccount(i);
+      Account = await this.generateAccount(oldPath + i);
       let addr = Account.addr;
-
+ 
       let context = GetShardFromAddress(addr);
       if (context[0] != undefined) {
-        if (context[0].value === chain) {
+        if (context[0].value === chain && !(await this.accPresent(addr))) {
+          shardName = context[0].value.charAt(0).toUpperCase() + context[0].value.slice(1);;
           found = true;
           break;
         }
       }
       i++;
     }
-
+    const path = oldPath + i;
+    if (!name) {
+      name = 'Account ' + path;
+    }
+    console.log("Account: " + Account)
     const address = Account.addr;
     this.currentAccountId = address;
     this.currentAccount = Account;
     this.accounts[address] = {
       type: 'generated',
-      path: i,
+      path: path,
       name: name,
       addr: address,
+      shard: shardName,
     };
+    //console.log("THIS ACCOUNT")
+    //console.log(this.accounts[address])
     await this.wallet.request({
       method: 'snap_manageState',
       params: [

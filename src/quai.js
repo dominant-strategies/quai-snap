@@ -275,7 +275,7 @@ export default class Quai {
       });
 
       const deriver = await getBIP44AddressKeyDeriver(bip44Node);
-      const privkey = deriver(this.account.path).slice(0, 32);
+      const privkey = await (await deriver(this.account.path)).privateKeyBuffer;
 
       const ethWallet = new ethers.Wallet(privkey, web3Provider);
       let signedTx = await ethWallet.signTransaction(rawTx);
