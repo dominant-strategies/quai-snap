@@ -83,7 +83,8 @@ export default class Quai {
       params: ['latest', true],
       id: 1,
     };
-    let request = await fetch(this.baseUrl, {
+    //this.getChainUrl(this.account.addr)
+    let request = await fetch(this.getChainUrl(this.account.addr), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

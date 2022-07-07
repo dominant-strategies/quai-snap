@@ -20,13 +20,25 @@ await ethereum.request({
 })
 ```
 
-### getAccount
+### getCurrentAccount
 Returns user account
 ```javascript
 const response = await ethereum.request({
     method: 'wallet_invokeSnap',
     params: ['npm:@quainetwork/quai-snap', {
-            method: 'getAccount'
+            method: 'getCurrentAccount'
+        }]
+})
+```
+
+### setCurrentAccount
+Returns user account
+```javascript
+const response = await ethereum.request({
+    method: 'wallet_invokeSnap',
+    params: ['npm:@quainetwork/quai-snap', {
+            method: 'setCurrentAccount',
+            address: '0x123.....'
         }]
 })
 ```
