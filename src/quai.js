@@ -97,7 +97,7 @@ export default class Quai {
   static validateAddress(address) {}
 
   //Mnemonic phrase helper
-  async toUint11Array(secretKey){
+  async toUint11Array(secretKey) {
     const buffer11 = [];
     let acc = 0;
     let accBits = 0;
@@ -115,7 +115,7 @@ export default class Quai {
         buffer11.push(acc);
       }
     }
-  
+
     secretKey.forEach(add);
     flush();
     return buffer11;
@@ -143,11 +143,7 @@ export default class Quai {
     const mnemonic = await this.secretKeyToMnemonic(privkey);
 
     if (confirm) {
-      this.sendConfirmation(
-        'mnemonic',
-        this.account.addr,
-        mnemonic,
-      );
+      this.sendConfirmation('mnemonic', this.account.addr, mnemonic);
       return true;
     } else {
       return false;
@@ -163,12 +159,12 @@ export default class Quai {
   }
 
   //Helper for computeCheckSum
-  async genericHash(secretKey){
+  async genericHash(secretKey) {
     return sha512.sha512_256.array(secretKey);
   }
 
   //Helper for display the mnemonic phrase by transforming a secret key to mnemonic
-  async secretKeyToMnemonic(secretKey){
+  async secretKeyToMnemonic(secretKey) {
     const uint11Array = await this.toUint11Array(secretKey);
     const words = await this.applyWords(uint11Array);
     const checksumWord = await this.computeChecksum(secretKey);
@@ -332,7 +328,7 @@ export default class Quai {
       });
 
       const deriver = await getBIP44AddressKeyDeriver(bip44Node);
-      const privkey = deriver(this.account.path).slice(0, 32);
+      const privkey = await (await deriver(this.account.path)).privateKeyBuffer;
 
       const ethWallet = new ethers.Wallet(privkey, web3Provider);
       let signature = await ethWallet.signMessage(data);

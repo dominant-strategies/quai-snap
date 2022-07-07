@@ -356,20 +356,15 @@ export default class Accounts {
 
   // generateAccount creates a new account with a given path.
   async generateAccount(path) {
-    const bip44Code = '60';
+    const bip44Code = '994';
     const bip44Node = await this.wallet.request({
       method: `snap_getBip44Entropy_${bip44Code}`,
     });
-
-    console.log('bip44Node', JSON.stringify(bip44Node));
 
     // m/purpose'/bip44Code'/accountIndex'/change/addressIndex
     // metamask has supplied us with entropy for "m/purpose'/bip44Code'/"
     // we need to derive the final "accountIndex'/change/addressIndex"
     const deriver = await getBIP44AddressKeyDeriver(bip44Node);
-
-    console.log('deriver: ', deriver);
-    console.log('path: ', path);
 
     const Account = {};
     const key = await this.toHexString((await deriver(path)).publicKeyBuffer);
