@@ -548,6 +548,13 @@
   dependencies:
     "@babel/helper-plugin-utils" "^7.14.5"
 
+"@babel/plugin-syntax-typescript@^7.18.6":
+  version "7.18.6"
+  resolved "https://registry.yarnpkg.com/@babel/plugin-syntax-typescript/-/plugin-syntax-typescript-7.18.6.tgz#1c09cd25795c7c2b8a4ba9ae49394576d4133285"
+  integrity sha512-mAWAuq4rvOepWCBid55JuRNvpTNf2UGVgoz4JV0fXEKolsVZDzsa4NqCef758WZJj/GDu0gVGItjKFiClTAmZA==
+  dependencies:
+    "@babel/helper-plugin-utils" "^7.18.6"
+
 "@babel/plugin-transform-arrow-functions@^7.18.6":
   version "7.18.6"
   resolved "https://registry.yarnpkg.com/@babel/plugin-transform-arrow-functions/-/plugin-transform-arrow-functions-7.18.6.tgz#19063fcf8771ec7b31d742339dac62433d0611fe"
@@ -797,6 +804,15 @@
   dependencies:
     "@babel/helper-plugin-utils" "^7.18.6"
 
+"@babel/plugin-transform-typescript@^7.18.6":
+  version "7.18.6"
+  resolved "https://registry.yarnpkg.com/@babel/plugin-transform-typescript/-/plugin-transform-typescript-7.18.6.tgz#8f4ade1a9cf253e5cf7c7c20173082c2c08a50a7"
+  integrity sha512-ijHNhzIrLj5lQCnI6aaNVRtGVuUZhOXFLRVFs7lLrkXTHip4FKty5oAuQdk4tywG0/WjXmjTfQCWmuzrvFer1w==
+  dependencies:
+    "@babel/helper-create-class-features-plugin" "^7.18.6"
+    "@babel/helper-plugin-utils" "^7.18.6"
+    "@babel/plugin-syntax-typescript" "^7.18.6"
+
 "@babel/plugin-transform-unicode-escapes@^7.18.6":
   version "7.18.6"
   resolved "https://registry.yarnpkg.com/@babel/plugin-transform-unicode-escapes/-/plugin-transform-unicode-escapes-7.18.6.tgz#0d01fb7fb2243ae1c033f65f6e3b4be78db75f27"
@@ -904,6 +920,15 @@
     "@babel/types" "^7.4.4"
     esutils "^2.0.2"
 
+"@babel/preset-typescript@^7.16.7":
+  version "7.18.6"
+  resolved "https://registry.yarnpkg.com/@babel/preset-typescript/-/preset-typescript-7.18.6.tgz#ce64be3e63eddc44240c6358daefac17b3186399"
+  integrity sha512-s9ik86kXBAnD760aybBucdpnLsAt0jK1xqJn2juOn9lkOvSHV60os5hxoVJsPzMQxvnUJFAlkont2DvvaYEBtQ==
+  dependencies:
+    "@babel/helper-plugin-utils" "^7.18.6"
+    "@babel/helper-validator-option" "^7.18.6"
+    "@babel/plugin-transform-typescript" "^7.18.6"
+
 "@babel/runtime@^7.5.5", "@babel/runtime@^7.8.4":
   version "7.18.6"
   resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.18.6.tgz#6a1ef59f838debd670421f8c7f2cbb8da9751580"
@@ -944,7 +969,7 @@
     "@babel/helper-validator-identifier" "^7.18.6"
     to-fast-properties "^2.0.0"
 
-"@chainsafe/strip-comments@^1.0.5":
+"@chainsafe/strip-comments@^1.0.7":
   version "1.0.7"
   resolved "https://registry.yarnpkg.com/@chainsafe/strip-comments/-/strip-comments-1.0.7.tgz#0ee02a54b6f03eaf8b50b2585a3624fef6e38220"
   integrity sha512-90E6eM5qbtv5LxaL2gvV5o8J/RmGzipMrbsWu1xe2/cRiROXmRDt+uhCIxwbpJETXosVGoU1rwEyIhgWF2E/QA==
@@ -1460,20 +1485,25 @@
     pbkdf2 "^3.0.9"
     randombytes "^2.0.1"
 
-"@metamask/contract-metadata@^1.33.0":
+"@metamask/browser-passworder@^3.0.0":
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/@metamask/browser-passworder/-/browser-passworder-3.0.0.tgz#c06744e66a968ffa13f70cc71a7d3b15d86b0ee7"
+  integrity sha512-hD10mgvhcDkZX8wnauw8udp1K2MzcbZfrN7Yon9sQ+OqVK9kiQ4VhZAyZNZTy9KJLtfoVD9Y2F6L4gEese7hDA==
+
+"@metamask/contract-metadata@^1.35.0":
   version "1.35.0"
   resolved "https://registry.yarnpkg.com/@metamask/contract-metadata/-/contract-metadata-1.35.0.tgz#2bf2b8f2b6fdbd5132f0bcfa594b6c02dc71c42e"
   integrity sha512-zfZKwLFOVrQS8vTFoeoNCG9JhqmK4oyembGiGVVpUAYD9BHVZnd9WpicGoUC07ROXLEyQuAK9AJZNBtqwwzfEQ==
 
-"@metamask/controllers@^29.0.1":
-  version "29.0.1"
-  resolved "https://registry.yarnpkg.com/@metamask/controllers/-/controllers-29.0.1.tgz#8b6d066a23877c82de005ce566b7fd6bbaa7cc13"
-  integrity sha512-jOZiaOg9E0Th2Pq75kRNMtKmku7dba6KVvKA5olEd7YB+2tzCkBh+TU16RAS1RUQzGXahWvt+kXDV/FLFa2ixg==
+"@metamask/controllers@^30.0.0":
+  version "30.1.0"
+  resolved "https://registry.yarnpkg.com/@metamask/controllers/-/controllers-30.1.0.tgz#157d0afca156f1f37a89fbb864c4ee5c64d23af0"
+  integrity sha512-480mQafsYKbl0q7YgV820mrPCUtWgLLVH/s8ozNT6/ZVX3sBU0FBhNKeCalewhn0HRfMRnLe8pvHCKIH30k/0w==
   dependencies:
     "@ethereumjs/common" "^2.3.1"
     "@ethereumjs/tx" "^3.2.1"
     "@keystonehq/metamask-airgapped-keyring" "^0.3.0"
-    "@metamask/contract-metadata" "^1.33.0"
+    "@metamask/contract-metadata" "^1.35.0"
     "@metamask/metamask-eth-abis" "3.0.0"
     "@metamask/types" "^1.1.0"
     "@types/uuid" "^8.3.0"
@@ -1485,7 +1515,7 @@
     eth-json-rpc-infura "^5.1.0"
     eth-keyring-controller "^7.0.2"
     eth-method-registry "1.1.0"
-    eth-phishing-detect "^1.1.16"
+    eth-phishing-detect "^1.2.0"
     eth-query "^2.1.2"
     eth-rpc-errors "^4.0.0"
     eth-sig-util "^3.0.0"
@@ -1543,15 +1573,16 @@
     tweetnacl "^1.0.3"
     tweetnacl-util "^0.15.1"
 
-"@metamask/execution-environments@^0.14.0":
-  version "0.14.0"
-  resolved "https://registry.yarnpkg.com/@metamask/execution-environments/-/execution-environments-0.14.0.tgz#594e2d3671c4e7d07725d4547561cba1fa441354"
-  integrity sha512-M7z/vLMZrtJ1sksUmyh161WDndNVw4PXilAz42WYuuVLz2j4jeUnYNwLml9DamoT9XSPtwiodhyEyikJsGg8JA==
+"@metamask/execution-environments@^0.16.0":
+  version "0.16.0"
+  resolved "https://registry.yarnpkg.com/@metamask/execution-environments/-/execution-environments-0.16.0.tgz#1c12f1aeedc1b58db91fc3dfd2371b7235c00595"
+  integrity sha512-Y+2d3SzVmFq1ij3DssYOLmJLQZM1rVJmh+dyYPJ5BFI5Cl6YwPluOrc1hoEDokT14vs+4wQsjMTdIHchza1EmQ==
   dependencies:
     "@metamask/object-multiplex" "^1.2.0"
     "@metamask/post-message-stream" "^4.0.0"
-    "@metamask/providers" "^8.1.1"
-    "@metamask/snap-types" "^0.14.0"
+    "@metamask/providers" "^9.0.0"
+    "@metamask/snap-types" "^0.16.0"
+    "@metamask/utils" "^2.0.0"
     eth-rpc-errors "^4.0.3"
     pump "^3.0.0"
     ses "^0.15.15"
@@ -1597,10 +1628,10 @@
   dependencies:
     readable-stream "2.3.3"
 
-"@metamask/providers@^8.1.1":
-  version "8.1.1"
-  resolved "https://registry.yarnpkg.com/@metamask/providers/-/providers-8.1.1.tgz#7b0dbb54700c949aafba24c9b98e6f4e9d81f325"
-  integrity sha512-CG1sAuD6Mp4MZ5U90anf1FT0moDbStGXT+80TQFYXJbBeTQjhp321WgC/F2IgIJ3mFqOiByC3MQHLuunEVMQOA==
+"@metamask/providers@^9.0.0":
+  version "9.0.0"
+  resolved "https://registry.yarnpkg.com/@metamask/providers/-/providers-9.0.0.tgz#644684f9eceb952138e80afb9103c7e39d8350fe"
+  integrity sha512-9qUkaFafZUROK0CAUBqjsut+7mqKOXFhBCpAhAPVRBqj5TfUTdPI4t8S7GYzPVaDbC7M6kH/YLNCgcfaFWAS+w==
   dependencies:
     "@metamask/object-multiplex" "^1.1.0"
     "@metamask/safe-event-emitter" "^2.0.0"
@@ -1620,17 +1651,19 @@
   resolved "https://registry.yarnpkg.com/@metamask/safe-event-emitter/-/safe-event-emitter-2.0.0.tgz#af577b477c683fad17c619a78208cede06f9605c"
   integrity sha512-/kSXhY692qiV1MXu6EeOZvg5nECLclxNXcKCxJ3cXQgYuRymRHpdx/t7JXfsK+JLjwA1e1c1/SBrlQYpusC29Q==
 
-"@metamask/snap-controllers@^0.14.0":
-  version "0.14.0"
-  resolved "https://registry.yarnpkg.com/@metamask/snap-controllers/-/snap-controllers-0.14.0.tgz#deb579c4c9ea69507209abe6901c1da1d1e8c5d1"
-  integrity sha512-DkD+opstaDow4+FRbECthlVKtR+9Np9ASY/OPeRfYt7foMPDAQOaFetFMNblNU5eCfEjgRSbON3VUPCF8pUaLw==
+"@metamask/snap-controllers@^0.16.0":
+  version "0.16.0"
+  resolved "https://registry.yarnpkg.com/@metamask/snap-controllers/-/snap-controllers-0.16.0.tgz#c271b2c04aa49e657273646478ef6cae356a9212"
+  integrity sha512-B9zpP8FXGK7zbdPOfbb1pdipZNstSt5ps0lB67597T1o/lcR0APX9FUUATL0N1X52cAuqfs30sqpDJBr5/Y89w==
   dependencies:
-    "@metamask/controllers" "^29.0.1"
-    "@metamask/execution-environments" "^0.14.0"
+    "@metamask/browser-passworder" "^3.0.0"
+    "@metamask/controllers" "^30.0.0"
+    "@metamask/execution-environments" "^0.16.0"
     "@metamask/object-multiplex" "^1.1.0"
     "@metamask/obs-store" "^7.0.0"
     "@metamask/post-message-stream" "4.0.0"
     "@metamask/safe-event-emitter" "^2.0.0"
+    "@metamask/utils" "^2.0.0"
     "@types/deep-freeze-strict" "^1.1.0"
     "@types/semver" "^7.3.9"
     ajv "^8.8.2"
@@ -1648,31 +1681,31 @@
     semver "^7.3.5"
     tar-stream "^2.2.0"
 
-"@metamask/snap-types@^0.14.0":
-  version "0.14.0"
-  resolved "https://registry.yarnpkg.com/@metamask/snap-types/-/snap-types-0.14.0.tgz#efd85f430061a61cbb4c4185256de50518a367fa"
-  integrity sha512-sM661jKNpkM3MeNAoG9oqejh86vqv/0uI9TDuDbu/s9AZciuHPknYwmuYjaXXWxGOkUogfkWSZHHrb0Ge2s8wg==
+"@metamask/snap-types@^0.16.0":
+  version "0.16.0"
+  resolved "https://registry.yarnpkg.com/@metamask/snap-types/-/snap-types-0.16.0.tgz#e62a29843e8be520b9e7fa7fff4ef7ca1d8a7733"
+  integrity sha512-X3DJrltoBjEC8mnnyjK9LW5JdB9WgG+sIOMNtRPkM2OJjGw8uPcxjljJ9jV2gLYfwXfpVCB26Byn6ovmhIa2wQ==
   dependencies:
-    "@metamask/controllers" "^29.0.1"
+    "@metamask/controllers" "^30.0.0"
 
-"@metamask/snap-utils@^0.14.0":
-  version "0.14.0"
-  resolved "https://registry.yarnpkg.com/@metamask/snap-utils/-/snap-utils-0.14.0.tgz#868ddf692a11d347fd0836479ab876f4c94594b1"
-  integrity sha512-YQTeaGsaifdiRoJD380r8Pf3Sayzq7kfo7h95mG2Aw+zUvxLqE0XWujVnI146SE0H1bG/NQylo7eb76yRDgt9w==
+"@metamask/snap-utils@^0.16.0":
+  version "0.16.0"
+  resolved "https://registry.yarnpkg.com/@metamask/snap-utils/-/snap-utils-0.16.0.tgz#ef6daddf578716c0a3e0c9cc753b6b4b1127c408"
+  integrity sha512-rS9CJbTVMg6uL3INM0lhBapLIdPIN/Ynqj8CKxk6RTIMisQs8N3lWd9x7XJHVpPR00Zh9i4FcIfbeqEhktZ1Pw==
   dependencies:
-    "@chainsafe/strip-comments" "^1.0.5"
+    "@chainsafe/strip-comments" "^1.0.7"
 
-"@metamask/snaps-browserify-plugin@^0.14.0":
-  version "0.14.0"
-  resolved "https://registry.yarnpkg.com/@metamask/snaps-browserify-plugin/-/snaps-browserify-plugin-0.14.0.tgz#9a4c4a686377435a70e67b4ad9b0b67b1c1e510e"
-  integrity sha512-XmkHaj9mc5VsZqWfkVpvQgIWnaRYTNw3XILY2koflvjpCk6o3vK0wo5946bh8hBU6vMOgZFE4ax5fZX1leyUYg==
+"@metamask/snaps-browserify-plugin@^0.16.0":
+  version "0.16.0"
+  resolved "https://registry.yarnpkg.com/@metamask/snaps-browserify-plugin/-/snaps-browserify-plugin-0.16.0.tgz#4e5775c7e3b8a904a1747d8906beaec37f77b9c5"
+  integrity sha512-diss9KlgGVndc/v/WNNwIar/bvBaLhOaHqcfzZRlT+5nXsV38TMOYUvBzdQOT9SCCCiNbaxZPh2a4TVrWGARSQ==
   dependencies:
-    "@metamask/snap-utils" "^0.14.0"
+    "@metamask/snap-utils" "^0.16.0"
 
-"@metamask/snaps-cli@^0.14.0":
-  version "0.14.0"
-  resolved "https://registry.yarnpkg.com/@metamask/snaps-cli/-/snaps-cli-0.14.0.tgz#c65bd398004a7529f29fcb0f8b533712160783cf"
-  integrity sha512-WTIDSywMKnC4eZVX8sDKco45t6rFBBqiHuxKwSl5tn3Q/OsY0kRd/0BFtLsA2+mQeoaJoVEgj4iIoYrkqwRRTg==
+"@metamask/snaps-cli@^0.16.0":
+  version "0.16.0"
+  resolved "https://registry.yarnpkg.com/@metamask/snaps-cli/-/snaps-cli-0.16.0.tgz#1953e40ef8c01d66a8da78d9786243dbf01e0a30"
+  integrity sha512-GAA+/N+B1igBAULW/hK9HdIxkQam2L6EFfxkz3/IwY6h0jBX2noE0ysshvr+KRMxxHbNMY0fF71reY+KG5GEHg==
   dependencies:
     "@babel/core" "^7.16.7"
     "@babel/plugin-proposal-class-properties" "^7.16.7"
@@ -1681,13 +1714,13 @@
     "@babel/plugin-proposal-optional-chaining" "^7.16.7"
     "@babel/plugin-transform-runtime" "^7.16.7"
     "@babel/preset-env" "^7.16.7"
-    "@chainsafe/strip-comments" "^1.0.5"
-    "@metamask/snap-controllers" "^0.14.0"
-    "@metamask/snaps-browserify-plugin" "^0.14.0"
+    "@babel/preset-typescript" "^7.16.7"
+    "@metamask/snap-controllers" "^0.16.0"
+    "@metamask/snaps-browserify-plugin" "^0.16.0"
+    "@metamask/utils" "^2.0.0"
     babelify "^10.0.0"
     browserify "^17.0.0"
     chokidar "^3.0.2"
-    fast-deep-equal "^2.0.1"
     init-package-json "^1.10.3"
     is-url "^1.2.4"
     mkdirp "^1.0.4"
@@ -1702,6 +1735,13 @@
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/@metamask/types/-/types-1.1.0.tgz#9bd14b33427932833c50c9187298804a18c2e025"
   integrity sha512-EEV/GjlYkOSfSPnYXfOosxa3TqYtIW3fhg6jdw+cok/OhMgNn4wCfbENFqjytrHMU2f7ZKtBAvtiP5V8H44sSw==
+
+"@metamask/utils@^2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@metamask/utils/-/utils-2.0.0.tgz#fe7e970416a256751c429f4a5e96aec6c4366ba7"
+  integrity sha512-AZ63AhRxAZXll+/SEiyEXgrxuAL4yOj0ny4V36VgPmTDvt+7GrmVJWrQF3o5PZZWV6ooaHZ9291RZHRcKZm0HA==
+  dependencies:
+    fast-deep-equal "^3.1.3"
 
 "@ngraveio/bc-ur@^1.1.5":
   version "1.1.6"
@@ -3640,7 +3680,7 @@ eth-method-registry@1.1.0:
   dependencies:
     ethjs "^0.3.0"
 
-eth-phishing-detect@^1.1.16:
+eth-phishing-detect@^1.2.0:
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/eth-phishing-detect/-/eth-phishing-detect-1.2.0.tgz#11b357776b2d1b98a9ac594a1343e5184fc26bf0"
   integrity sha512-+M7D4dhu5tkSA9b5eiBwDeJCjwy+7Lv49nuTEw8fNZIZUAVZC3d2XHatBq1MOW7J8kxNGbBdgBuIf65opI7Tkg==
