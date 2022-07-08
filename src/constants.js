@@ -1,3 +1,4 @@
+// constants
 export const QUAI_MAINNET_NETWORK_ID = {
   prime: 9000,
   cyprus: 9100,
