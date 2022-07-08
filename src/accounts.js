@@ -239,6 +239,16 @@ export default class Accounts {
     return { currentAccountId: address, Accounts: this.accounts };
   }
 
+  async checkShardsToFind(){
+    for (const [key, value] of Object.entries(shardsToFind)) {
+      console.log(`${key}: ${value}`);
+      if (value[0] == false) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   // Creates all accounts that span the Quai Network shards.
   async generateAllAccounts() {
     console.log('accounts length', this.accounts.length);
@@ -248,7 +258,7 @@ export default class Accounts {
     let found = false;
     let Account = null;
     let address = null;
-    while (!found) {
+    while (!found && await this.checkShardsToFind()) {
       Account = await this.generateAccount(i);
 
       console.log(Account);
@@ -259,7 +269,7 @@ export default class Accounts {
         // If this address exists in a shard, check to see if we haven't found it yet.
         if (
           context[0] != undefined &&
-          shardsToFind[context[0].value][0] === false
+          shardsToFind[context[0].value][0] == false
         ) {
           this.currentAccount = Account;
           this.currentAccountId = Account.addr;
