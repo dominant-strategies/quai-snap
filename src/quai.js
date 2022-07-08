@@ -52,7 +52,7 @@ export default class Quai {
     );
     return await transactions.json();
   }
-
+  //must pass address
   async getBalance(addr) {
     let body = {
       jsonrpc: '2.0',
