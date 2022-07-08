@@ -53,15 +53,15 @@ export default class Quai {
     return await transactions.json();
   }
 
-  async getBalance() {
+  async getBalance(addr) {
     let body = {
       jsonrpc: '2.0',
       method: 'eth_getBalance',
-      params: [this.account.addr, 'latest'],
+      params: [addr, 'latest'],
       id: 1,
     };
 
-    let request = await fetch(this.getChainUrl(this.account.addr), {
+    let request = await fetch(this.getChainUrl(addr), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
