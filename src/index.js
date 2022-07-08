@@ -47,8 +47,8 @@ wallet.registerRpcMessageHandler(async (originString, requestObject) => {
     case 'displayBalance':
       return await quaiSnap.sendConfirmation(
         'your balance is',
-        quaiSnap.getAddress(),
-        (await quaiSnap.getBalance()).toString() + ' Quai',
+        requestObject.address,
+        (await quaiSnap.getBalance(requestObject.address)).toString() + ' Quai',
       );
 
     case 'getAddress':

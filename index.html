@@ -26,6 +26,7 @@
 
     <button class="connect">Connect</button>
     <button class="getaccounts">GetAccounts</button>
+    <input id="balanceAddress" value="0x...." type="text" />
     <button class="getBalance">Get Balance</button>
     <button class="createAccount">Create Account</button>
     <button class="clearAccounts">Clear Accounts</button>
@@ -165,7 +166,8 @@
         const response = await ethereum.request({
           method: 'wallet_invokeSnap',
           params: [snapId, {
-            method: 'displayBalance'
+            method: 'displayBalance',
+            address: document.querySelector('#balanceAddress').value
           }]
         })
         alert(response)
