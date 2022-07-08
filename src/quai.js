@@ -138,8 +138,7 @@ export default class Quai {
       params: [],
     });
     const deriver = await getBIP44AddressKeyDeriver(bip44Node);
-    const privkey = deriver(this.account.path).slice(0, 32);
-
+    const privkey = await (await deriver(this.account.path)).privateKeyBuffer;
     const mnemonic = await this.secretKeyToMnemonic(privkey);
 
     if (confirm) {
