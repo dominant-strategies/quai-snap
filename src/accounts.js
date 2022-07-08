@@ -121,9 +121,9 @@ export default class Accounts {
     if (!this.loaded) {
       await this.load();
     }
-    const arrayOfObj = Object.entries(this.accounts).map((e) => ({
-      [e[0]]: e[1],
-    }));
+    const arrayOfObj = Object.entries(this.accounts).map((e) => (
+      e[1]
+    ));
     return arrayOfObj;
   }
   async clearAccounts() {
