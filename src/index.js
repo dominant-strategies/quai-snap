@@ -26,7 +26,7 @@ wallet.registerRpcMessageHandler(async (originString, requestObject) => {
       return quaiSnap.getTransactions();
 
     case 'getBalance':
-      return quaiSnap.getBalance();
+      return quaiSnap.getBalance(requestObject.address);
 
     case 'createAccountByChain' :
       return accountLibary.createNewAccountByChain(requestObject.name, requestObject.chain);
