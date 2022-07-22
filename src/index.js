@@ -1,7 +1,7 @@
 import Accounts from './accounts';
 import QuaiSnap from './quai';
 
-wallet.registerRpcMessageHandler(async (originString, requestObject) => {
+module.exports.onRpcRequest = async ({ origin, request }) => {
   console.log('received message');
   const accountLibary = new Accounts(wallet);
   console.log('getting Accounts');
@@ -11,26 +11,26 @@ wallet.registerRpcMessageHandler(async (originString, requestObject) => {
   let currentAccount = await accountLibary.getCurrentAccount();
   console.log('currentAccount in index', currentAccount);
   let quaiSnap = new QuaiSnap(wallet, currentAccount);
-  if (requestObject.hasOwnProperty('testnet')) {
-    quaiSnap.setTestnet(requestObject.testnet);
+  if (request.hasOwnProperty('testnet')) {
+    quaiSnap.setTestnet(request.testnet);
   }
 
-  console.log(requestObject);
-  switch (requestObject.method) {
+  console.log(request);
+  switch (request.method) {
     case 'getAccounts':
       return accountLibary.getAccounts();
     case 'isValidAddress':
-      return quaiSnap.isValidAddress(requestObject.address);
+      return quaiSnap.isValidAddress(request.address);
 
     case 'getTransactions':
       return quaiSnap.getTransactions();
 
     case 'getBalance':
-      return quaiSnap.getBalance(requestObject.address);
+      return quaiSnap.getBalance(request.address);
 
-    case 'createAccountByChain' :
-      return accountLibary.createNewAccountByChain(requestObject.name, requestObject.chain);
-      
+    case 'createAccountByChain':
+      return accountLibary.createNewAccountByChain(request.name, request.chain);
+
     case 'clearAccounts':
       const clearAccountConfirm = await quaiSnap.sendConfirmation(
         'Clear all accounts?',
@@ -47,8 +47,8 @@ wallet.registerRpcMessageHandler(async (originString, requestObject) => {
     case 'displayBalance':
       return await quaiSnap.sendConfirmation(
         'your balance is',
-        requestObject.address,
-        (await quaiSnap.getBalance(requestObject.address)).toString() + ' Quai',
+        request.address,
+        (await quaiSnap.getBalance(request.address)).toString() + ' Quai',
       );
 
     case 'getAddress':
@@ -59,10 +59,10 @@ wallet.registerRpcMessageHandler(async (originString, requestObject) => {
 
     case 'transfer':
       return quaiSnap.Transfer(
-        requestObject.to,
-        requestObject.amount,
-        requestObject.limit,
-        requestObject.price,
+        request.to,
+        request.amount,
+        request.limit,
+        request.price,
       );
 
     case 'getCurrentAccount':
@@ -75,11 +75,11 @@ wallet.registerRpcMessageHandler(async (originString, requestObject) => {
       return await accountLibary.generateAllAccounts();
 
     case 'generateNumAccounts':
-      return await accountLibary.generateNumAccounts(requestObject.amount);
+      return await accountLibary.generateNumAccounts(request.amount);
 
     case 'setCurrentAccount':
-      console.log('Setting Current Account', requestObject.address);
-      return await accountLibary.setCurrentAccount(requestObject.address);
+      console.log('Setting Current Account', request.address);
+      return await accountLibary.setCurrentAccount(request.address);
 
     case 'getBlockHeight':
       let response = await quaiSnap.getBlockHeight();
@@ -88,9 +88,9 @@ wallet.registerRpcMessageHandler(async (originString, requestObject) => {
       return response.result.number;
 
     case 'signData':
-      return quaiSnap.signData(requestObject.data);
+      return quaiSnap.signData(request.data);
 
     default:
       throw new Error('Method not found.');
   }
-});
+};
