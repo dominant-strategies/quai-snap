@@ -1,1 +1,57 @@
-{"name": "@quainetwork/quai-snap", "version": "0.1.0-pre.28", "description": "QuaiSnap", "repository": {"type": "git", "url": "https://github.com/spruce-solutions/quai-snap.git"}, "license": "MIT", "main": "src/index.js", "files": ["dist/", "images/", "snap.manifest.json"], "scripts": {"build:clean": "yarn clean && yarn build", "build:website": "node ./scripts/build-website.js", "build": "mm-snap build", "serve": "mm-snap serve", "clean": "rimraf dist/*", "test": "echo 'TODO'", "lint:eslint": "eslint . --cache --ext js,ts", "lint:misc": "prettier '**/*.json' '**/*.md' '!CHANGELOG.md' --ignore-path .gitignore", "lint": "yarn lint:eslint && yarn lint:misc --check", "lint:fix": "yarn lint:eslint --fix && yarn lint:misc --write", "lint:changelog": "yarn auto-changelog validate"}, "devDependencies": {"@metamask/auto-changelog": "^2.5.0", "@metamask/eslint-config": "^8.0.0", "@metamask/eslint-config-jest": "^8.0.0", "@metamask/eslint-config-nodejs": "^8.0.0", "@metamask/snaps-cli": "^0.18.0", "eslint": "^7.30.0", "eslint-config-prettier": "^8.3.0", "eslint-plugin-import": "^2.23.4", "eslint-plugin-jest": "^24.4.0", "eslint-plugin-node": "^11.1.0", "eslint-plugin-prettier": "^3.4.0", "mkdirp": "^1.0.4", "prettier": "^2.3.2", "rimraf": "^3.0.2"}, "publishConfig": {"access": "public", "registry": "https://registry.npmjs.org/"}, "engines": {"node": ">=14.0.0"}, "dependencies": {"@metamask/key-tree": "^4.0.0", "ethers": "^5.6.6", "js-sha512": "^0.8.0"}}
+{
+  "name": "@quainetwork/quai-snap",
+  "version": "0.1.0-pre.29",
+  "description": "QuaiSnap",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/spruce-solutions/quai-snap.git"
+  },
+  "license": "MIT",
+  "main": "src/index.js",
+  "files": [
+    "dist/",
+    "images/",
+    "snap.manifest.json"
+  ],
+  "scripts": {
+    "build:clean": "yarn clean && yarn build",
+    "build:website": "node ./scripts/build-website.js",
+    "build": "mm-snap build",
+    "serve": "mm-snap serve",
+    "clean": "rimraf dist/*",
+    "test": "echo 'TODO'",
+    "lint:eslint": "eslint . --cache --ext js,ts",
+    "lint:misc": "prettier '**/*.json' '**/*.md' '!CHANGELOG.md' --ignore-path .gitignore",
+    "lint": "yarn lint:eslint && yarn lint:misc --check",
+    "lint:fix": "yarn lint:eslint --fix && yarn lint:misc --write",
+    "lint:changelog": "yarn auto-changelog validate"
+  },
+  "devDependencies": {
+    "@metamask/auto-changelog": "^2.5.0",
+    "@metamask/eslint-config": "^8.0.0",
+    "@metamask/eslint-config-jest": "^8.0.0",
+    "@metamask/eslint-config-nodejs": "^8.0.0",
+    "@metamask/snaps-cli": "^0.18.0",
+    "eslint": "^7.30.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-import": "^2.23.4",
+    "eslint-plugin-jest": "^24.4.0",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-prettier": "^3.4.0",
+    "mkdirp": "^1.0.4",
+    "prettier": "^2.3.2",
+    "rimraf": "^3.0.2"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "dependencies": {
+    "@metamask/key-tree": "^4.0.0",
+    "ethers": "^5.6.6",
+    "js-sha512": "^0.8.0"
+  }
+}

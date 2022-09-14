@@ -1,1 +1,28 @@
-{"version": "0.1.0-pre.28", "proposedName": "QuaiSnap", "description": "QuaiSnap", "repository": {"type": "git", "url": "https://github.com/spruce-solutions/quai-snap.git"}, "source": {"shasum": "jolZ9axOPVlLLsWfc+Np10IVkL+57BP8rIsIoIW6Uxc=", "location": {"npm": {"filePath": "dist/bundle.js", "iconPath": "images/icon.svg", "packageName": "@quainetwork/quai-snap", "registry": "https://registry.npmjs.org/"}}}, "initialPermissions": {"snap_confirm": {}, "snap_getBip44Entropy_994": {}, "endowment:network-access": {}, "snap_notify": {}, "snap_manageState": {}}, "manifestVersion": "0.1"}
+{
+  "version": "0.1.0-pre.29",
+  "proposedName": "QuaiSnap",
+  "description": "QuaiSnap",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/spruce-solutions/quai-snap.git"
+  },
+  "source": {
+    "shasum": "jolZ9axOPVlLLsWfc+Np10IVkL+57BP8rIsIoIW6Uxc=",
+    "location": {
+      "npm": {
+        "filePath": "dist/bundle.js",
+        "iconPath": "images/icon.svg",
+        "packageName": "@quainetwork/quai-snap",
+        "registry": "https://registry.npmjs.org/"
+      }
+    }
+  },
+  "initialPermissions": {
+    "snap_confirm": {},
+    "snap_getBip44Entropy_994": {},
+    "endowment:network-access": {},
+    "snap_notify": {},
+    "snap_manageState": {}
+  },
+  "manifestVersion": "0.1"
+}

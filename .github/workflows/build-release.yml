@@ -40,13 +40,13 @@ jobs:
       run: git tag ${{ env.VERSION }} && git push origin tag ${{ env.VERSION }}
 
     - name: Update version environment variable
-      run: export VERSION=$(echo ${{ env.VERSION }} | awk -F. '{print $1"."$2"."$3"."$4+1}')
+      run: echo "VERSION=$(echo $VERSION | awk -F. '{print $1"."$2"."$3"."$4+1}')" >> $GITHUB_ENV
 
     - name: Update version in package.json
-      run: sudo yq eval -i ".version=\"${{ env.VERSION }}\"" package.json
+      run: sudo yq eval -jP -i ".version=\"${{ env.VERSION }}\"" package.json
 
-    - name: Update version in package.json
-      run: sudo yq eval -i ".version=\"${{ env.VERSION }}\"" snap.manifest.json
+    - name: Update version in snap.manifest.json
+      run: sudo yq eval -jP -i ".version=\"${{ env.VERSION }}\"" snap.manifest.json
 
     - uses: stefanzweifel/git-auto-commit-action@v4
       with:
