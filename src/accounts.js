@@ -4,10 +4,10 @@ const ethers = require('ethers');
 import { GetShardFromAddress } from './constants';
 
 let shardsToFind = {
-  'prime': [false, 1],
-  'cyprus': [false, 2],
-  'paxos': [false, 3],
-  'hydra': [false, 4],
+  prime: [false, 1],
+  cyprus: [false, 2],
+  paxos: [false, 3],
+  hydra: [false, 4],
   'cyprus-1': [false, 5],
   'cyprus-2': [false, 6],
   'cyprus-3': [false, 7],
@@ -18,12 +18,6 @@ let shardsToFind = {
   'hydra-2': [false, 12],
   'hydra-3': [false, 13],
 };
-
-/*
- * The `wallet` API is a superset of the standard provider,
- * and can be used to initialize an ethers.js provider like this:
- */
-const provider = new ethers.providers.Web3Provider(wallet);
 
 export default class Accounts {
   constructor(wallet) {
@@ -121,9 +115,7 @@ export default class Accounts {
     if (!this.loaded) {
       await this.load();
     }
-    const arrayOfObj = Object.entries(this.accounts).map((e) => (
-      e[1]
-    ));
+    const arrayOfObj = Object.entries(this.accounts).map((e) => e[1]);
     return arrayOfObj;
   }
   async clearAccounts() {
@@ -176,11 +168,11 @@ export default class Accounts {
   }
 
   //Checks if the account has already been generated
-  async accPresent(addr){
+  async accPresent(addr) {
     let allAccounts = await this.getAccounts();
     for (const address of allAccounts) {
       let addrHash = Object.keys(address)[0];
-      if (addrHash == addr){
+      if (addrHash == addr) {
         return true;
       }
     }
@@ -201,11 +193,13 @@ export default class Accounts {
     while (!found) {
       Account = await this.generateAccount(oldPath + i);
       let addr = Account.addr;
- 
+
       let context = GetShardFromAddress(addr);
       if (context[0] != undefined) {
         if (context[0].value === chain && !(await this.accPresent(addr))) {
-          shardName = context[0].value.charAt(0).toUpperCase() + context[0].value.slice(1);;
+          shardName =
+            context[0].value.charAt(0).toUpperCase() +
+            context[0].value.slice(1);
           found = true;
           break;
         }
@@ -216,7 +210,7 @@ export default class Accounts {
     if (!name) {
       name = 'Account ' + path;
     }
-    console.log("Account: " + Account)
+    console.log('Account: ' + Account);
     const address = Account.addr;
     this.currentAccountId = address;
     this.currentAccount = Account;
@@ -239,7 +233,7 @@ export default class Accounts {
     return { currentAccountId: address, Accounts: this.accounts };
   }
 
-  async checkShardsToFind(){
+  async checkShardsToFind() {
     for (const [key, value] of Object.entries(shardsToFind)) {
       console.log(`${key}: ${value}`);
       if (value[0] == false) {
@@ -258,7 +252,7 @@ export default class Accounts {
     let found = false;
     let Account = null;
     let address = null;
-    while (!found && await this.checkShardsToFind()) {
+    while (!found && (await this.checkShardsToFind())) {
       Account = await this.generateAccount(i);
 
       console.log(Account);
