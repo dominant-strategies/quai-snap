@@ -1,13 +1,8 @@
-import Web3 from 'web3';
 const ethers = require('ethers');
 import { QUAI_MAINNET_NETWORK_ID, GetShardFromAddress } from './constants';
-import {
-  deriveBIP44AddressKey,
-  getBIP44AddressKeyDeriver,
-} from '@metamask/key-tree';
+import { getBIP44AddressKeyDeriver } from '@metamask/key-tree';
 
 import english from './wordlists/english';
-import nacl from 'tweetnacl';
 import sha512 from 'js-sha512';
 
 export default class Quai {
