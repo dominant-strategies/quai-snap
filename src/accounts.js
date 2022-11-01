@@ -391,9 +391,12 @@ export default class Accounts {
 
   // generateAccount creates a new account with a given path.
   async generateAccount(path) {
-    const bip44Code = '994';
+    const bip44Code = 994;
     const bip44Node = await this.wallet.request({
-      method: `snap_getBip44Entropy_${bip44Code}`,
+      method: `snap_getBip44Entropy`,
+      params: {
+        coinType: bip44Code,
+      },
     });
 
     // m/purpose'/bip44Code'/accountIndex'/change/addressIndex
