@@ -69,7 +69,7 @@ module.exports.onRpcRequest = async ({ origin, request }) => {
       return await accountLibary.getCurrentAccount();
 
     case 'createAccount':
-      return await accountLibary.createNewAccount();
+      return await accountLibary.createNewAccount(request.name);
 
     case 'generateAllAccounts':
       return await accountLibary.generateAllAccounts();

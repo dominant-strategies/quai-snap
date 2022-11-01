@@ -22,7 +22,7 @@ let shardsToFind = {
 export default class Accounts {
   constructor(wallet) {
     this.wallet = wallet;
-    this.accounts = {};
+    this.accounts = [];
     this.currentAccountId = null;
     this.currentAccount = null;
     this.loaded = false;
@@ -50,14 +50,17 @@ export default class Accounts {
       };
     } else {
       console.log('have stored accounts');
+      console.log(storedAccounts);
       this.accounts = storedAccounts.Accounts;
       if (storedAccounts.currentAccountId == null) {
         this.currentAccount =
-          this.accounts[
-            Object.keys(this.accounts)[Object.keys(this.accounts).length - 1]
-          ];
+          this.accounts[this.accounts.length - 1];
       } else {
-        this.currentAccount = this.accounts[storedAccounts.currentAccountId];
+        for (let i = 0; i < storedAccounts.Accounts.length; i++) {
+          if (storedAccounts.Accounts[i].addr == storedAccounts.currentAccountId) {
+            this.currentAccount = storedAccounts.Accounts[i];
+          }
+        }
       }
       this.currentAccountId = this.currentAccount.addr;
       this.loaded = true;
@@ -112,12 +115,14 @@ export default class Accounts {
   }
 
   async getAccounts() {
+    console.log('Getting accounts');
     if (!this.loaded) {
       await this.load();
     }
-    const arrayOfObj = Object.entries(this.accounts).map((e) => e[1]);
-    return arrayOfObj;
+    console.log(this.accounts);
+    return this.accounts;
   }
+
   async clearAccounts() {
     await this.wallet.request({
       method: 'snap_manageState',
@@ -139,23 +144,31 @@ export default class Accounts {
       await this.load();
     }
 
-    const oldPath = Object.keys(this.accounts).length;
-
-    if (!name) {
-      name = 'Account ' + (oldPath + 1);
+    //If there is an account with such a name, return an error
+    const oldPath = this.accounts.length;
+    for (let i = 0; i < this.accounts.length; i++) {
+      if (this.accounts[i].name == name) {
+        return { error: 'account name already exists' };
+      }
     }
 
-    console.log('accounts length', oldPath);
-
+    if (name == undefined || name == '') {
+      name = 'Account ' + (oldPath + 1);
+    }
     const Account = await this.generateAccount(oldPath + 1);
     const address = Account.addr;
     const path = oldPath + 1;
-    this.accounts[address] = {
+    let context = GetShardFromAddress(address);
+    console.log('context: ', context);
+    let shard = context[0].value;
+    let readableShard = shard.charAt(0).toUpperCase() + shard.slice(1);
+    this.accounts.push({
       type: 'generated',
       path: path,
       name: name,
       addr: address,
-    };
+      shard: readableShard,
+    });
 
     await this.wallet.request({
       method: 'snap_manageState',
@@ -185,7 +198,7 @@ export default class Accounts {
       await this.load();
     }
 
-    const oldPath = Object.keys(this.accounts).length;
+    const oldPath = this.accounts.length;
     let i = 1;
     let found = false;
     let Account = null;
@@ -214,13 +227,13 @@ export default class Accounts {
     const address = Account.addr;
     this.currentAccountId = address;
     this.currentAccount = Account;
-    this.accounts[address] = {
+    this.accounts.push({
       type: 'generated',
       path: path,
       name: name,
       addr: address,
       shard: shardName,
-    };
+    });
     //console.log("THIS ACCOUNT")
     //console.log(this.accounts[address])
     await this.wallet.request({
@@ -269,13 +282,13 @@ export default class Accounts {
           this.currentAccountId = Account.addr;
           let shard = context[0].value;
           let readableShard = shard.charAt(0).toUpperCase() + shard.slice(1);
-          this.accounts[address] = {
+          this.accounts.push({
             type: 'generated',
             path: i,
             name: 'Account ' + shardsToFind[shard][1],
             addr: Account.addr,
             shard: readableShard,
-          };
+          });
           foundShard++;
 
           shardsToFind[context[0].value][0] = true;
@@ -307,12 +320,15 @@ export default class Accounts {
     if (!this.loaded) {
       await this.load();
     }
+    let oldPath = 0;
+    if (this.accounts.length != 0) {
+      oldPath =
+        this.accounts[
+          Object.keys(this.accounts)[Object.keys(this.accounts).length - 1]
+        ].path;
+    }
 
-    let oldPath =
-      this.accounts[
-        Object.keys(this.accounts)[Object.keys(this.accounts).length - 1]
-      ].path;
-
+    console.log('accounts length', oldPath);
     for (var i = 0; i < amount; i++) {
       const name = 'Account ' + (oldPath + 1);
       const Account = await this.generateAccount(oldPath + 1);
@@ -321,12 +337,12 @@ export default class Accounts {
       const path = oldPath + 1;
       this.currentAccount = Account;
       this.currentAccountId = address;
-      this.accounts[address] = {
+      this.accounts.push({
         type: 'generated',
         path: path,
         name: name,
         addr: address,
-      };
+      });
       oldPath++;
     }
 
@@ -364,13 +380,13 @@ export default class Accounts {
           this.currentAccountId = Account.addr;
           let shard = context[0].value;
           let readableShard = shard.charAt(0).toUpperCase() + shard.slice(1);
-          this.accounts[address] = {
+          this.accounts.push({
             type: 'generated',
             path: i,
             name: 'Account ' + (foundShard + 1),
             addr: Account.addr,
             shard: readableShard,
-          };
+          });
           break;
         }
       }
