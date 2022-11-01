@@ -410,7 +410,9 @@ export default class Accounts {
     const bip44Code = 994;
     const bip44Node = await this.wallet.request({
       method: `snap_getBip44Entropy`,
-      cointype: bip44Code,
+      params: {
+        coinType: bip44Code,
+      },
     });
 
     // m/purpose'/bip44Code'/accountIndex'/change/addressIndex

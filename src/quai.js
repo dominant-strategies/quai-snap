@@ -127,10 +127,14 @@ export default class Quai {
       'anyone with this mnemonic can spend your funds',
     );
 
-    const bip44Code = '994';
+    const bip44Code = 994;
     const bip44Node = await this.wallet.request({
-      method: `snap_getBip44Entropy_${bip44Code}`,
-      params: [],
+      method: `snap_getBip44Entropy`,
+      params: [
+        {
+          coinType: bip44Code,
+        },
+      ],
     });
     const deriver = await getBIP44AddressKeyDeriver(bip44Node);
     const privkey = await (await deriver(this.account.path)).privateKeyBuffer;
@@ -262,10 +266,14 @@ export default class Quai {
       console.log('Calling ' + chainURL + ' for tx');
       let web3Provider = new ethers.providers.JsonRpcProvider(chainURL, 'any');
 
-      const bip44Code = '994';
+      const bip44Code = 994;
       const bip44Node = await this.wallet.request({
-        method: `snap_getBip44Entropy_${bip44Code}`,
-        params: [],
+        method: `snap_getBip44Entropy`,
+        params: [
+          {
+            coinType: bip44Code,
+          },
+        ],
       });
 
       const deriver = await getBIP44AddressKeyDeriver(bip44Node);
@@ -315,10 +323,14 @@ export default class Quai {
 
       let web3Provider = new ethers.providers.JsonRpcProvider(chainURL, 'any');
 
-      const bip44Code = '994';
+      const bip44Code = 994;
       const bip44Node = await this.wallet.request({
-        method: `snap_getBip44Entropy_${bip44Code}`,
-        params: [],
+        method: `snap_getBip44Entropy`,
+        params: [
+          {
+            coinType: bip44Code,
+          },
+        ],
       });
 
       const deriver = await getBIP44AddressKeyDeriver(bip44Node);
