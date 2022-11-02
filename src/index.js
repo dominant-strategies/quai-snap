@@ -2,14 +2,8 @@ import Accounts from './accounts';
 import QuaiSnap from './quai';
 
 module.exports.onRpcRequest = async ({ origin, request }) => {
-  console.log('received message');
   const accountLibary = new Accounts(wallet);
-  console.log('getting Accounts');
-  let accounts = await accountLibary.getAccounts();
-  console.log('accounts got : ');
-  console.log(accounts);
   let currentAccount = await accountLibary.getCurrentAccount();
-  console.log('currentAccount in index', currentAccount);
   let quaiSnap = new QuaiSnap(wallet, currentAccount);
   if (request.hasOwnProperty('testnet')) {
     quaiSnap.setTestnet(request.testnet);

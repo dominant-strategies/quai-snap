@@ -309,7 +309,7 @@ export default class Quai {
     //user confirmation for data signing
     confirm = await this.sendConfirmation(
       'Sign Data',
-      'Sign ' + data + ' using account address:  ' + this.account.addr + " (" + this.account.shard + ")" + ' ?',
+      'Sign "' + data + '" using account address:  ' + this.account.addr + " (" + this.account.shard + ")" + ' ?',
     );
 
     if (!confirm) {

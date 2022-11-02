@@ -41,17 +41,17 @@ export default class Accounts {
       this.loaded = true;
       return {
         currentAccountId: this.currentAccountId,
-        Accounts: this.accounts,
+        accounts: this.accounts,
       };
     } else {
-      this.accounts = storedAccounts.Accounts;
+      this.accounts = storedAccounts.accounts;
       if (storedAccounts.currentAccountId == null) {
         this.currentAccount =
           this.accounts[this.accounts.length - 1];
       } else {
-        for (let i = 0; i < storedAccounts.Accounts.length; i++) {
-          if (storedAccounts.Accounts[i].addr == storedAccounts.currentAccountId) {
-            this.currentAccount = storedAccounts.Accounts[i];
+        for (let i = 0; i < storedAccounts.accounts.length; i++) {
+          if (storedAccounts.accounts[i].addr == storedAccounts.currentAccountId) {
+            this.currentAccount = storedAccounts.accounts[i];
           }
         }
       }
@@ -83,11 +83,10 @@ export default class Accounts {
     if (!this.loaded) {
       await this.load();
     }
-    console.log('getCurrentAccount', this.currentAccount);
-    if (this.currentAccount !== null) {
-      return this.currentAccount;
+    if (this.currentAccount == null) {
+      null;
     }
-    this.currentAccount = await this.unlockAccount(this.currentAccountId);
+    console.log(this.currentAccount);
     return this.currentAccount;
   }
 
@@ -101,9 +100,9 @@ export default class Accounts {
         this.currentAccount = await this.unlockAccount(addr);
         await this.wallet.request({
           method: 'snap_manageState',
-          params: ['update', { currentAccountId: addr, Accounts: this.accounts }],
+          params: ['update', { currentAccountId: addr, accounts: this.accounts }],
         });
-        return { currentAccountId: addr, Accounts: this.accounts };
+        return { currentAccountId: addr, accounts: this.accounts };
       }
     }
     return { error: 'account not found' };
@@ -114,6 +113,7 @@ export default class Accounts {
     if (!this.loaded) {
       await this.load();
     }
+    console.log(this.accounts);
     return this.accounts;
   }
 
@@ -144,14 +144,19 @@ export default class Accounts {
         return { error: 'account name already exists' };
       }
     }
-
-    if (name == undefined || name == '') {
-      name = 'Account ' + (oldPath + 1);
-    }
-    const Account = await this.generateAccount(oldPath + 1);
-    const address = Account.addr;
     const path = oldPath + 1;
+    if (name == undefined || name == '') {
+      name = 'Account ' + (path);
+    }
+    const Account = await this.generateAccount(path);
+    const address = Account.addr;
     let context = GetShardFromAddress(address);
+    while (context == undefined) {
+      const Account = await this.generateAccount(path + 1);
+      const address = Account.addr;
+      context = GetShardFromAddress(address);
+      path++;
+    }
     let shard = context[0].value;
     let readableShard = shard.charAt(0).toUpperCase() + shard.slice(1);
     this.accounts.push({
@@ -166,10 +171,10 @@ export default class Accounts {
       method: 'snap_manageState',
       params: [
         'update',
-        { currentAccountId: this.currentAccountId, Accounts: this.accounts },
+        { currentAccountId: this.currentAccountId, accounts: this.accounts },
       ],
     });
-    return { currentAccountId: address, Accounts: this.accounts };
+    return { currentAccountId: address, accounts: this.accounts };
   }
 
   //Checks if the account has already been generated
@@ -236,10 +241,10 @@ export default class Accounts {
       method: 'snap_manageState',
       params: [
         'update',
-        { currentAccountId: this.currentAccountId, Accounts: this.accounts },
+        { currentAccountId: this.currentAccountId, accounts: this.accounts },
       ],
     });
-    return { currentAccountId: address, Accounts: this.accounts };
+    return { currentAccountId: address, accounts: this.accounts };
   }
 
   async checkShardsToFind() {
@@ -304,10 +309,10 @@ export default class Accounts {
       method: 'snap_manageState',
       params: [
         'update',
-        { currentAccountId: this.currentAccountId, Accounts: this.accounts },
+        { currentAccountId: this.currentAccountId, accounts: this.accounts },
       ],
     });
-    return { currentAccountId: address, Accounts: this.accounts };
+    return { currentAccountId: address, accounts: this.accounts };
   }
   // Creates accounts for an amount of paths.
   async generateNumAccounts(amount) {
@@ -317,8 +322,8 @@ export default class Accounts {
     let oldPath = 0;
     if (this.accounts.length != 0) {
       oldPath =
-        this.accounts(this.accounts.length - 1
-        ).path;
+        this.accounts[this.accounts.length - 1
+        ].path;
     }
 
     var i = 0;
@@ -349,10 +354,10 @@ export default class Accounts {
       method: 'snap_manageState',
       params: [
         'update',
-        { currentAccountId: this.currentAccountId, Accounts: this.accounts },
+        { currentAccountId: this.currentAccountId, accounts: this.accounts },
       ],
     });
-    return { currentAccountId: this.currentAccountId, Accounts: this.accounts };
+    return { currentAccountId: this.currentAccountId, accounts: this.accounts };
   }
   // Creates all accounts that span the Quai Network shards.
   async generateZoneAccount() {
@@ -398,10 +403,10 @@ export default class Accounts {
       method: 'snap_manageState',
       params: [
         'update',
-        { currentAccountId: this.currentAccountId, Accounts: this.accounts },
+        { currentAccountId: this.currentAccountId, accounts: this.accounts },
       ],
     });
-    return { currentAccountId: address, Accounts: this.accounts };
+    return { currentAccountId: address, accounts: this.accounts };
   }
 
   // generateAccount creates a new account with a given path.
