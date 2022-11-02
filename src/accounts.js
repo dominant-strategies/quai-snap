@@ -122,7 +122,6 @@ export default class Accounts {
     if (!this.loaded) {
       await this.load();
     }
-    console.log(this.accounts);
     return this.accounts;
   }
 
@@ -161,7 +160,6 @@ export default class Accounts {
     const address = Account.addr;
     const path = oldPath + 1;
     let context = GetShardFromAddress(address);
-    console.log('context: ', context);
     let shard = context[0].value;
     let readableShard = shard.charAt(0).toUpperCase() + shard.slice(1);
     this.accounts.push({
@@ -211,7 +209,6 @@ export default class Accounts {
     while (!found) {
       Account = await this.generateAccount(oldPath + i);
       let addr = Account.addr;
-
       let context = GetShardFromAddress(addr);
       if (context[0] != undefined) {
         if (context[0].value === chain && !(await this.accPresent(addr))) {
