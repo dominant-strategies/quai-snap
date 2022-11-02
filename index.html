@@ -139,7 +139,9 @@
         method: 'wallet_invokeSnap',
         params: [snapId, {
           method: 'createAccountByChain',
-          chain: document.querySelector('#createByChain').value,
+          params: {
+            chain: document.getElementById('createByChain').value
+          }
         }]
       })
       alert(response)
@@ -171,7 +173,9 @@
         method: 'wallet_invokeSnap',
         params: [snapId, {
           method: 'setCurrentAccount',
-          address: document.querySelector('#setAddress').value
+          params: {
+            address: document.querySelector('#setAddress').value,
+          }
         }]
       })
       alert(response)
@@ -214,9 +218,11 @@
         method: 'wallet_invokeSnap',
         params: [snapId, {
           method: 'displayBalance',
-          address: document.querySelector('#balanceAddress').value
-        }]
-      })
+          params: {
+            address: document.querySelector('#balanceAddress').value
+          }
+        }],
+      });
       alert(response)
     } catch (err) {
       console.error(err)
@@ -229,11 +235,14 @@
     try {
       const response = await ethereum.request({
         method: 'wallet_invokeSnap',
-        params: [snapId, {
-          method: 'createAccount',
-          name: document.querySelector('#accountName').value //Name can be anything
-        }]
-      })
+        params: [snapId,
+          {
+            method: 'createAccount',
+            params: {
+              name: document.querySelector('#accountName').value //Name can be anything
+            }
+          }],
+      });
       alert(response)
     } catch (err) {
       console.error(err)
@@ -279,7 +288,9 @@
         method: 'wallet_invokeSnap',
         params: [snapId, {
           method: 'generateNumAccounts',
-          amount: document.querySelector('#NumAccounts').value
+          params: {
+            amount: document.querySelector('#NumAccounts').value
+          }
         }]
       })
       alert(response)
@@ -295,8 +306,10 @@
         method: 'wallet_invokeSnap',
         params: [snapId, {
           method: 'transfer',
-          to: document.querySelector('#SendTo').value,
-          amount: document.querySelector('#Amount').value
+          params: {
+            to: document.querySelector('#SendTo').value,
+            amount: document.querySelector('#Amount').value
+          }
         }]
       })
       alert(response)
@@ -315,7 +328,9 @@
         method: 'wallet_invokeSnap',
         params: [snapId, {
           method: 'signData',
-          data: document.querySelector('#SignMessage').value
+          params: {
+            data: document.querySelector('#SignMessage').value
+          }
         }]
       })
       alert(response);

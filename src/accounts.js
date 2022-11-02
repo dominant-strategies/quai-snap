@@ -74,12 +74,14 @@ export default class Accounts {
       console.log('not loaded in unlock account');
       await this.load();
     }
-    if (this.accounts.hasOwnProperty(addr)) {
-      const tempAccount = this.accounts[addr];
-      if (tempAccount.type === 'generated') {
-        const Account = await this.generateAccount(tempAccount.path);
+    for (var i = 0; i < this.accounts.length; i++) {
+      if (this.accounts[i].addr == addr) {
+        const tempAccount = this.accounts[i];
+        if (tempAccount.type === 'generated') {
+          const Account = await this.generateAccount(tempAccount.path);
 
-        return Account;
+          return Account;
+        }
       }
     }
   }
@@ -100,18 +102,19 @@ export default class Accounts {
     if (!this.loaded) {
       await this.load();
     }
-    if (this.accounts.hasOwnProperty(addr)) {
-      this.currentAccountId = addr;
-      this.currentAccount = await this.unlockAccount(addr);
-      console.log('this.currentAccount', addr, this.currentAccount);
-      await this.wallet.request({
-        method: 'snap_manageState',
-        params: ['update', { currentAccountId: addr, Accounts: this.accounts }],
-      });
-      return { currentAccountId: addr, Accounts: this.accounts };
-    } else {
-      return { error: 'account not found' };
+    for (var i = 0; i < this.accounts.length; i++) {
+      if (this.accounts[i].addr == addr) {
+        this.currentAccountId = addr;
+        this.currentAccount = await this.unlockAccount(addr);
+        console.log('this.currentAccount', addr, this.currentAccount);
+        await this.wallet.request({
+          method: 'snap_manageState',
+          params: ['update', { currentAccountId: addr, Accounts: this.accounts }],
+        });
+        return { currentAccountId: addr, Accounts: this.accounts };
+      }
     }
+    return { error: 'account not found' };
   }
 
   async getAccounts() {
@@ -143,7 +146,6 @@ export default class Accounts {
     if (!this.loaded) {
       await this.load();
     }
-
     //If there is an account with such a name, return an error
     const oldPath = this.accounts.length;
     for (let i = 0; i < this.accounts.length; i++) {
@@ -198,7 +200,10 @@ export default class Accounts {
       await this.load();
     }
 
-    const oldPath = this.accounts.length;
+    var oldPath = 0;
+    if (this.accounts.length > 0)
+      oldPath = this.accounts[this.accounts.length - 1].path;
+
     let i = 1;
     let found = false;
     let Account = null;
@@ -323,26 +328,31 @@ export default class Accounts {
     let oldPath = 0;
     if (this.accounts.length != 0) {
       oldPath =
-        this.accounts[
-          Object.keys(this.accounts)[Object.keys(this.accounts).length - 1]
-        ].path;
+        this.accounts(this.accounts.length - 1
+        ).path;
     }
 
-    console.log('accounts length', oldPath);
-    for (var i = 0; i < amount; i++) {
+    var i = 0;
+    while (i < amount) {
       const name = 'Account ' + (oldPath + 1);
       const Account = await this.generateAccount(oldPath + 1);
       const address = Account.addr;
-      console.log(address);
-      const path = oldPath + 1;
-      this.currentAccount = Account;
-      this.currentAccountId = address;
-      this.accounts.push({
-        type: 'generated',
-        path: path,
-        name: name,
-        addr: address,
-      });
+      let context = GetShardFromAddress(address);
+      if (context[0] != undefined) {
+        let shard = context[0].value;
+        let readableShard = shard.charAt(0).toUpperCase() + shard.slice(1);
+        const path = oldPath + 1;
+        this.currentAccount = Account;
+        this.currentAccountId = address;
+        this.accounts.push({
+          type: 'generated',
+          path: path,
+          name: name,
+          addr: address,
+          shard: readableShard
+        });
+        i++;
+      }
       oldPath++;
     }
 
