@@ -1,11 +1,6 @@
 import sinon from 'sinon';
-import chai, { expect } from 'chai';
-import {
-  testNewBip44Entropy,
-  testNewMetamaskVersion,
-} from './keyPairTestConstants';
 
-class MockWallet {
+export default class MockWallet {
   constructor() {
     this.registerRpcMessageHandler = sinon.stub();
     this.requestStub = sinon.stub();
@@ -17,9 +12,15 @@ class MockWallet {
     };
   }
   request(args) {
-    const { method, params = [] } = args;
+    var _a;
+    var method = args.method,
+      params = args.params;
     if (Object.hasOwnProperty.call(this.rpcStubs, method)) {
-      return this.rpcStubs[method](...params);
+      if (Array.isArray(params)) {
+        return (_a = this.rpcStubs)[method].apply(_a, params);
+      } else {
+        return this.rpcStubs[method](params);
+      }
     }
     return this.requestStub(args);
   }
@@ -28,20 +29,4 @@ class MockWallet {
     this.requestStub.reset();
     Object.values(this.rpcStubs).forEach((stub) => stub.reset());
   }
-  prepareFoKeyPair() {
-    this.rpcStubs.snap_manageState.withArgs('get').resolves({
-      quai: {
-        config: {
-          derivationPath: "m/44'/994'/0'/0/0",
-          network: 'f',
-        },
-      },
-    });
-    this.rpcStubs.snap_getBip44Entropy_461.resolves(testNewBip44Entropy);
-    this.rpcStubs.web3_clientVersion.resolves(testNewMetamaskVersion);
-  }
-}
-export function mockSnapProvider() {
-  const mock = new MockWallet();
-  return mock;
 }

@@ -89,7 +89,7 @@ export default class Quai {
 
     return await request.json();
   }
-  static validateAddress(address) { }
+  static validateAddress(address) {}
 
   //Mnemonic phrase helper
   async toUint11Array(secretKey) {
@@ -130,8 +130,7 @@ export default class Quai {
     const bip44Code = 994;
     const bip44Node = await this.wallet.request({
       method: `snap_getBip44Entropy`,
-      params:
-      {
+      params: {
         coinType: bip44Code,
       },
     });
@@ -309,7 +308,14 @@ export default class Quai {
     //user confirmation for data signing
     confirm = await this.sendConfirmation(
       'Sign Data',
-      'Sign "' + data + '" using account address:  ' + this.account.addr + " (" + this.account.shard + ")" + ' ?',
+      'Sign "' +
+        data +
+        '" using account address:  ' +
+        this.account.addr +
+        ' (' +
+        this.account.shard +
+        ')' +
+        ' ?',
     );
 
     if (!confirm) {
@@ -325,11 +331,9 @@ export default class Quai {
       const bip44Code = 994;
       const bip44Node = await this.wallet.request({
         method: `snap_getBip44Entropy`,
-        params:
-        {
+        params: {
           coinType: bip44Code,
         },
-
       });
 
       const deriver = await getBIP44AddressKeyDeriver(bip44Node);
@@ -344,7 +348,7 @@ export default class Quai {
     }
   }
 
-  async signTxns(txns) { }
+  async signTxns(txns) {}
 
   async sendConfirmation(prompt, description, textAreaContent) {
     const confirm = await this.wallet.request({
