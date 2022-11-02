@@ -26,6 +26,8 @@ module.exports.onRpcRequest = async ({ origin, request }) => {
       return quaiSnap.getTransactions();
 
     case 'getBalance':
+      console.log('getBalance');
+      console.log(request.params.address);
       return quaiSnap.getBalance(request.params.address);
 
     case 'createAccountByChain':

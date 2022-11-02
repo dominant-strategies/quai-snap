@@ -4,10 +4,10 @@ const ethers = require('ethers');
 import { GetShardFromAddress } from './constants';
 
 let shardsToFind = {
-  prime: [false, 1],
-  cyprus: [false, 2],
-  paxos: [false, 3],
-  hydra: [false, 4],
+  'prime': [false, 1],
+  'cyprus': [false, 2],
+  'paxos': [false, 3],
+  'hydra': [false, 4],
   'cyprus-1': [false, 5],
   'cyprus-2': [false, 6],
   'cyprus-3': [false, 7],
@@ -189,7 +189,10 @@ export default class Accounts {
     if (!this.loaded) {
       await this.load();
     }
-
+    const chains = Object.keys(shardsToFind);
+    if (!chains.includes(chain)) {
+      return { error: 'chain not found' };
+    }
     var oldPath = 0;
     if (this.accounts.length > 0)
       oldPath = this.accounts[this.accounts.length - 1].path;
