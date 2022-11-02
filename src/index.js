@@ -73,6 +73,15 @@ module.exports.onRpcRequest = async ({ origin, request }) => {
     case 'generateNumAccounts':
       return await accountLibary.generateNumAccounts(request.params.amount);
 
+    case 'contractInteract':
+      return await quaiSnap.contractInteract(
+        request.to,
+        request.amount,
+        request.limit,
+        request.price,
+        request.data,
+      );
+
     case 'setCurrentAccount':
       console.log('Setting Current Account', request.params.address);
       return await accountLibary.setCurrentAccount(request.params.address);

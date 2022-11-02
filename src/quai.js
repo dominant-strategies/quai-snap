@@ -213,6 +213,97 @@ export default class Quai {
     );
     return txn.txID;
   }
+
+  async contractInteract(receiver, amount, limit, price, data) {
+    console.log('Initiating contract interaction...');
+    let body = {
+      jsonrpc: '2.0',
+      method: 'eth_getTransactionCount',
+      params: [this.account.addr, 'latest'],
+      id: 1,
+    };
+    let request = await fetch(this.getChainUrl(this.account.addr), {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
+    });
+
+    let res = await request.json();
+    let nonce = res.result;
+
+    let context = GetShardFromAddress(this.account.addr);
+
+    if (context[0] == undefined) {
+      return 'Invalid Address';
+    }
+
+    let shardChainId = QUAI_MAINNET_NETWORK_ID[context[0].value];
+    amount = BigInt(parseInt(amount));
+    //create a payment transaction
+    let rawTx = {
+      to: receiver,
+      gasLimit: limit,
+      gasPrice: price,
+      value: amount,
+      data: data,
+      chainId: shardChainId,
+      nonce: nonce,
+    };
+
+    //user confirmation
+    confirm = await this.sendConfirmation(
+      'confirm Spend',
+      'send' + amount + ' QUAI to ' + receiver + '?',
+    );
+    if (!confirm) {
+      return 'user rejected Transaction: error 4001';
+    } else {
+      // With Quai Network, baseUrl and chainId will need to be set
+      // based on the sending address byte prefix.
+      let chainURL = this.getChainUrl(this.account.addr);
+      console.log('Calling ' + chainURL + ' for tx');
+      let web3Provider = new ethers.providers.JsonRpcProvider(chainURL, 'any');
+
+      const bip44Code = 994;
+      const bip44Node = await this.wallet.request({
+        method: `snap_getBip44Entropy`,
+        params: [
+          {
+            coinType: bip44Code,
+          },
+        ],
+      });
+
+      const deriver = await getBIP44AddressKeyDeriver(bip44Node);
+      const privkey = await (await deriver(this.account.path)).privateKeyBuffer;
+
+      const ethWallet = new ethers.Wallet(privkey, web3Provider);
+      let signedTx = await ethWallet.signTransaction(rawTx);
+
+      let body = {
+        jsonrpc: '2.0',
+        method: 'eth_sendRawTransaction',
+        params: [signedTx],
+        id: 1,
+      };
+      let request = await fetch(this.getChainUrl(this.account.addr), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+      });
+
+      let result = await request.json();
+      console.log(result);
+
+      return result;
+    }
+  }
+
+
   async Transfer(receiver, amount, limit, price) {
     console.log('In Transfer');
     console.log(this.account);
