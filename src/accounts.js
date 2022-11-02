@@ -35,22 +35,15 @@ export default class Accounts {
       params: ['get'],
     });
 
-    console.log('Stored accounts');
-    console.log(storedAccounts);
 
     if (storedAccounts === null || Object.keys(storedAccounts).length === 0) {
-      console.log('no accounts found');
       //const accounts = await this.generateZoneAccount();
       this.loaded = true;
-      console.log('setting this.accounts');
-      console.log(this.accounts);
       return {
         currentAccountId: this.currentAccountId,
         Accounts: this.accounts,
       };
     } else {
-      console.log('have stored accounts');
-      console.log(storedAccounts);
       this.accounts = storedAccounts.Accounts;
       if (storedAccounts.currentAccountId == null) {
         this.currentAccount =
@@ -106,7 +99,6 @@ export default class Accounts {
       if (this.accounts[i].addr == addr) {
         this.currentAccountId = addr;
         this.currentAccount = await this.unlockAccount(addr);
-        console.log('this.currentAccount', addr, this.currentAccount);
         await this.wallet.request({
           method: 'snap_manageState',
           params: ['update', { currentAccountId: addr, Accounts: this.accounts }],
@@ -236,8 +228,7 @@ export default class Accounts {
       addr: address,
       shard: shardName,
     });
-    //console.log("THIS ACCOUNT")
-    //console.log(this.accounts[address])
+
     await this.wallet.request({
       method: 'snap_manageState',
       params: [
@@ -260,8 +251,6 @@ export default class Accounts {
 
   // Creates all accounts that span the Quai Network shards.
   async generateAllAccounts() {
-    console.log('accounts length', this.accounts.length);
-
     let i = 0;
     let foundShard = 0;
     let found = false;
