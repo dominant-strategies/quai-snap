@@ -25,7 +25,8 @@
     "lint:fix": "yarn lint:eslint --fix && yarn lint:misc --write",
     "lint:changelog": "yarn auto-changelog validate",
     "start": "nodemon --exec babel-node ./src/testindex.js",
-    "test": "./node_modules/.bin/mocha --require @babel/register"
+    "test": "./node_modules/.bin/mocha --require @babel/register",
+    "test:coverage": "nyc ./node_modules/.bin/mocha --require @babel/register"
   },
   "devDependencies": {
     "@babel/cli": "^7.19.3",
@@ -49,6 +50,7 @@
     "mkdirp": "^1.0.4",
     "mocha": "^10.1.0",
     "nodemon": "^2.0.20",
+    "nyc": "^15.1.0",
     "prettier": "^2.3.2",
     "rimraf": "^3.0.2"
   },

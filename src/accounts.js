@@ -4,10 +4,10 @@ const ethers = require('ethers');
 import { GetShardFromAddress } from './constants';
 
 let shardsToFind = {
-  'prime': [false, 1],
-  'cyprus': [false, 2],
-  'paxos': [false, 3],
-  'hydra': [false, 4],
+  prime: [false, 1],
+  cyprus: [false, 2],
+  paxos: [false, 3],
+  hydra: [false, 4],
   'cyprus-1': [false, 5],
   'cyprus-2': [false, 6],
   'cyprus-3': [false, 7],
@@ -35,7 +35,6 @@ export default class Accounts {
       params: ['get'],
     });
 
-
     if (storedAccounts === null || Object.keys(storedAccounts).length === 0) {
       //const accounts = await this.generateZoneAccount();
       this.loaded = true;
@@ -46,11 +45,12 @@ export default class Accounts {
     } else {
       this.accounts = storedAccounts.accounts;
       if (storedAccounts.currentAccountId == null) {
-        this.currentAccount =
-          this.accounts[this.accounts.length - 1];
+        this.currentAccount = this.accounts[this.accounts.length - 1];
       } else {
         for (let i = 0; i < storedAccounts.accounts.length; i++) {
-          if (storedAccounts.accounts[i].addr == storedAccounts.currentAccountId) {
+          if (
+            storedAccounts.accounts[i].addr == storedAccounts.currentAccountId
+          ) {
             this.currentAccount = storedAccounts.accounts[i];
           }
         }
@@ -86,7 +86,6 @@ export default class Accounts {
     if (this.currentAccount == null) {
       null;
     }
-    console.log(this.currentAccount);
     return this.currentAccount;
   }
 
@@ -100,7 +99,10 @@ export default class Accounts {
         this.currentAccount = await this.unlockAccount(addr);
         await this.wallet.request({
           method: 'snap_manageState',
-          params: ['update', { currentAccountId: addr, accounts: this.accounts }],
+          params: [
+            'update',
+            { currentAccountId: addr, accounts: this.accounts },
+          ],
         });
         return { currentAccountId: addr, accounts: this.accounts };
       }
@@ -109,11 +111,9 @@ export default class Accounts {
   }
 
   async getAccounts() {
-    console.log('Getting accounts');
     if (!this.loaded) {
       await this.load();
     }
-    console.log(this.accounts);
     return this.accounts;
   }
 
@@ -128,7 +128,6 @@ export default class Accounts {
     });
     for (const [key, value] of Object.entries(shardsToFind)) {
       value[0] = false;
-      console.log(`${key}: ${value}`);
     }
     return true;
   }
@@ -146,7 +145,7 @@ export default class Accounts {
     }
     const path = oldPath + 1;
     if (name == undefined || name == '') {
-      name = 'Account ' + (path);
+      name = 'Account ' + path;
     }
     const Account = await this.generateAccount(path);
     const address = Account.addr;
@@ -321,9 +320,7 @@ export default class Accounts {
     }
     let oldPath = 0;
     if (this.accounts.length != 0) {
-      oldPath =
-        this.accounts[this.accounts.length - 1
-        ].path;
+      oldPath = this.accounts[this.accounts.length - 1].path;
     }
 
     var i = 0;
@@ -343,7 +340,7 @@ export default class Accounts {
           path: path,
           name: name,
           addr: address,
-          shard: readableShard
+          shard: readableShard,
         });
         i++;
       }
