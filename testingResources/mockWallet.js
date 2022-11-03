@@ -1,16 +1,15 @@
 import sinon from 'sinon';
 
 export default class MockWallet {
-  constructor() {
-    this.registerRpcMessageHandler = sinon.stub();
-    this.requestStub = sinon.stub();
-    this.rpcStubs = {
-      snap_confirm: sinon.stub(),
-      snap_getBip44Entropy: sinon.stub(),
-      snap_manageState: sinon.stub(),
-      web3_clientVersion: sinon.stub(),
-    };
-  }
+  registerRpcMessageHandler = sinon.stub();
+  requestStub = sinon.stub();
+  rpcStubs = {
+    snap_confirm: sinon.stub(),
+    snap_getBip44Entropy: sinon.stub(),
+    snap_manageState: sinon.stub(),
+    web3_clientVersion: sinon.stub(),
+  };
+
   request(args) {
     var _a;
     var method = args.method,

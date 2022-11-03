@@ -4,11 +4,13 @@ This is an **EXPERIMENTAL** snap for Quai Network.
 
 ## Running Locally
 
-`yarn install && yarn build:clean && yarn serve`
+`yarn install`
+`yarn build:clean && yarn serve`
 
 ## Running Tests
 
 `yarn test`
+`yarn test:coverage`
 
 ## Available API Calls
 

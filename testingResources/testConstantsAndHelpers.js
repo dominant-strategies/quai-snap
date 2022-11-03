@@ -1,3 +1,5 @@
+import { getBIP44AddressKeyDeriver } from '@metamask/key-tree';
+
 export const mockAccountsObj = {
   '0x0940f153016623DbD240168DED3b758fC6d04a90:': {
     addr: '0x0940f153016623DbD240168DED3b758fC6d04a90',
@@ -93,3 +95,60 @@ export const mockAccountsObj = {
 };
 
 export const mockAccountsArray = Object.values(mockAccountsObj);
+
+// derived from the seed phrase:
+// 'sand reason sound giraffe enrich chair gauge patrol lunch behind skull tennis dinosaur roof burden carry devote alley cage bulb cotton observe relax about cupboard
+export const bip44Entropy = {
+  depth: 2,
+  masterFingerprint: 3604421617,
+  parentFingerprint: 801743947,
+  index: 2147484642,
+  privateKey:
+    '40b6d8fc5aabb05b12f734eeef041bb1a37be6be5ff459e0cec1e98d594cbc0b',
+  publicKey:
+    '04b6e78a5eff4f19f0733ae61791b780a8746d01d0511e91ca2013e0dff11f88d76020f1d1ce7a9a06e5d6f06d10ff31d05898daea4b0116e8e776fb2488c5891b',
+  chainCode: '4aeaeaceaba4ca7ed413367ac8af2340b40bd7b48e2ff72a2e44c0d34ab93f2b',
+  coin_type: 994,
+  path: "m / bip32:44' / bip32:994'",
+};
+
+export const getBip44EntropyStub = async (...args) => {
+  var _a;
+  if (
+    ((_a = args === null || args === void 0 ? void 0 : args[0]) === null ||
+    _a === void 0
+      ? void 0
+      : _a['coinType']) === 994
+  ) {
+    return bip44Entropy;
+  } else {
+    return null;
+  }
+};
+
+export async function getAddressKeyDeriver(wallet) {
+  const bip44Code = 994;
+  const bip44Node = await wallet.request({
+    method: `snap_getBip44Entropy`,
+    params: {
+      coinType: bip44Code,
+    },
+  });
+  return getBIP44AddressKeyDeriver(bip44Node);
+}
+
+export let testShardsToFind = {
+  prime: [true, 1],
+  cyprus: [false, 2],
+  paxos: [false, 3],
+  hydra: [true, 4],
+  'cyprus-1': [false, 5],
+  'cyprus-2': [false, 6],
+  'cyprus-3': [false, 7],
+  'paxos-1': [false, 8],
+  'paxos-2': [false, 9],
+  'paxos-3': [false, 10],
+  'hydra-1': [false, 11],
+  'hydra-2': [true, 12],
+  'hydra-3': [false, 13],
+};

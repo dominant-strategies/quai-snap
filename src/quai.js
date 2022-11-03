@@ -1,5 +1,5 @@
 const ethers = require('ethers');
-import { QUAI_MAINNET_NETWORK_ID, GetShardFromAddress } from './constants';
+import { QUAI_MAINNET_NETWORK_ID, getShardFromAddress } from './constants';
 import { getBIP44AddressKeyDeriver } from '@metamask/key-tree';
 
 import english from './wordlists/english';
@@ -15,7 +15,7 @@ export default class Quai {
   }
   getChainFromAddr(addr) {
     let chain = 'none';
-    let context = GetShardFromAddress(addr);
+    let context = getShardFromAddress(addr);
     if (context[0] != undefined) {
       chain = context[0].value;
     }
@@ -32,7 +32,7 @@ export default class Quai {
   }
   getChainUrl(addr) {
     let url = this.getBaseUrl();
-    let context = GetShardFromAddress(addr);
+    let context = getShardFromAddress(addr);
     if (context[0] != undefined) {
       url = context[0].rpc;
     }
@@ -232,7 +232,7 @@ export default class Quai {
     let res = await request.json();
     let nonce = res.result;
 
-    let context = GetShardFromAddress(this.account.addr);
+    let context = getShardFromAddress(this.account.addr);
 
     if (context[0] == undefined) {
       return 'Invalid Address';
