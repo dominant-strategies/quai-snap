@@ -55,10 +55,10 @@ module.exports.onRpcRequest = async ({ origin, request }) => {
 
     case 'transfer':
       return quaiSnap.Transfer(
-        request.to,
-        request.amount,
-        request.limit,
-        request.price,
+        request.params.to,
+        request.params.amount,
+        request.params.limit,
+        request.params.price,
       );
 
     case 'getCurrentAccount':
@@ -75,11 +75,11 @@ module.exports.onRpcRequest = async ({ origin, request }) => {
 
     case 'contractInteract':
       return await quaiSnap.contractInteract(
-        request.to,
-        request.amount,
-        request.limit,
-        request.price,
-        request.data,
+        request.params.to,
+        request.params.amount,
+        request.params.limit,
+        request.params.price,
+        request.params.data,
       );
 
     case 'setCurrentAccount':

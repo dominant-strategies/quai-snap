@@ -51,6 +51,10 @@
   <button class="genAllAccounts">Generate All Accounts</button>
   <input id="createByChain" value="cyprus-1" type="'text">
   <button class="accountByChain">Create Account by Chain</button>
+  <h1>Contracts</h1>
+  <input id="contractAddress" placeholder="Contract Address" type="text">
+  <input id="byteCode" placeholder="Byte Code" type="text">
+  <button class="contractInteraction"> Interact with Contract</button>
   <h1>Tests</h1>
   <p>Read the test descriptions <a
       href="https://www.notion.so/dominantstrategies/6-Functional-Testing-4bb4190044b74e98a4d00a136c410d9f">here.</a>
@@ -78,7 +82,7 @@
   const accountByChainButton = document.querySelector('button.accountByChain')
   //TESTS
   const test1Button = document.querySelector('button.test1')
-
+  const contractButton = document.querySelector('button.contractInteraction')
 
   connectButton.addEventListener('click', connect)
   sendButton.addEventListener('click', getAccounts)
@@ -98,6 +102,28 @@
   accountByChainButton.addEventListener('click', accountByChain)
   //TESTS
   test1Button.addEventListener('click', test1)
+  contractButton.addEventListener('click', contractInteraction)
+
+  async function contractInteraction() {
+    try {
+      const contractAddress = document.getElementById('contractAddress').value
+      const byteCode = document.getElementById('byteCode').value
+      const response = await ethereum.request({
+        method: 'wallet_invokeSnap',
+        params: [snapId, {
+          method: 'contractInteract',
+          params: {
+            address: contractAddress,
+            data: byteCode
+          }
+        }]
+      })
+      alert(JSON.stringify(response))
+    } catch (err) {
+      console.error(err)
+      alert('Problem happened: ' + err.message || err)
+    }
+  }
 
   //Creates a random 0 - 10 accounts
   async function test1() {

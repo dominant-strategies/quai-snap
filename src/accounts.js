@@ -62,23 +62,6 @@ export default class Accounts {
     }
   }
 
-  async unlockAccount(addr) {
-    if (!this.loaded) {
-      console.log('not loaded in unlock account');
-      await this.load();
-    }
-    for (var i = 0; i < this.accounts.length; i++) {
-      if (this.accounts[i].addr == addr) {
-        const tempAccount = this.accounts[i];
-        if (tempAccount.type === 'generated') {
-          const Account = await this.generateAccount(tempAccount.path);
-
-          return Account;
-        }
-      }
-    }
-  }
-
   async getCurrentAccount() {
     if (!this.loaded) {
       await this.load();
@@ -97,7 +80,6 @@ export default class Accounts {
     for (var i = 0; i < this.accounts.length; i++) {
       if (this.accounts[i].addr == addr) {
         this.currentAccountId = addr;
-        this.currentAccount = await this.unlockAccount(addr);
         await this.wallet.request({
           method: 'snap_manageState',
           params: ['update', { currentAccountId: addr, accounts: this.accounts }],

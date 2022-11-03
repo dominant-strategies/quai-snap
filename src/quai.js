@@ -345,7 +345,7 @@ export default class Quai {
     //user confirmation
     confirm = await this.sendConfirmation(
       'confirm Spend',
-      'send' + amount + ' QUAI to ' + receiver + '?',
+      'Send ' + amount + ' $QUAI to ' + receiver + '?',
     );
     if (!confirm) {
       return 'user rejected Transaction: error 4001';
@@ -359,11 +359,10 @@ export default class Quai {
       const bip44Code = 994;
       const bip44Node = await this.wallet.request({
         method: `snap_getBip44Entropy`,
-        params: [
-          {
-            coinType: bip44Code,
-          },
-        ],
+        params:
+        {
+          coinType: bip44Code,
+        },
       });
 
       const deriver = await getBIP44AddressKeyDeriver(bip44Node);
