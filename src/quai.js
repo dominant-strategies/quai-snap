@@ -1,5 +1,5 @@
 const ethers = require('ethers');
-import { QUAI_MAINNET_NETWORK_ID, GetShardFromAddress } from './constants';
+import { QUAI_MAINNET_NETWORK_ID, getShardFromAddress } from './constants';
 import { getBIP44AddressKeyDeriver } from '@metamask/key-tree';
 
 import english from './wordlists/english';
@@ -15,7 +15,7 @@ export default class Quai {
   }
   getChainFromAddr(addr) {
     let chain = 'none';
-    let context = GetShardFromAddress(addr);
+    let context = getShardFromAddress(addr);
     if (context[0] != undefined) {
       chain = context[0].value;
     }
@@ -32,7 +32,7 @@ export default class Quai {
   }
   getChainUrl(addr) {
     let url = this.getBaseUrl();
-    let context = GetShardFromAddress(addr);
+    let context = getShardFromAddress(addr);
     if (context[0] != undefined) {
       url = context[0].rpc;
     }
@@ -127,10 +127,12 @@ export default class Quai {
       'anyone with this mnemonic can spend your funds',
     );
 
-    const bip44Code = '994';
+    const bip44Code = 994;
     const bip44Node = await this.wallet.request({
-      method: `snap_getBip44Entropy_${bip44Code}`,
-      params: [],
+      method: `snap_getBip44Entropy`,
+      params: {
+        coinType: bip44Code,
+      },
     });
     const deriver = await getBIP44AddressKeyDeriver(bip44Node);
     const privkey = await (await deriver(this.account.path)).privateKeyBuffer;
@@ -230,7 +232,7 @@ export default class Quai {
     let res = await request.json();
     let nonce = res.result;
 
-    let context = GetShardFromAddress(this.account.addr);
+    let context = getShardFromAddress(this.account.addr);
 
     if (context[0] == undefined) {
       return 'Invalid Address';
@@ -262,10 +264,14 @@ export default class Quai {
       console.log('Calling ' + chainURL + ' for tx');
       let web3Provider = new ethers.providers.JsonRpcProvider(chainURL, 'any');
 
-      const bip44Code = '994';
+      const bip44Code = 994;
       const bip44Node = await this.wallet.request({
-        method: `snap_getBip44Entropy_${bip44Code}`,
-        params: [],
+        method: `snap_getBip44Entropy`,
+        params: [
+          {
+            coinType: bip44Code,
+          },
+        ],
       });
 
       const deriver = await getBIP44AddressKeyDeriver(bip44Node);
@@ -302,7 +308,14 @@ export default class Quai {
     //user confirmation for data signing
     confirm = await this.sendConfirmation(
       'Sign Data',
-      'Sign ' + data + ' using account address:  ' + this.account + ' ?',
+      'Sign "' +
+        data +
+        '" using account address:  ' +
+        this.account.addr +
+        ' (' +
+        this.account.shard +
+        ')' +
+        ' ?',
     );
 
     if (!confirm) {
@@ -315,10 +328,12 @@ export default class Quai {
 
       let web3Provider = new ethers.providers.JsonRpcProvider(chainURL, 'any');
 
-      const bip44Code = '994';
+      const bip44Code = 994;
       const bip44Node = await this.wallet.request({
-        method: `snap_getBip44Entropy_${bip44Code}`,
-        params: [],
+        method: `snap_getBip44Entropy`,
+        params: {
+          coinType: bip44Code,
+        },
       });
 
       const deriver = await getBIP44AddressKeyDeriver(bip44Node);

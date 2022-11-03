@@ -167,7 +167,23 @@ export const QUAI_OPTIONS = [
   { name: 'Hydra Three', value: 'hydra-3' },
 ];
 
-export function GetShardFromAddress(address) {
+export let shardsToFind = {
+  prime: [false, 1],
+  cyprus: [false, 2],
+  paxos: [false, 3],
+  hydra: [false, 4],
+  'cyprus-1': [false, 5],
+  'cyprus-2': [false, 6],
+  'cyprus-3': [false, 7],
+  'paxos-1': [false, 8],
+  'paxos-2': [false, 9],
+  'paxos-3': [false, 10],
+  'hydra-1': [false, 11],
+  'hydra-2': [false, 12],
+  'hydra-3': [false, 13],
+};
+
+export function getShardFromAddress(address) {
   return QUAI_CONTEXTS.filter((obj) => {
     let num = parseInt(Number('0x' + address.substring(2, 4)), 10);
     let start = parseInt(Number('0x' + obj.byte[0]), 10);

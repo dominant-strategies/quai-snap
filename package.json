@@ -19,19 +19,28 @@
     "build": "mm-snap build",
     "serve": "mm-snap serve",
     "clean": "rimraf dist/*",
-    "test": "echo 'TODO'",
     "lint:eslint": "eslint . --cache --ext js,ts",
     "lint:misc": "prettier '**/*.json' '**/*.md' '!CHANGELOG.md' --ignore-path .gitignore",
     "lint": "yarn lint:eslint && yarn lint:misc --check",
     "lint:fix": "yarn lint:eslint --fix && yarn lint:misc --write",
-    "lint:changelog": "yarn auto-changelog validate"
+    "lint:changelog": "yarn auto-changelog validate",
+    "start": "nodemon --exec babel-node ./src/testindex.js",
+    "test": "./node_modules/.bin/mocha --require @babel/register",
+    "test:coverage": "nyc ./node_modules/.bin/mocha --require @babel/register"
   },
   "devDependencies": {
+    "@babel/cli": "^7.19.3",
+    "@babel/core": "^7.19.6",
+    "@babel/node": "^7.20.0",
+    "@babel/preset-env": "^7.19.4",
+    "@babel/register": "^7.18.9",
     "@metamask/auto-changelog": "^2.5.0",
     "@metamask/eslint-config": "^8.0.0",
     "@metamask/eslint-config-jest": "^8.0.0",
     "@metamask/eslint-config-nodejs": "^8.0.0",
     "@metamask/snaps-cli": "^0.18.0",
+    "chai": "^4.3.6",
+    "coffeescript": "^2.7.0",
     "eslint": "^7.30.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-import": "^2.23.4",
@@ -39,6 +48,9 @@
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-prettier": "^3.4.0",
     "mkdirp": "^1.0.4",
+    "mocha": "^10.1.0",
+    "nodemon": "^2.0.20",
+    "nyc": "^15.1.0",
     "prettier": "^2.3.2",
     "rimraf": "^3.0.2"
   },
@@ -52,6 +64,8 @@
   "dependencies": {
     "@metamask/key-tree": "^4.0.0",
     "ethers": "^5.6.6",
-    "js-sha512": "^0.8.0"
+    "js-sha512": "^0.8.0",
+    "sinon": "^14.0.1",
+    "sinon-chai": "^3.7.0"
   }
 }

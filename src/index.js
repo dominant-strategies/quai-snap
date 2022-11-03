@@ -2,14 +2,8 @@ import Accounts from './accounts';
 import QuaiSnap from './quai';
 
 module.exports.onRpcRequest = async ({ origin, request }) => {
-  console.log('received message');
   const accountLibary = new Accounts(wallet);
-  console.log('getting Accounts');
-  let accounts = await accountLibary.getAccounts();
-  console.log('accounts got : ');
-  console.log(accounts);
   let currentAccount = await accountLibary.getCurrentAccount();
-  console.log('currentAccount in index', currentAccount);
   let quaiSnap = new QuaiSnap(wallet, currentAccount);
   if (request.hasOwnProperty('testnet')) {
     quaiSnap.setTestnet(request.testnet);
@@ -20,16 +14,18 @@ module.exports.onRpcRequest = async ({ origin, request }) => {
     case 'getAccounts':
       return accountLibary.getAccounts();
     case 'isValidAddress':
-      return quaiSnap.isValidAddress(request.address);
+      return quaiSnap.isValidAddress(request.params.address);
 
     case 'getTransactions':
       return quaiSnap.getTransactions();
 
     case 'getBalance':
-      return quaiSnap.getBalance(request.address);
+      console.log('getBalance');
+      console.log(request.params.address);
+      return quaiSnap.getBalance(request.params.address);
 
     case 'createAccountByChain':
-      return accountLibary.createNewAccountByChain(request.name, request.chain);
+      return accountLibary.createNewAccountByChain(request.params.name, request.params.chain);
 
     case 'clearAccounts':
       const clearAccountConfirm = await quaiSnap.sendConfirmation(
@@ -69,17 +65,17 @@ module.exports.onRpcRequest = async ({ origin, request }) => {
       return await accountLibary.getCurrentAccount();
 
     case 'createAccount':
-      return await accountLibary.createNewAccount();
+      return await accountLibary.createNewAccount(request.params.name);
 
     case 'generateAllAccounts':
       return await accountLibary.generateAllAccounts();
 
     case 'generateNumAccounts':
-      return await accountLibary.generateNumAccounts(request.amount);
+      return await accountLibary.generateNumAccounts(request.params.amount);
 
     case 'setCurrentAccount':
-      console.log('Setting Current Account', request.address);
-      return await accountLibary.setCurrentAccount(request.address);
+      console.log('Setting Current Account', request.params.address);
+      return await accountLibary.setCurrentAccount(request.params.address);
 
     case 'getBlockHeight':
       let response = await quaiSnap.getBlockHeight();
@@ -88,7 +84,7 @@ module.exports.onRpcRequest = async ({ origin, request }) => {
       return response.result.number;
 
     case 'signData':
-      return quaiSnap.signData(request.data);
+      return quaiSnap.signData(request.params.data);
 
     default:
       throw new Error('Method not found.');
