@@ -54,6 +54,7 @@
   <h1>Contracts</h1>
   <input id="contractAddress" placeholder="Contract Address" type="text">
   <input id="byteCode" placeholder="Byte Code" type="text">
+  <input id="decodeTypes" placeholder="Decode Types" type="text">
   <button class="contractInteraction"> Interact with Contract</button>
   <h1>Tests</h1>
   <p>Read the test descriptions <a
@@ -108,13 +109,16 @@
     try {
       const contractAddress = document.getElementById('contractAddress').value
       const byteCode = document.getElementById('byteCode').value
+      const decodeTypes = document.getElementById('decodeTypes').value
       const response = await ethereum.request({
         method: 'wallet_invokeSnap',
         params: [snapId, {
           method: 'contractInteract',
           params: {
             address: contractAddress,
-            data: byteCode
+            data: byteCode,
+            decode: true, // optional, temporary for testing, by default its false
+            decodeTypes: [decodeTypes]//Temporary for testing with string form
           }
         }]
       })

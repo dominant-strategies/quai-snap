@@ -75,11 +75,13 @@ module.exports.onRpcRequest = async ({ origin, request }) => {
 
     case 'contractInteract':
       return await quaiSnap.contractInteract(
-        request.params.to,
+        request.params.address,
         request.params.amount,
         request.params.limit,
         request.params.price,
         request.params.data,
+        request.params.decode,
+        request.params.decodeTypes
       );
 
     case 'setCurrentAccount':

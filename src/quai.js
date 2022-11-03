@@ -1,7 +1,6 @@
 const ethers = require('ethers');
 import { QUAI_MAINNET_NETWORK_ID, GetShardFromAddress } from './constants';
 import { getBIP44AddressKeyDeriver } from '@metamask/key-tree';
-
 import english from './wordlists/english';
 import sha512 from 'js-sha512';
 
@@ -214,8 +213,21 @@ export default class Quai {
     return txn.txID;
   }
 
-  async contractInteract(receiver, amount, limit, price, data) {
+  async contractInteract(receiver, amount, limit, price, data, decode, decodetypes) {
+    if (this.account == undefined) {
+      throw new Error('No account selected');
+    }
+    console.log(receiver, amount, limit, price, data, decode, decodetypes);
+    if (decode == undefined)
+      decode = false;
     console.log('Initiating contract interaction...');
+    let decodedMessage = '';
+    if (decode && (decodetypes != undefined && decodetypes.length > 0 && decodetypes[0] != '')
+      && (data != undefined && data != '' && data != null)) {
+      let abiCoder = new ethers.utils.AbiCoder();
+      decodedMessage = abiCoder.decode(decodetypes, data);
+    }
+    console.log('Decoded message: ', decodedMessage);
     let body = {
       jsonrpc: '2.0',
       method: 'eth_getTransactionCount',
@@ -240,7 +252,10 @@ export default class Quai {
     }
 
     let shardChainId = QUAI_MAINNET_NETWORK_ID[context[0].value];
-    amount = BigInt(parseInt(amount));
+    if (amount != undefined)
+      amount = BigInt(parseInt(amount));
+    else
+      amount = BigInt(0);
     //create a payment transaction
     let rawTx = {
       to: receiver,
@@ -254,8 +269,9 @@ export default class Quai {
 
     //user confirmation
     confirm = await this.sendConfirmation(
-      'confirm Spend',
-      'send' + amount + ' QUAI to ' + receiver + '?',
+      'Confirm Contract Call',
+      'Interact with ' + receiver + ' ?\n' + "This interaction will send " + amount + "$QUAI",
+      decodedMessage,//Metamask has a limit of 1800 characters
     );
     if (!confirm) {
       return 'user rejected Transaction: error 4001';
@@ -269,11 +285,10 @@ export default class Quai {
       const bip44Code = 994;
       const bip44Node = await this.wallet.request({
         method: `snap_getBip44Entropy`,
-        params: [
-          {
-            coinType: bip44Code,
-          },
-        ],
+        params:
+        {
+          coinType: bip44Code,
+        },
       });
 
       const deriver = await getBIP44AddressKeyDeriver(bip44Node);
