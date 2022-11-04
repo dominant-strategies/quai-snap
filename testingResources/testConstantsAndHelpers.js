@@ -96,8 +96,9 @@ export const mockAccountsObj = {
 
 export const mockAccountsArray = Object.values(mockAccountsObj);
 
-// derived from the seed phrase:
-// 'sand reason sound giraffe enrich chair gauge patrol lunch behind skull tennis dinosaur roof burden carry devote alley cage bulb cotton observe relax about cupboard
+export const testSeed =
+  'sand reason sound giraffe enrich chair gauge patrol lunch behind skull tennis dinosaur roof burden carry devote alley cage bulb cotton observe relax about cupboard';
+// derived from the seed phrase above
 export const bip44Entropy = {
   depth: 2,
   masterFingerprint: 3604421617,
