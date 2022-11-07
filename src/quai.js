@@ -1,4 +1,4 @@
-import { QUAI_MAINNET_NETWORK_ID, getShardFromAddress } from './constants'
+import { QUAI_MAINNET_NETWORK_ID, GetShardFromAddress, getChainData } from './constants'
 import { getBIP44AddressKeyDeriver } from '@metamask/key-tree'
 
 import english from './wordlists/english'
@@ -6,47 +6,57 @@ import sha512 from 'js-sha512'
 const ethers = require('ethers')
 
 export default class Quai {
-  constructor (wallet, account) {
+  constructor(wallet, account) {
     this.wallet = wallet
     this.account = account
     this.baseUrl = 'rpc.quaiscan.io'
     this.baseTestUrl = 'rpc.quaiscan-test.io'
     this.testnet = false
+    this.devnet = false
   }
 
-  getChainFromAddr (addr) {
+  getChainFromAddr(addr) {
     let chain = 'none'
-    const context = getShardFromAddress(addr)
+    const context = GetShardFromAddress(addr)
     if (context[0] !== undefined) {
       chain = context[0].value
     }
     return chain
   }
 
-  getBaseUrl (chain) {
+  getBaseUrl(chain) {
     if (chain === undefined) {
       chain = 'prime'
     }
     if (this.testnet) {
       return 'https://' + chain + '.' + this.baseTestUrl
     }
+    if (this.devnet) {
+      let chainData = getChainData(chain);
+      return 'http://localhost:' + chainData.httpPort;
+    }
     return 'https://' + chain + '.' + this.baseUrl
   }
 
-  getChainUrl (addr) {
-    let url = this.getBaseUrl()
-    const context = getShardFromAddress(addr)
-    if (context[0] !== undefined) {
+  getChainUrl(addr) {
+    let context = GetShardFromAddress(addr);
+    let url = this.getBaseUrl(context.value);
+    console.log('url', url);
+    if (context[0] !== undefined && this.devnet === false) {
       url = context[0].rpc
     }
     return url
   }
 
-  setTestnet (bool) {
+  setTestnet(bool) {
     this.testnet = bool
   }
 
-  async getTransactions () {
+  setDevnet(bool) {
+    this.devnet = bool;
+  }
+
+  async getTransactions() {
     const transactions = await fetch(
       this.getBaseUrl() + '/transactions?address=' + this.account.addr
     )
@@ -54,7 +64,7 @@ export default class Quai {
   }
 
   // must pass address
-  async getBalance (addr) {
+  async getBalance(addr) {
     const body = {
       jsonrpc: '2.0',
       method: 'eth_getBalance',
@@ -74,7 +84,7 @@ export default class Quai {
     return parseInt(res.result, 16)
   }
 
-  async getBlockHeight () {
+  async getBlockHeight() {
     console.log('Attempting to get block height...')
 
     // creates a notifican when the transaction is broadcast
@@ -97,14 +107,14 @@ export default class Quai {
     return await request.json()
   }
 
-  static validateAddress (address) {}
+  static validateAddress(address) { }
 
   // Mnemonic phrase helper
-  async toUint11Array (secretKey) {
+  async toUint11Array(secretKey) {
     const buffer11 = []
     let acc = 0
     let accBits = 0
-    function add (octet) {
+    function add(octet) {
       acc |= octet << accBits
       accBits += 8
       if (accBits >= 11) {
@@ -113,7 +123,7 @@ export default class Quai {
         accBits -= 11
       }
     }
-    function flush () {
+    function flush() {
       if (accBits) {
         buffer11.push(acc)
       }
@@ -125,11 +135,11 @@ export default class Quai {
   }
 
   // helper for displayMnemonic
-  async applyWords (nums) {
+  async applyWords(nums) {
     return nums.map((n) => english[n])
   }
 
-  async displayMnemonic () {
+  async displayMnemonic() {
     const confirm = await this.sendConfirmation(
       'confirm',
       'Are you sure you want to display your mnemonic?',
@@ -156,7 +166,7 @@ export default class Quai {
   }
 
   // Helper for displayMnemonic. Computes the final checksum word
-  async computeChecksum (secretKey) {
+  async computeChecksum(secretKey) {
     const hashBuffer = await this.genericHash(secretKey)
     const uint11Hash = await this.toUint11Array(hashBuffer)
     const words = await this.applyWords(uint11Hash)
@@ -164,30 +174,30 @@ export default class Quai {
   }
 
   // Helper for computeCheckSum
-  async genericHash (secretKey) {
+  async genericHash(secretKey) {
     return sha512.sha512_256.array(secretKey)
   }
 
   // Helper for display the mnemonic phrase by transforming a secret key to mnemonic
-  async secretKeyToMnemonic (secretKey) {
+  async secretKeyToMnemonic(secretKey) {
     const uint11Array = await this.toUint11Array(secretKey)
     const words = await this.applyWords(uint11Array)
     const checksumWord = await this.computeChecksum(secretKey)
     return `${words.join(' ')} ${checksumWord}`
   }
 
-  getAddress () {
+  getAddress() {
     return this.account.addr
   }
 
   // Get params needs to be modified to get Quai Network gas data
   // for when we send transactions.
-  async getParams () {
+  async getParams() {
     const request = await fetch(this.getBaseUrl() + '/suggestedParams')
     return await request.json()
   }
 
-  async notify (message) {
+  async notify(message) {
     wallet.request({
       method: 'snap_notify',
       params: [
@@ -199,10 +209,10 @@ export default class Quai {
     })
   }
 
-  async SendTransaction (to, amount, limit, price, data, abi) {
+  async SendTransaction(to, amount, limit, price, data, abi) {
     try {
       const nonce = await this.getNonce()
-      const context = getShardFromAddress(this.account.addr)
+      const context = GetShardFromAddress(this.account.addr)
       if (context[0] === undefined) {
         return 'Invalid Address'
       }
@@ -221,7 +231,7 @@ export default class Quai {
       }
 
       let confirm = this.checkConfirmation(to, amount, data, abi);
-      
+
       if (!confirm) {
         return 'user rejected Transaction: error 4001'
       } else {
@@ -251,20 +261,20 @@ export default class Quai {
   }
 
   // Use ethers wallet and signMessage()
-  async signData (data) {
+  async signData(data) {
     console.log('Signing Data...: ' + data)
     console.log(this.account)
     // user confirmation for data signing
     confirm = await this.sendConfirmation(
       'Sign Data',
       'Sign "' +
-        data +
-        '" using account address:  ' +
-        this.account.addr +
-        ' (' +
-        this.account.shard +
-        ')' +
-        ' ?'
+      data +
+      '" using account address:  ' +
+      this.account.addr +
+      ' (' +
+      this.account.shard +
+      ')' +
+      ' ?'
     )
 
     if (!confirm) {
@@ -280,11 +290,11 @@ export default class Quai {
     }
   }
 
-  async getChainURL () {
+  async getChainURL() {
     return this.getChainUrl(this.account.addr)
   }
 
-  async getNonce () {
+  async getNonce() {
     const body = {
       jsonrpc: '2.0',
       method: 'eth_getTransactionCount',
@@ -303,7 +313,7 @@ export default class Quai {
     return res.result
   }
 
-  async getWallet () {
+  async getWallet() {
     const chainURL = this.getChainUrl(this.account.addr)
     const web3Provider = new ethers.providers.JsonRpcProvider(chainURL, 'any')
 
@@ -311,9 +321,9 @@ export default class Quai {
     const bip44Node = await this.wallet.request({
       method: 'snap_getBip44Entropy',
       params:
-        {
-          coinType: bip44Code
-        }
+      {
+        coinType: bip44Code
+      }
     })
 
     const deriver = await getBIP44AddressKeyDeriver(bip44Node)
@@ -321,7 +331,7 @@ export default class Quai {
     return new ethers.Wallet(privkey, web3Provider)
   }
 
-  async checkConfirmation(to, value, data, abi){
+  async checkConfirmation(to, value, data, abi) {
     let confirm = undefined;
     if (data.length > 0 && abi !== undefined) {
       try {
@@ -351,7 +361,7 @@ export default class Quai {
     return confirm;
   }
 
-  async sendConfirmation (prompt, description, textAreaContent) {
+  async sendConfirmation(prompt, description, textAreaContent) {
     const confirm = await this.wallet.request({
       method: 'snap_confirm',
       params: [
