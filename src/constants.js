@@ -12,8 +12,8 @@ export const QUAI_MAINNET_NETWORK_ID = {
   'paxos-3': 9203,
   'hydra-1': 9301,
   'hydra-2': 9302,
-  'hydra-3': 9303,
-};
+  'hydra-3': 9303
+}
 
 export const QUAI_MAINNET_CHAIN_ID = {
   Prime: '0x2328',
@@ -28,8 +28,8 @@ export const QUAI_MAINNET_CHAIN_ID = {
   Paxos3: '0x23f3',
   Hydra1: '0x2455',
   Hydra2: '0x2456',
-  Hydra3: '0x2457',
-};
+  Hydra3: '0x2457'
+}
 
 export const QUAI_CONTEXTS = [
   {
@@ -39,7 +39,7 @@ export const QUAI_CONTEXTS = [
     id: '0x2328',
     rpc: 'https://prime.rpc.quaiscan.io/',
     provider: 'ws://45.76.19.78:8547',
-    blockExplorerUrl: 'https://quaiscan.io',
+    blockExplorerUrl: 'https://quaiscan.io'
   },
   {
     name: 'Cyprus',
@@ -48,7 +48,7 @@ export const QUAI_CONTEXTS = [
     id: '0x238c',
     rpc: 'https://cyprus.rpc.quaiscan.io/',
     provider: 'ws://45.76.19.78:8579',
-    blockExplorerUrl: 'https://quaiscan.io',
+    blockExplorerUrl: 'https://quaiscan.io'
   },
   {
     name: 'Cyprus One',
@@ -57,7 +57,7 @@ export const QUAI_CONTEXTS = [
     id: '0x238d',
     rpc: 'https://cyprus1.rpc.quaiscan.io/',
     provider: 'ws://45.76.19.78:8611',
-    blockExplorerUrl: 'https://quaiscan.io',
+    blockExplorerUrl: 'https://quaiscan.io'
   },
   {
     name: 'Cyprus Two',
@@ -66,7 +66,7 @@ export const QUAI_CONTEXTS = [
     id: '0x238e',
     rpc: 'https://cyprus2.rpc.quaiscan.io/',
     provider: 'ws://45.76.19.78:8543',
-    blockExplorerUrl: 'https://quaiscan.io',
+    blockExplorerUrl: 'https://quaiscan.io'
   },
   {
     name: 'Cyprus Three',
@@ -75,7 +75,7 @@ export const QUAI_CONTEXTS = [
     id: '0x238f',
     rpc: 'https://cyprus3.rpc.quaiscan.io/',
     provider: 'ws://45.76.19.78:8675',
-    blockExplorerUrl: 'https://quaiscan.io',
+    blockExplorerUrl: 'https://quaiscan.io'
   },
   {
     name: 'Paxos',
@@ -84,7 +84,7 @@ export const QUAI_CONTEXTS = [
     id: '0x23f0',
     rpc: 'https://paxos.rpc.quaiscan.io/',
     provider: 'ws://45.76.19.78:8581',
-    blockExplorerUrl: 'https://quaiscan.io',
+    blockExplorerUrl: 'https://quaiscan.io'
   },
   {
     name: 'Paxos One',
@@ -93,7 +93,7 @@ export const QUAI_CONTEXTS = [
     id: '0x23f1',
     rpc: 'https://paxos1.rpc.quaiscan.io/',
     provider: 'ws://45.76.19.78:8513',
-    blockExplorerUrl: 'https://quaiscan.io',
+    blockExplorerUrl: 'https://quaiscan.io'
   },
   {
     name: 'Paxos Two',
@@ -102,7 +102,7 @@ export const QUAI_CONTEXTS = [
     id: '0x23f2',
     rpc: 'https://paxos2.rpc.quaiscan.io/',
     provider: 'ws://45.76.19.78:8645',
-    blockExplorerUrl: 'https://quaiscan.io',
+    blockExplorerUrl: 'https://quaiscan.io'
   },
   {
     name: 'Paxos Three',
@@ -111,7 +111,7 @@ export const QUAI_CONTEXTS = [
     id: '0x23f3',
     rpc: 'https://paxos3.rpc.quaiscan.io/',
     provider: 'ws://45.76.19.78:8577',
-    blockExplorerUrl: 'https://quaiscan.io',
+    blockExplorerUrl: 'https://quaiscan.io'
   },
   {
     name: 'Hydra',
@@ -120,7 +120,7 @@ export const QUAI_CONTEXTS = [
     id: '0x2454',
     rpc: 'https://hydra.rpc.quaiscan.io/',
     provider: 'ws://45.76.19.78:8583',
-    blockExplorerUrl: 'https://quaiscan.io',
+    blockExplorerUrl: 'https://quaiscan.io'
   },
   {
     name: 'Hydra One',
@@ -129,7 +129,7 @@ export const QUAI_CONTEXTS = [
     id: '0x2455',
     rpc: 'https://hydra1.rpc.quaiscan.io/',
     provider: 'ws://45.76.19.78:8615',
-    blockExplorerUrl: 'https://quaiscan.io',
+    blockExplorerUrl: 'https://quaiscan.io'
   },
   {
     name: 'Hydra Two',
@@ -138,7 +138,7 @@ export const QUAI_CONTEXTS = [
     id: '0x2456',
     rpc: 'https://hydra2.rpc.quaiscan.io/',
     provider: 'ws://45.76.19.78:8647',
-    blockExplorerUrl: 'https://quaiscan.io',
+    blockExplorerUrl: 'https://quaiscan.io'
   },
   {
     name: 'Hydra Three',
@@ -147,9 +147,9 @@ export const QUAI_CONTEXTS = [
     id: '0x2457',
     rpc: 'https://hydra3.rpc.quaiscan.io/',
     provider: 'ws://45.76.19.78:8679',
-    blockExplorerUrl: 'https://quaiscan.io',
-  },
-];
+    blockExplorerUrl: 'https://quaiscan.io'
+  }
+]
 
 export const QUAI_OPTIONS = [
   { name: 'Prime', value: 'prime' },
@@ -164,10 +164,10 @@ export const QUAI_OPTIONS = [
   { name: 'Paxos Three', value: 'paxos-3' },
   { name: 'Hydra One', value: 'hydra-1' },
   { name: 'Hydra Two', value: 'hydra-2' },
-  { name: 'Hydra Three', value: 'hydra-3' },
-];
+  { name: 'Hydra Three', value: 'hydra-3' }
+]
 
-export let shardsToFind = {
+export const shardsToFind = {
   prime: [false, 1],
   cyprus: [false, 2],
   paxos: [false, 3],
@@ -180,14 +180,14 @@ export let shardsToFind = {
   'paxos-3': [false, 10],
   'hydra-1': [false, 11],
   'hydra-2': [false, 12],
-  'hydra-3': [false, 13],
-};
+  'hydra-3': [false, 13]
+}
 
-export function getShardFromAddress(address) {
+export function getShardFromAddress (address) {
   return QUAI_CONTEXTS.filter((obj) => {
-    let num = parseInt(Number('0x' + address.substring(2, 4)), 10);
-    let start = parseInt(Number('0x' + obj.byte[0]), 10);
-    let end = parseInt(Number('0x' + obj.byte[1]), 10);
-    return num >= start && num <= end;
-  });
+    const num = parseInt(Number('0x' + address.substring(2, 4)), 10)
+    const start = parseInt(Number('0x' + obj.byte[0]), 10)
+    const end = parseInt(Number('0x' + obj.byte[1]), 10)
+    return num >= start && num <= end
+  })
 }

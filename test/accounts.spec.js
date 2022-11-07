@@ -1,362 +1,362 @@
-import chai, { assert, expect } from 'chai';
-import sinon from 'sinon';
-import sinonChai from 'sinon-chai';
-import MockWallet from '../testingResources/mockWallet';
+import chai, { assert, expect } from 'chai'
+import sinon from 'sinon'
+import sinonChai from 'sinon-chai'
+import MockWallet from '../testingResources/mockWallet'
 import {
   mockAccountsArray,
   getBip44EntropyStub,
-  testShardsToFind,
-} from '../testingResources/testConstantsAndHelpers';
-import Accounts from '../src/accounts';
+  testShardsToFind
+} from '../testingResources/testConstantsAndHelpers'
+import Accounts from '../src/accounts'
 
-chai.use(sinonChai);
-const sandbox = sinon.createSandbox();
+chai.use(sinonChai)
+const sandbox = sinon.createSandbox()
 
 describe('Accounts.js Tests', function () {
-  const mockWallet = new MockWallet();
+  const mockWallet = new MockWallet()
 
   beforeEach(async function () {
-    mockWallet.rpcStubs.snap_getBip44Entropy.callsFake(getBip44EntropyStub);
-  });
+    mockWallet.rpcStubs.snap_getBip44Entropy.callsFake(getBip44EntropyStub)
+  })
 
   afterEach(function () {
-    mockWallet.reset();
-    sandbox.restore();
-  });
+    mockWallet.reset()
+    sandbox.restore()
+  })
 
   it('should initialize the Accounts class', function () {
-    let mockAccounts = new Accounts(mockWallet, {}, null, null, false);
+    const mockAccounts = new Accounts(mockWallet, {}, null, null, false)
 
-    assert.equal(mockAccounts.wallet, mockWallet);
-    expect(mockAccounts.accounts).to.be.empty;
-    assert.equal(mockAccounts.currentAccountId, null);
-  });
+    assert.equal(mockAccounts.wallet, mockWallet)
+    expect(mockAccounts.accounts).to.be.empty
+    assert.equal(mockAccounts.currentAccountId, null)
+  })
 
   it('should load no accounts when there are no accounts in state', async function () {
-    mockWallet.rpcStubs.snap_manageState.withArgs('get').resolves({});
-    let accountsClass = new Accounts(mockWallet, {}, null, null, false);
+    mockWallet.rpcStubs.snap_manageState.withArgs('get').resolves({})
+    const accountsClass = new Accounts(mockWallet, {}, null, null, false)
 
-    await accountsClass.load();
-    expect(accountsClass.loaded).to.be.true;
+    await accountsClass.load()
+    expect(accountsClass.loaded).to.be.true
     expect(mockWallet.rpcStubs.snap_manageState).to.have.been.calledOnceWith(
-      'get',
-    );
-    expect(accountsClass.accounts).to.be.empty;
-    expect(accountsClass.currentAccountId).to.be.null;
-  });
+      'get'
+    )
+    expect(accountsClass.accounts).to.be.empty
+    expect(accountsClass.currentAccountId).to.be.null
+  })
 
   it('should load all accounts when there are accounts in state', async function () {
-    let mockStateWithAccounts = {
+    const mockStateWithAccounts = {
       currentAccountId: mockAccountsArray[0].addr,
-      accounts: mockAccountsArray,
-    };
+      accounts: mockAccountsArray
+    }
     mockWallet.rpcStubs.snap_manageState
       .withArgs('get')
-      .resolves(mockStateWithAccounts);
-    let accountsClass = new Accounts(
+      .resolves(mockStateWithAccounts)
+    const accountsClass = new Accounts(
       mockWallet,
       mockAccountsArray,
       mockAccountsArray[0].addr,
       mockAccountsArray[0],
-      false,
-    );
+      false
+    )
 
-    await accountsClass.load();
-    expect(accountsClass.loaded).to.be.true;
+    await accountsClass.load()
+    expect(accountsClass.loaded).to.be.true
     expect(mockWallet.rpcStubs.snap_manageState).to.have.been.calledOnceWith(
-      'get',
-    );
-    expect(accountsClass.accounts).to.deep.equal(mockAccountsArray);
-  });
+      'get'
+    )
+    expect(accountsClass.accounts).to.deep.equal(mockAccountsArray)
+  })
 
   it('should load all accounts when there are accounts in state but no current account is set', async function () {
-    let mockStateWithAccounts = {
+    const mockStateWithAccounts = {
       currentAccountId: null,
-      accounts: mockAccountsArray,
-    };
+      accounts: mockAccountsArray
+    }
     mockWallet.rpcStubs.snap_manageState
       .withArgs('get')
-      .resolves(mockStateWithAccounts);
-    let accountsClass = new Accounts(
+      .resolves(mockStateWithAccounts)
+    const accountsClass = new Accounts(
       mockWallet,
       mockAccountsArray,
       null,
       null,
-      false,
-    );
+      false
+    )
 
-    await accountsClass.load();
-    expect(accountsClass.loaded).to.be.true;
+    await accountsClass.load()
+    expect(accountsClass.loaded).to.be.true
     expect(mockWallet.rpcStubs.snap_manageState).to.have.been.calledOnceWith(
-      'get',
-    );
-    expect(accountsClass.accounts).to.deep.equal(mockAccountsArray);
-  });
+      'get'
+    )
+    expect(accountsClass.accounts).to.deep.equal(mockAccountsArray)
+  })
 
   it('should return the current account', async function () {
-    let mockStateWithAccounts = {
+    const mockStateWithAccounts = {
       currentAccountId: mockAccountsArray[0].addr,
-      accounts: mockAccountsArray,
-    };
+      accounts: mockAccountsArray
+    }
     mockWallet.rpcStubs.snap_manageState
       .withArgs('get')
-      .resolves(mockStateWithAccounts);
-    let accountsClass = new Accounts(
+      .resolves(mockStateWithAccounts)
+    const accountsClass = new Accounts(
       mockWallet,
       mockAccountsArray,
       mockAccountsArray[0].addr,
       mockAccountsArray[0],
-      false,
-    );
+      false
+    )
 
-    await accountsClass.getCurrentAccount();
-    expect(accountsClass.loaded).to.be.true;
-    expect(accountsClass.currentAccount).to.deep.equal(mockAccountsArray[0]);
-  });
+    await accountsClass.getCurrentAccount()
+    expect(accountsClass.loaded).to.be.true
+    expect(accountsClass.currentAccount).to.deep.equal(mockAccountsArray[0])
+  })
 
   it('should return null when trying to get current account when there are no accounts', async function () {
-    mockWallet.rpcStubs.snap_manageState.withArgs('get').resolves({});
-    let accountsClass = new Accounts(mockWallet, [], null, null, false);
+    mockWallet.rpcStubs.snap_manageState.withArgs('get').resolves({})
+    const accountsClass = new Accounts(mockWallet, [], null, null, false)
 
-    await accountsClass.getCurrentAccount();
-    expect(accountsClass.loaded).to.be.true;
-    expect(accountsClass.currentAccount).to.be.null;
-  });
+    await accountsClass.getCurrentAccount()
+    expect(accountsClass.loaded).to.be.true
+    expect(accountsClass.currentAccount).to.be.null
+  })
 
   it('should set the current account', async function () {
-    let mockStateWithAccounts = {
+    const mockStateWithAccounts = {
       currentAccountId: mockAccountsArray[0].addr,
-      accounts: mockAccountsArray,
-    };
+      accounts: mockAccountsArray
+    }
     mockWallet.rpcStubs.snap_manageState
       .withArgs('get')
-      .resolves(mockStateWithAccounts);
-    let accountsClass = new Accounts(
+      .resolves(mockStateWithAccounts)
+    const accountsClass = new Accounts(
       mockWallet,
       mockAccountsArray,
       mockAccountsArray[0].addr,
       mockAccountsArray[0],
-      true,
-    );
+      true
+    )
 
-    await accountsClass.setCurrentAccount(mockAccountsArray[1].addr);
+    await accountsClass.setCurrentAccount(mockAccountsArray[1].addr)
     expect(accountsClass.currentAccountId).to.deep.equal(
-      mockAccountsArray[1].addr,
-    );
-  });
+      mockAccountsArray[1].addr
+    )
+  })
 
   it('should return all accounts', async function () {
-    let mockStateWithAccounts = {
+    const mockStateWithAccounts = {
       currentAccountId: mockAccountsArray[0].addr,
-      accounts: mockAccountsArray,
-    };
+      accounts: mockAccountsArray
+    }
     mockWallet.rpcStubs.snap_manageState
       .withArgs('get')
-      .resolves(mockStateWithAccounts);
-    let accountsClass = new Accounts(
+      .resolves(mockStateWithAccounts)
+    const accountsClass = new Accounts(
       mockWallet,
       mockAccountsArray,
       mockAccountsArray[0].addr,
       mockAccountsArray[0],
-      false,
-    );
+      false
+    )
 
-    await accountsClass.getAccounts();
-    expect(accountsClass.loaded).to.be.true;
-    expect(accountsClass.accounts).to.deep.equal(mockAccountsArray);
-  });
+    await accountsClass.getAccounts()
+    expect(accountsClass.loaded).to.be.true
+    expect(accountsClass.accounts).to.deep.equal(mockAccountsArray)
+  })
 
   it('should clear all accounts', async function () {
-    let mockStateWithAccounts = {
+    const mockStateWithAccounts = {
       currentAccountId: mockAccountsArray[0].addr,
-      accounts: mockAccountsArray,
-    };
+      accounts: mockAccountsArray
+    }
     mockWallet.rpcStubs.snap_manageState
       .withArgs('get')
-      .resolves(mockStateWithAccounts);
+      .resolves(mockStateWithAccounts)
     mockWallet.rpcStubs.snap_manageState
       .withArgs('update', { accounts: [] })
-      .resolves({});
+      .resolves({})
 
-    let accountsClass = new Accounts(
+    const accountsClass = new Accounts(
       mockWallet,
       mockAccountsArray,
       mockAccountsArray[0].addr,
       mockAccountsArray[0],
-      false,
-    );
+      false
+    )
 
-    await accountsClass.clearAccounts();
-    expect(accountsClass.accounts).to.deep.equal([]);
-  });
+    await accountsClass.clearAccounts()
+    expect(accountsClass.accounts).to.deep.equal([])
+  })
 
   it('should generate an account given a name', async function () {
-    let mockStateWithAccounts = {
+    const mockStateWithAccounts = {
       currentAccountId: mockAccountsArray[0].addr,
-      accounts: mockAccountsArray,
-    };
+      accounts: mockAccountsArray
+    }
     mockWallet.rpcStubs.snap_manageState
       .withArgs('get')
-      .resolves(mockStateWithAccounts);
+      .resolves(mockStateWithAccounts)
 
-    let accountsClass = new Accounts(
+    const accountsClass = new Accounts(
       mockWallet,
       mockAccountsArray,
       mockAccountsArray[0].addr,
       mockAccountsArray[0],
-      false,
-    );
+      false
+    )
 
-    await accountsClass.createNewAccount('Test Account');
+    await accountsClass.createNewAccount('Test Account')
     expect(
-      accountsClass.accounts[accountsClass.accounts.length - 1].name,
-    ).to.equal('Test Account');
-  });
+      accountsClass.accounts[accountsClass.accounts.length - 1].name
+    ).to.equal('Test Account')
+  })
 
   it('should generate an account with the name Account + number when given no name', async function () {
-    let mockStateWithAccounts = {
+    const mockStateWithAccounts = {
       currentAccountId: mockAccountsArray[0].addr,
-      accounts: mockAccountsArray,
-    };
+      accounts: mockAccountsArray
+    }
     mockWallet.rpcStubs.snap_manageState
       .withArgs('get')
-      .resolves(mockStateWithAccounts);
+      .resolves(mockStateWithAccounts)
 
-    let accountsClass = new Accounts(
+    const accountsClass = new Accounts(
       mockWallet,
       mockAccountsArray,
       mockAccountsArray[0].addr,
       mockAccountsArray[0],
-      false,
-    );
+      false
+    )
 
-    await accountsClass.createNewAccount();
+    await accountsClass.createNewAccount()
     expect(
-      accountsClass.accounts[accountsClass.accounts.length - 1].name,
-    ).to.equal('Account 15');
-  });
+      accountsClass.accounts[accountsClass.accounts.length - 1].name
+    ).to.equal('Account 15')
+  })
 
   it('should generate an account with a given name and chainId', async function () {
-    let mockStateWithAccounts = {
+    const mockStateWithAccounts = {
       currentAccountId: mockAccountsArray[0].addr,
-      accounts: mockAccountsArray,
-    };
+      accounts: mockAccountsArray
+    }
     mockWallet.rpcStubs.snap_manageState
       .withArgs('get')
-      .resolves(mockStateWithAccounts);
+      .resolves(mockStateWithAccounts)
 
-    let accountsClass = new Accounts(
+    const accountsClass = new Accounts(
       mockWallet,
       mockAccountsArray,
       mockAccountsArray[0].addr,
       mockAccountsArray[0],
-      false,
-    );
+      false
+    )
 
-    await accountsClass.createNewAccountByChain('Test Account', 'paxos');
+    await accountsClass.createNewAccountByChain('Test Account', 'paxos')
     expect(
-      accountsClass.accounts[accountsClass.accounts.length - 1].name,
-    ).to.equal('Test Account');
+      accountsClass.accounts[accountsClass.accounts.length - 1].name
+    ).to.equal('Test Account')
     expect(
-      accountsClass.accounts[accountsClass.accounts.length - 1].shard,
-    ).to.equal('Paxos');
-  });
+      accountsClass.accounts[accountsClass.accounts.length - 1].shard
+    ).to.equal('Paxos')
+  })
 
   it('should check if an account exists', async function () {
-    let mockStateWithAccounts = {
+    const mockStateWithAccounts = {
       currentAccountId: mockAccountsArray[0].addr,
-      accounts: mockAccountsArray,
-    };
+      accounts: mockAccountsArray
+    }
     mockWallet.rpcStubs.snap_manageState
       .withArgs('get')
-      .resolves(mockStateWithAccounts);
+      .resolves(mockStateWithAccounts)
 
-    let accountsClass = new Accounts(
+    const accountsClass = new Accounts(
       mockWallet,
       mockAccountsArray,
       null,
       null,
-      false,
-    );
+      false
+    )
 
-    await accountsClass.doesAccountExist(mockAccountsArray[0].addr);
-    expect(accountsClass.accounts).to.deep.equal(mockAccountsArray);
-  });
+    await accountsClass.doesAccountExist(mockAccountsArray[0].addr)
+    expect(accountsClass.accounts).to.deep.equal(mockAccountsArray)
+  })
 
   it('should accurately check shards to find', async function () {
-    let accountsClass = new Accounts(
+    const accountsClass = new Accounts(
       mockWallet,
       mockAccountsArray,
       mockAccountsArray[0].addr,
       mockAccountsArray[0],
-      true,
-    );
+      true
+    )
 
-    let result = await accountsClass.checkShardsToFind(testShardsToFind);
-    expect(result).to.be.true;
-  });
+    const result = await accountsClass.checkShardsToFind(testShardsToFind)
+    expect(result).to.be.true
+  })
 
   it('should generate an account given a path', async function () {
-    let accountsClass = new Accounts(
+    const accountsClass = new Accounts(
       mockWallet,
       mockAccountsArray,
       mockAccountsArray[0].addr,
       mockAccountsArray[0],
-      false,
-    );
+      false
+    )
 
-    let generatedAccount = await accountsClass.generateAccount(14);
-    expect(generatedAccount).to.have.property('addr');
-    expect(generatedAccount).to.have.property('path');
-  });
+    const generatedAccount = await accountsClass.generateAccount(14)
+    expect(generatedAccount).to.have.property('addr')
+    expect(generatedAccount).to.have.property('path')
+  })
 
   it('should generate a specified number of accounts', async function () {
-    let mockStateWithAccounts = {
+    const mockStateWithAccounts = {
       currentAccountId: mockAccountsArray[0].addr,
-      accounts: mockAccountsArray,
-    };
+      accounts: mockAccountsArray
+    }
 
     mockWallet.rpcStubs.snap_manageState
       .withArgs('get')
-      .resolves(mockStateWithAccounts);
+      .resolves(mockStateWithAccounts)
 
-    let accountsClass = new Accounts(
+    const accountsClass = new Accounts(
       mockWallet,
       mockAccountsArray,
       mockAccountsArray[0].addr,
       mockAccountsArray[0],
-      false,
-    );
-    const mockAccountsArrayLengthBefore = mockAccountsArray.length;
-    let result = await accountsClass.generateNumAccounts(2);
-    expect(result.accounts).to.have.lengthOf(mockAccountsArrayLengthBefore + 2);
-  });
+      false
+    )
+    const mockAccountsArrayLengthBefore = mockAccountsArray.length
+    const result = await accountsClass.generateNumAccounts(2)
+    expect(result.accounts).to.have.lengthOf(mockAccountsArrayLengthBefore + 2)
+  })
 
   it('should generate all accounts', async function () {
-    let mockStateWithAccounts = {
+    const mockStateWithAccounts = {
       currentAccountId: mockAccountsArray[0].addr,
-      accounts: mockAccountsArray,
-    };
+      accounts: mockAccountsArray
+    }
 
     mockWallet.rpcStubs.snap_manageState
       .withArgs('get')
-      .resolves(mockStateWithAccounts);
+      .resolves(mockStateWithAccounts)
 
-    let accountsClass = new Accounts(
+    const accountsClass = new Accounts(
       mockWallet,
       mockAccountsArray,
       mockAccountsArray[0].addr,
       mockAccountsArray[0],
-      false,
-    );
-    let result = await accountsClass.generateAllAccounts();
-    expect(result.accounts).to.have.lengthOf(13);
-  });
+      false
+    )
+    const result = await accountsClass.generateAllAccounts()
+    expect(result.accounts).to.have.lengthOf(13)
+  })
 
   it('should convert a bytearray to a hex string', async function () {
-    let accountsClass = new Accounts(mockWallet, {}, null, null, false);
-    let byteArray = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
-    let hexString = await accountsClass.toHexString(byteArray);
-    expect(hexString).to.equal('0x00010203040506070809');
-  });
-});
+    const accountsClass = new Accounts(mockWallet, {}, null, null, false)
+    const byteArray = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+    const hexString = await accountsClass.toHexString(byteArray)
+    expect(hexString).to.equal('0x00010203040506070809')
+  })
+})
