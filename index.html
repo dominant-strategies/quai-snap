@@ -29,8 +29,9 @@
 
   <button class="connect">Connect</button>
   <button class="getaccounts">GetAccounts</button>
-  <input id="balanceAddress" value="0x...." type="text" />
+  <input id="balanceAddress" placeholder="0x...." type="text" />
   <button class="getBalance">Get Balance</button>
+  <button class="displayBalance">Display Balance</button>
   <input id="accountName" placeholder="Account Name" type="text" />
   <button class="createAccount">Create Account</button>
   <button class="clearAccounts">Clear Accounts</button>
@@ -58,6 +59,7 @@
   const connectButton = document.querySelector('button.connect')
   const sendButton = document.querySelector('button.getaccounts')
   const getBalanceButton = document.querySelector('button.getBalance')
+  const displayBalanceButton = document.querySelector('button.displayBalance')
   const createButton = document.querySelector('button.createAccount')
   const clearButton = document.querySelector('button.clearAccounts')
   const blockHeightButton = document.querySelector('button.blockHeight')
@@ -78,6 +80,7 @@
   connectButton.addEventListener('click', connect)
   sendButton.addEventListener('click', getAccounts)
   getBalanceButton.addEventListener('click', getBalance)
+  displayBalanceButton.addEventListener('click', displayBalance)
   createButton.addEventListener('click', create)
   clearButton.addEventListener('click', clearAccounts)
   blockHeightButton.addEventListener('click', blockHeight)
@@ -208,6 +211,24 @@
 
   // here we call the snap's "hello" method
   async function getBalance() {
+    try {
+      const response = await ethereum.request({
+        method: 'wallet_invokeSnap',
+        params: [snapId, {
+          method: 'getBalance',
+          params: {
+            address: document.querySelector('#balanceAddress').value
+          }
+        }],
+      });
+      alert(response)
+    } catch (err) {
+      console.error(err)
+      alert('Problem happened: ' + err.message || err)
+    }
+  }
+
+  async function displayBalance() {
     try {
       const response = await ethereum.request({
         method: 'wallet_invokeSnap',

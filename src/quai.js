@@ -1,7 +1,6 @@
 const ethers = require('ethers');
-import { QUAI_MAINNET_NETWORK_ID, getShardFromAddress } from './constants';
+import { QUAI_MAINNET_NETWORK_ID, GetShardFromAddress, getChainData } from './constants';
 import { getBIP44AddressKeyDeriver } from '@metamask/key-tree';
-
 import english from './wordlists/english';
 import sha512 from 'js-sha512';
 
@@ -12,10 +11,11 @@ export default class Quai {
     this.baseUrl = 'rpc.quaiscan.io';
     this.baseTestUrl = 'rpc.quaiscan-test.io';
     this.testnet = false;
+    this.devnet = false;
   }
   getChainFromAddr(addr) {
     let chain = 'none';
-    let context = getShardFromAddress(addr);
+    let context = GetShardFromAddress(addr);
     if (context[0] != undefined) {
       chain = context[0].value;
     }
@@ -28,11 +28,17 @@ export default class Quai {
     if (this.testnet) {
       return 'https://' + chain + '.' + this.baseTestUrl;
     }
+    if (this.devnet) {
+      let chainData = getChainData(chain);
+      return 'http://localhost:' + chainData.httpPort;
+    }
     return 'https://' + chain + '.' + this.baseUrl;
   }
+
   getChainUrl(addr) {
-    let url = this.getBaseUrl();
-    let context = getShardFromAddress(addr);
+    let context = GetShardFromAddress(addr);
+    let url = this.getBaseUrl(context.value);
+    console.log(url);
     if (context[0] != undefined) {
       url = context[0].rpc;
     }
@@ -40,6 +46,9 @@ export default class Quai {
   }
   setTestnet(bool) {
     this.testnet = bool;
+  }
+  setDevnet(bool) {
+    this.devnet = bool;
   }
   async getTransactions() {
     let transactions = await fetch(
@@ -89,7 +98,7 @@ export default class Quai {
 
     return await request.json();
   }
-  static validateAddress(address) {}
+  static validateAddress(address) { }
 
   //Mnemonic phrase helper
   async toUint11Array(secretKey) {
@@ -130,7 +139,8 @@ export default class Quai {
     const bip44Code = 994;
     const bip44Node = await this.wallet.request({
       method: `snap_getBip44Entropy`,
-      params: {
+      params:
+      {
         coinType: bip44Code,
       },
     });
@@ -212,6 +222,113 @@ export default class Quai {
     );
     return txn.txID;
   }
+
+  async contractInteract(receiver, amount, limit, price, data, decode, decodetypes) {
+    if (this.account == undefined) {
+      throw new Error('No account selected');
+    }
+    console.log(receiver, amount, limit, price, data, decode, decodetypes);
+    if (decode == undefined)
+      decode = false;
+    console.log('Initiating contract interaction...');
+    let decodedMessage = '';
+    if (decode && (decodetypes != undefined && decodetypes.length > 0 && decodetypes[0] != '')
+      && (data != undefined && data != '' && data != null)) {
+      let abiCoder = new ethers.utils.AbiCoder();
+      decodedMessage = abiCoder.decode(decodetypes, data);
+    }
+    console.log('Decoded message: ', decodedMessage);
+    let body = {
+      jsonrpc: '2.0',
+      method: 'eth_getTransactionCount',
+      params: [this.account.addr, 'latest'],
+      id: 1,
+    };
+    let request = await fetch(this.getChainUrl(this.account.addr), {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
+    });
+
+    let res = await request.json();
+    let nonce = res.result;
+
+    let context = GetShardFromAddress(this.account.addr);
+
+    if (context[0] == undefined) {
+      return 'Invalid Address';
+    }
+
+    let shardChainId = QUAI_MAINNET_NETWORK_ID[context[0].value];
+    if (amount != undefined)
+      amount = BigInt(parseInt(amount));
+    else
+      amount = BigInt(0);
+    //create a payment transaction
+    let rawTx = {
+      to: receiver,
+      gasLimit: limit,
+      gasPrice: price,
+      value: amount,
+      data: data,
+      chainId: shardChainId,
+      nonce: nonce,
+    };
+
+    //user confirmation
+    confirm = await this.sendConfirmation(
+      'Confirm Contract Call',
+      'Interact with ' + receiver + ' ?\n' + "This interaction will send " + amount + "$QUAI",
+      decodedMessage,//Metamask has a limit of 1800 characters
+    );
+    if (!confirm) {
+      return 'user rejected Transaction: error 4001';
+    } else {
+      // With Quai Network, baseUrl and chainId will need to be set
+      // based on the sending address byte prefix.
+      let chainURL = this.getChainUrl(this.account.addr);
+      console.log('Calling ' + chainURL + ' for tx');
+      let web3Provider = new ethers.providers.JsonRpcProvider(chainURL, 'any');
+
+      const bip44Code = 994;
+      const bip44Node = await this.wallet.request({
+        method: `snap_getBip44Entropy`,
+        params:
+        {
+          coinType: bip44Code,
+        },
+      });
+
+      const deriver = await getBIP44AddressKeyDeriver(bip44Node);
+      const privkey = await (await deriver(this.account.path)).privateKeyBuffer;
+
+      const ethWallet = new ethers.Wallet(privkey, web3Provider);
+      let signedTx = await ethWallet.signTransaction(rawTx);
+
+      let body = {
+        jsonrpc: '2.0',
+        method: 'eth_sendRawTransaction',
+        params: [signedTx],
+        id: 1,
+      };
+      let request = await fetch(this.getChainUrl(this.account.addr), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+      });
+
+      let result = await request.json();
+      console.log(result);
+
+      return result;
+    }
+  }
+
+
   async Transfer(receiver, amount, limit, price) {
     console.log('In Transfer');
     console.log(this.account);
@@ -232,7 +349,7 @@ export default class Quai {
     let res = await request.json();
     let nonce = res.result;
 
-    let context = getShardFromAddress(this.account.addr);
+    let context = GetShardFromAddress(this.account.addr);
 
     if (context[0] == undefined) {
       return 'Invalid Address';
@@ -253,7 +370,7 @@ export default class Quai {
     //user confirmation
     confirm = await this.sendConfirmation(
       'confirm Spend',
-      'send' + amount + ' QUAI to ' + receiver + '?',
+      'Send ' + amount + ' $QUAI to ' + receiver + '?',
     );
     if (!confirm) {
       return 'user rejected Transaction: error 4001';
@@ -267,11 +384,10 @@ export default class Quai {
       const bip44Code = 994;
       const bip44Node = await this.wallet.request({
         method: `snap_getBip44Entropy`,
-        params: [
-          {
-            coinType: bip44Code,
-          },
-        ],
+        params:
+        {
+          coinType: bip44Code,
+        },
       });
 
       const deriver = await getBIP44AddressKeyDeriver(bip44Node);
@@ -308,14 +424,7 @@ export default class Quai {
     //user confirmation for data signing
     confirm = await this.sendConfirmation(
       'Sign Data',
-      'Sign "' +
-        data +
-        '" using account address:  ' +
-        this.account.addr +
-        ' (' +
-        this.account.shard +
-        ')' +
-        ' ?',
+      'Sign "' + data + '" using account address:  ' + this.account.addr + " (" + this.account.shard + ")" + ' ?',
     );
 
     if (!confirm) {
@@ -331,9 +440,11 @@ export default class Quai {
       const bip44Code = 994;
       const bip44Node = await this.wallet.request({
         method: `snap_getBip44Entropy`,
-        params: {
+        params:
+        {
           coinType: bip44Code,
         },
+
       });
 
       const deriver = await getBIP44AddressKeyDeriver(bip44Node);
@@ -347,6 +458,8 @@ export default class Quai {
       return signature;
     }
   }
+
+  async signTxns(txns) { }
 
   async sendConfirmation(prompt, description, textAreaContent) {
     const confirm = await this.wallet.request({

@@ -8,6 +8,9 @@ module.exports.onRpcRequest = async ({ origin, request }) => {
   if (request.hasOwnProperty('testnet')) {
     quaiSnap.setTestnet(request.testnet);
   }
+  if (request.hasOwnProperty('devnet')) {
+    quaiSnap.setDevnet(request.devnet);
+  }
 
   console.log(request);
   switch (request.method) {
@@ -22,6 +25,7 @@ module.exports.onRpcRequest = async ({ origin, request }) => {
     case 'getBalance':
       console.log('getBalance');
       console.log(request.params.address);
+      quaiSnap.setDevnet(true);
       return quaiSnap.getBalance(request.params.address);
 
     case 'createAccountByChain':
@@ -43,8 +47,8 @@ module.exports.onRpcRequest = async ({ origin, request }) => {
     case 'displayBalance':
       return await quaiSnap.sendConfirmation(
         'your balance is',
-        request.address,
-        (await quaiSnap.getBalance(request.address)).toString() + ' Quai',
+        request.params.address,
+        (await quaiSnap.getBalance(request.params.address)).toString() + ' Quai',
       );
 
     case 'getAddress':

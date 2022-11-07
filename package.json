@@ -41,7 +41,7 @@
     "@metamask/snaps-cli": "^0.18.0",
     "chai": "^4.3.6",
     "coffeescript": "^2.7.0",
-    "eslint": "^7.30.0",
+    "eslint": "^7.32.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-import": "^2.23.4",
     "eslint-plugin-jest": "^24.4.0",
