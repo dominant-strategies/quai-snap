@@ -5,13 +5,14 @@ module.exports.onRpcRequest = async ({ origin, request }) => {
   const accountLibary = new Accounts(wallet)
   const currentAccount = await accountLibary.getCurrentAccount()
   const quaiSnap = new QuaiSnap(wallet, currentAccount)
-  if (request.params.hasOwnProperty('testnet')) {
-    quaiSnap.setTestnet(request.params.testnet)
+  if (request.hasOwnProperty('params')) {
+    if (request.params.hasOwnProperty('testnet') != undefined) {
+      quaiSnap.setTestnet(request.params.testnet)
+    }
+    if (request.params.hasOwnProperty('devnet') != undefined) {
+      quaiSnap.setDevnet(request.params.devnet);
+    }
   }
-  if (request.params.hasOwnProperty('devnet')) {
-    quaiSnap.setDevnet(request.params.devnet);
-  }
-
   console.log(request)
   switch (request.method) {
     case 'getAccounts':
@@ -56,6 +57,9 @@ module.exports.onRpcRequest = async ({ origin, request }) => {
 
     case 'displayMnemonic':
       return await quaiSnap.displayMnemonic()
+
+    case 'deleteAccount':
+      return await accountLibary.deleteAccount(request.params.address)
 
     case 'sendTransaction':
       return quaiSnap.SendTransaction(

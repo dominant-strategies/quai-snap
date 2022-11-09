@@ -4,7 +4,7 @@ import { getShardFromAddress, shardsToFind } from './constants'
 const ethers = require('ethers')
 
 export default class Accounts {
-  constructor (wallet) {
+  constructor(wallet) {
     this.wallet = wallet
     this.accounts = []
     this.currentAccountId = null
@@ -12,7 +12,7 @@ export default class Accounts {
     this.loaded = false
   }
 
-  async load () {
+  async load() {
     // load acount Data
     const storedAccounts = await this.wallet.request({
       method: 'snap_manageState',
@@ -45,14 +45,15 @@ export default class Accounts {
     }
   }
 
-  async getCurrentAccount () {
+  async getCurrentAccount() {
     if (!this.loaded) {
       await this.load()
     }
+    console.log(this.currentAccount)
     return this.currentAccount
   }
 
-  async setCurrentAccount (addr) {
+  async setCurrentAccount(addr) {
     if (!this.loaded) {
       await this.load()
     }
@@ -72,14 +73,38 @@ export default class Accounts {
     return { error: 'account not found' }
   }
 
-  async getAccounts () {
+  async getAccounts() {
     if (!this.loaded) {
       await this.load()
     }
     return this.accounts
   }
 
-  async clearAccounts () {
+  async deleteAccount(addr) {
+    if (!this.loaded) {
+      await this.load()
+    }
+    for (let i = 0; i < this.accounts.length; i++) {
+      if (this.accounts[i].addr === addr) {
+        this.accounts.splice(i, 1)
+        if (this.currentAccountId === addr) {
+          this.currentAccountId = null
+        }
+        await this.wallet.request({
+          method: 'snap_manageState',
+          params: [
+            'update',
+            { currentAccountId: this.currentAccountId, accounts: this.accounts }
+          ]
+        })
+        return true
+      }
+    }
+    return false
+  }
+
+
+  async clearAccounts() {
     await this.wallet.request({
       method: 'snap_manageState',
       params: ['update', {}]
@@ -91,7 +116,7 @@ export default class Accounts {
   }
 
   // createAccount creates a new account with a given name.
-  async createNewAccount (name) {
+  async createNewAccount(name) {
     if (!this.loaded) {
       await this.load()
     }
@@ -136,7 +161,7 @@ export default class Accounts {
   }
 
   // Checks if the account has already been generated
-  async doesAccountExist (addr) {
+  async doesAccountExist(addr) {
     const allAccounts = await this.getAccounts()
     for (const address of allAccounts) {
       const addrHash = Object.keys(address)[0]
@@ -148,7 +173,7 @@ export default class Accounts {
   }
 
   // Chain is an indexable value into QUAI_CONTEXTS i.e prime, paxos, cyprus-1.
-  async createNewAccountByChain (name, chain) {
+  async createNewAccountByChain(name, chain) {
     if (!this.loaded) {
       await this.load()
     }
@@ -206,7 +231,7 @@ export default class Accounts {
     return { currentAccountId: address, accounts: this.accounts }
   }
 
-  async checkShardsToFind (shardsToFind) {
+  async checkShardsToFind(shardsToFind) {
     for (const [, value] of Object.entries(shardsToFind)) {
       if (value[0] === false) {
         return true
@@ -216,7 +241,7 @@ export default class Accounts {
   }
 
   // Creates all accounts that span the Quai Network shards.
-  async generateAllAccounts () {
+  async generateAllAccounts() {
     let i = 0
     let found = false
     let Account = null
@@ -267,7 +292,7 @@ export default class Accounts {
   }
 
   // Creates accounts for an amount of paths.
-  async generateNumAccounts (amount) {
+  async generateNumAccounts(amount) {
     if (!this.loaded) {
       await this.load()
     }
@@ -311,7 +336,7 @@ export default class Accounts {
   }
 
   // generateAccount creates a new account with a given path.
-  async generateAccount (path) {
+  async generateAccount(path) {
     const bip44Code = 994
     const bip44Node = await this.wallet.request({
       method: 'snap_getBip44Entropy',
@@ -333,7 +358,7 @@ export default class Accounts {
     return Account
   }
 
-  async toHexString (byteArray) {
+  async toHexString(byteArray) {
     let s = '0x'
     byteArray.forEach(function (byte) {
       s += ('0' + (byte & 0xff).toString(16)).slice(-2)
