@@ -111,5 +111,17 @@ describe('Quai.js tests', () => {
     );
   });
 
+  it.skip('should get transactions for current account', async () => {
+    let quai = new Quai(mockWallet, mockAccountsArray[2]);
+    let transactions = await quai.getTransactions();
+  });
+
+  it.skip('gets quai network param data', async () => {
+    let quai = new Quai(mockWallet, mockAccountsArray[2]);
+    let data = await quai.getParams();
+  });
+
+
+  //Need to test transaction, blockheight, contracts
 
 });
