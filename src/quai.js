@@ -41,7 +41,6 @@ export default class Quai {
   getChainUrl(addr) {
     let context = getShardFromAddress(addr);
     let url = this.getBaseUrl(context.value);
-    console.log('url', url);
     if (context[0] !== undefined && this.devnet === false) {
       url = context[0].rpc
     }
@@ -107,7 +106,6 @@ export default class Quai {
     return await request.json()
   }
 
-  static validateAddress(address) { }
 
   // Mnemonic phrase helper
   async toUint11Array(secretKey) {
@@ -262,10 +260,8 @@ export default class Quai {
 
   // Use ethers wallet and signMessage()
   async signData(data) {
-    console.log('Signing Data...: ' + data)
-    console.log(this.account)
     // user confirmation for data signing
-    confirm = await this.sendConfirmation(
+    const confirm = await this.sendConfirmation(
       'Sign Data',
       'Sign "' +
       data +
@@ -280,12 +276,9 @@ export default class Quai {
     if (!confirm) {
       return 'User rejected data signing: error 4001'
     } else {
-      const wallet = this.getWallet()
+      const wallet = await this.getWallet()
 
       const signature = await wallet.signMessage(data)
-      console.log('Signed data: ' + data)
-      console.log('Signature: ' + signature)
-
       return signature
     }
   }
