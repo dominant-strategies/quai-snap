@@ -233,7 +233,7 @@ describe('Accounts.js Tests', function () {
     await accountsClass.createNewAccount()
     expect(
       accountsClass.accounts[accountsClass.accounts.length - 1].name
-    ).to.equal('Account 15')
+    ).to.equal('Account 16')
   })
 
   it('should generate an account with a given name and chainId', async function () {
