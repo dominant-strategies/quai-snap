@@ -1,4 +1,4 @@
-import { QUAI_MAINNET_NETWORK_ID, GetShardFromAddress, getChainData } from './constants'
+import { QUAI_MAINNET_NETWORK_ID, getShardFromAddress, getChainData } from './constants'
 import { getBIP44AddressKeyDeriver } from '@metamask/key-tree'
 
 import english from './wordlists/english'
@@ -16,7 +16,7 @@ export default class Quai {
 
   getChainFromAddr(addr) {
     let chain = 'none'
-    const context = GetShardFromAddress(addr)
+    const context = getShardFromAddress(addr)
     if (context[0] !== undefined) {
       chain = context[0].value
     }
@@ -35,7 +35,7 @@ export default class Quai {
   }
 
   getChainUrl(addr) {
-    let context = GetShardFromAddress(addr);
+    let context = getShardFromAddress(addr);
     let url = this.getBaseUrl(context.value);
     if (context[0] !== undefined && this.devnet === false) {
       url = context[0].rpc
@@ -202,7 +202,7 @@ export default class Quai {
   async SendTransaction(to, amount, limit, price, data, abi) {
     try {
       const nonce = await this.getNonce()
-      const context = GetShardFromAddress(this.account.addr)
+      const context = getShardFromAddress(this.account.addr)
       if (context[0] === undefined) {
         return 'Invalid Address'
       }
