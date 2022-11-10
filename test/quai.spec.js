@@ -45,6 +45,9 @@ describe('Quai.js tests', () => {
       'https://cyprus-1.rpc.quaiscan.io',
     );
     quai.setDevnet(true);
+    expect(quai.getBaseUrl('cyprus-1')).to.equal(
+      'http://localhost:8610',
+    );
   });
 
   it('should get chain url', () => {
@@ -83,11 +86,9 @@ describe('Quai.js tests', () => {
     expect(req).to.equal(true);
   });
 
-  it('should be able to set testnet and devnet', () => {
+  it('should be able to set devnet', () => {
     let quai = new Quai(mockWallet, mockAccountsArray[2]);
-    quai.setTestnet(true);
     quai.setDevnet(true);
-    expect(quai.testnet).to.equal(true);
     expect(quai.devnet).to.equal(true);
   });
 
