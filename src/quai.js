@@ -11,7 +11,6 @@ export default class Quai {
     this.account = account
     this.baseUrl = 'rpc.quaiscan.io'
     this.baseTestUrl = 'rpc.quaiscan-test.io'
-    this.testnet = false
     this.devnet = false
   }
 
@@ -28,9 +27,6 @@ export default class Quai {
     if (chain === undefined) {
       chain = 'prime'
     }
-    if (this.testnet) {
-      return 'https://' + chain + '.' + this.baseTestUrl
-    }
     if (this.devnet) {
       let chainData = getChainData(chain);
       return 'http://localhost:' + chainData.httpPort;
@@ -45,10 +41,6 @@ export default class Quai {
       url = context[0].rpc
     }
     return url
-  }
-
-  setTestnet(bool) {
-    this.testnet = bool
   }
 
   setDevnet(bool) {
