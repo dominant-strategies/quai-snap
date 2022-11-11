@@ -1,5 +1,5 @@
 {
-  "version": "0.1.0-pre.37",
+  "version": "0.1.0-pre.38",
   "description": "QuaiSnap",
   "proposedName": "QuaiSnap",
   "repository": {
@@ -7,7 +7,7 @@
     "url": "https://github.com/spruce-solutions/quai-snap.git"
   },
   "source": {
-    "shasum": "Strh67GLblHGoktTbYWFQOwO0Rbm+Z5qTDuiklL3Mvw=",
+    "shasum": "kNvqRovl0dFBDMc25C8dndG1PHQhWoniCyGaTAQq0I4=",
     "location": {
       "npm": {
         "filePath": "dist/bundle.js",
