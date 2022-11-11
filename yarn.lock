@@ -1348,10 +1348,10 @@
     "@metamask/obs-store" "^7.0.0"
     rlp "^2.2.6"
     uuid "^8.3.2"
-
-"@metamask/auto-changelog@^2.5.0":
-  version "2.5.0"
-  resolved "https://registry.npmjs.org/@metamask/auto-changelog/-/auto-changelog-2.5.0.tgz"
+"@metamask/auto-changelog@^3.0.0":
+  "integrity" "sha512-yr2ZI7t8SZHcZ0lw1pc5d9mKPasyqIqJ+b9Q70Q7YMqDIc+jgy6j5WtLI/BxbnHkxdVHXQq0GMf5+k1aY4F5gg=="
+  "resolved" "https://registry.npmjs.org/@metamask/auto-changelog/-/auto-changelog-3.0.0.tgz"
+  "version" "3.0.0"
   dependencies:
     diff "^5.0.0"
     execa "^5.1.1"
