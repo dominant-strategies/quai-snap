@@ -91,7 +91,15 @@ export const mockAccountsObj = {
     path: 97,
     shard: 'Hydra-3',
     type: 'generated'
-  }
+  },
+  '0x146F08a82299B7958a25a77A5cb6FD2Aec7c355D': {
+    addr: '0x146F08a82299B7958a25a77A5cb6FD2Aec7c355D',
+    name: 'Account 33',
+    path: 33,
+    shard: 'Cyprus-1',
+    type: 'generated',
+    mnemonic: 'make jump junk secret once leisure rather pioneer solar invest mixed nice level false predict horror bleak answer unit half file curious arrow abstract letter'
+  },
 }
 
 export const mockAccountsArray = Object.values(mockAccountsObj)
@@ -116,7 +124,7 @@ export const getBip44EntropyStub = async (...args) => {
   let _a
   if (
     ((_a = args === null || args === void 0 ? void 0 : args[0]) === null ||
-    _a === void 0
+      _a === void 0
       ? void 0
       : _a.coinType) === 994
   ) {
@@ -126,7 +134,7 @@ export const getBip44EntropyStub = async (...args) => {
   }
 }
 
-export async function getAddressKeyDeriver (wallet) {
+export async function getAddressKeyDeriver(wallet) {
   const bip44Code = 994
   const bip44Node = await wallet.request({
     method: 'snap_getBip44Entropy',
