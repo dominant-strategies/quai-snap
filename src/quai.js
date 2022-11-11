@@ -11,7 +11,6 @@ export default class Quai {
     this.account = account
     this.baseUrl = 'rpc.quaiscan.io'
     this.baseTestUrl = 'rpc.quaiscan-test.io'
-    this.testnet = false
     this.devnet = false
   }
 
@@ -28,9 +27,6 @@ export default class Quai {
     if (chain === undefined) {
       chain = 'prime'
     }
-    if (this.testnet) {
-      return 'https://' + chain + '.' + this.baseTestUrl
-    }
     if (this.devnet) {
       let chainData = getChainData(chain);
       return 'http://localhost:' + chainData.httpPort;
@@ -41,15 +37,10 @@ export default class Quai {
   getChainUrl(addr) {
     let context = getShardFromAddress(addr);
     let url = this.getBaseUrl(context.value);
-    console.log('url', url);
     if (context[0] !== undefined && this.devnet === false) {
       url = context[0].rpc
     }
     return url
-  }
-
-  setTestnet(bool) {
-    this.testnet = bool
   }
 
   setDevnet(bool) {
@@ -107,7 +98,6 @@ export default class Quai {
     return await request.json()
   }
 
-  static validateAddress(address) { }
 
   // Mnemonic phrase helper
   async toUint11Array(secretKey) {
@@ -262,10 +252,8 @@ export default class Quai {
 
   // Use ethers wallet and signMessage()
   async signData(data) {
-    console.log('Signing Data...: ' + data)
-    console.log(this.account)
     // user confirmation for data signing
-    confirm = await this.sendConfirmation(
+    const confirm = await this.sendConfirmation(
       'Sign Data',
       'Sign "' +
       data +
@@ -280,12 +268,9 @@ export default class Quai {
     if (!confirm) {
       return 'User rejected data signing: error 4001'
     } else {
-      const wallet = this.getWallet()
+      const wallet = await this.getWallet()
 
       const signature = await wallet.signMessage(data)
-      console.log('Signed data: ' + data)
-      console.log('Signature: ' + signature)
-
       return signature
     }
   }
