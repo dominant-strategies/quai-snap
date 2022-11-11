@@ -41,7 +41,6 @@ export default class Quai {
   getChainUrl(addr) {
     let context = getShardFromAddress(addr);
     let url = this.getBaseUrl(context.value);
-    console.log('url', url);
     if (context[0] !== undefined && this.devnet === false) {
       url = context[0].rpc
     }
@@ -80,13 +79,10 @@ export default class Quai {
       body: JSON.stringify(body)
     })
     const res = await request.json()
-    console.log(res)
     return parseInt(res.result, 16)
   }
 
   async getBlockHeight() {
-    console.log('Attempting to get block height...')
-
     // creates a notifican when the transaction is broadcast
 
     const body = {
@@ -262,8 +258,6 @@ export default class Quai {
 
   // Use ethers wallet and signMessage()
   async signData(data) {
-    console.log('Signing Data...: ' + data)
-    console.log(this.account)
     // user confirmation for data signing
     confirm = await this.sendConfirmation(
       'Sign Data',
@@ -283,8 +277,6 @@ export default class Quai {
       const wallet = this.getWallet()
 
       const signature = await wallet.signMessage(data)
-      console.log('Signed data: ' + data)
-      console.log('Signature: ' + signature)
 
       return signature
     }
@@ -337,8 +329,6 @@ export default class Quai {
       try {
         const iface = new ethers.utils.Interface(abi)
         const decodedData = iface.parseTransaction({ data: data, value: value })
-        console.log('decoded data', decodedData)
-        console.log('receiver', to)
         confirm = await this.sendConfirmation(
           'Confirm Contract Call',
           'Interact with ' + to + ' ?\n' + 'This interaction will ' + decodedData.functionFragment.name + ' with args ' + decodedData.args)
