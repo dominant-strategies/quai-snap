@@ -196,7 +196,7 @@ export const shardsToFind = {
   'hydra-3': [false, 13]
 }
 
-export function GetShardFromAddress(address) {
+export function getShardFromAddress(address) {
   return QUAI_CONTEXTS.filter((obj) => {
     const num = parseInt(Number('0x' + address.substring(2, 4)), 10)
     const start = parseInt(Number('0x' + obj.byte[0]), 10)
