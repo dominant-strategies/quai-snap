@@ -6,9 +6,6 @@ module.exports.onRpcRequest = async ({ origin, request }) => {
   const currentAccount = await accountLibary.getCurrentAccount()
   const quaiSnap = new QuaiSnap(wallet, currentAccount)
   if (request.hasOwnProperty('params')) {
-    if (request.params.hasOwnProperty('testnet') != undefined) {
-      quaiSnap.setTestnet(request.params.testnet)
-    }
     if (request.params.hasOwnProperty('devnet') != undefined) {
       quaiSnap.setDevnet(request.params.devnet);
     }

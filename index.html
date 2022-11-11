@@ -119,14 +119,13 @@
           }]
         })
         total += response.Accounts.length
-        console.log(response)
+
         const response2 = await ethereum.request({
           method: 'wallet_invokeSnap',
           params: [snapId, {
             method: 'getAccounts',
           }]
         })
-        console.log(response2)
         if (response2.length != total) {
           console.log("Test 1 Failed")
           return
@@ -149,7 +148,6 @@
           }
         }]
       })
-      console.log(response)
     } catch (err) {
       console.error(err)
       alert('Problem happened: ' + err.message || err)
@@ -355,8 +353,6 @@
         }]
       })
       alert(response)
-      console.log("transaction returned");
-      console.log(response);
     } catch (err) {
       console.error(err)
       alert('Problem happened: ' + err.message || err)
@@ -365,7 +361,6 @@
 
   async function sign() {
     try {
-      console.log("Signing message:" + document.querySelector('#SignMessage').value);
       const response = await ethereum.request({
         method: 'wallet_invokeSnap',
         params: [snapId, {
@@ -376,8 +371,6 @@
         }]
       })
       alert(response);
-      console.log("Message successfuly signed");
-      console.log(response);
     } catch (err) {
       console.error(err)
       alert('Problem happened: ' + err.message || err)
@@ -387,7 +380,6 @@
   //Getting user transactions
   async function getTransactions() {
     try {
-      console.log("Getting transactions....");
       const response = await ethereum.request({
         method: 'wallet_invokeSnap',
         params: [snapId, {
@@ -395,8 +387,6 @@
         }]
       })
       alert(response);
-      console.log("Got Transactions");
-      console.log(response);
     } catch (err) {
       console.error(err)
       alert('Problem happened: ' + err.message || err)
@@ -413,8 +403,6 @@
         }]
       })
       alert(response);
-      console.log("Got Address");
-      console.log(response);
     } catch (err) {
       console.error(err)
       alert('Problem happened: ' + err.message || err)
@@ -431,8 +419,6 @@
         }]
       })
       alert(response);
-      console.log("Got Mnemonic Phrase");
-      console.log(response);
     } catch (err) {
       console.error(err)
       alert('Problem happened: ' + err.message || err)
@@ -449,8 +435,6 @@
         }]
       })
       alert(response);
-      console.log("Got Account");
-      console.log(response);
     } catch (err) {
       console.error(err)
       alert('Problem happened: ' + err.message || err)
