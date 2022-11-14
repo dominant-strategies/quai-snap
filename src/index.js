@@ -7,13 +7,17 @@ module.exports.onRpcRequest = async ({ origin, request }) => {
   const quaiSnap = new QuaiSnap(wallet, currentAccount)
   if (request.hasOwnProperty('params')) {
     if (request.params.hasOwnProperty('devnet') != undefined) {
-      quaiSnap.setDevnet(request.params.devnet);
+      await quaiSnap.setDevnet(request.params.devnet);
     }
     if (request.params.hasOwnProperty('overrideurl') != undefined) {
-      quaiSnap.setOverrideURL(request.params.overrideurl);
+      await quaiSnap.setOverrideURL(request.params.overrideurl);
+    }
+    if (request.params.hasOwnProperty('testnet') != undefined) {
+      await quaiSnap.setTestnet(request.params.testnet);
+      await accountLibary.setTestnet(request.params.testnet);
     }
   }
-  console.log(request)
+
   switch (request.method) {
     case 'getAccounts':
       return accountLibary.getAccounts()
@@ -24,8 +28,6 @@ module.exports.onRpcRequest = async ({ origin, request }) => {
       return quaiSnap.getTransactions()
 
     case 'getBalance':
-      console.log('getBalance')
-      console.log(request.params.address)
       return quaiSnap.getBalance(request.params.address)
 
     case 'createAccountByChain':
@@ -60,10 +62,10 @@ module.exports.onRpcRequest = async ({ origin, request }) => {
 
     case 'getPrivateKey':
       return await quaiSnap.getPrivateKey()
-  
+
     case 'deleteAccount':
       return await accountLibary.deleteAccount(request.params.address)
-      
+
     case 'sendTransaction':
       return quaiSnap.SendTransaction(
         request.params.to,
@@ -87,13 +89,10 @@ module.exports.onRpcRequest = async ({ origin, request }) => {
       return await accountLibary.generateNumAccounts(request.params.amount)
 
     case 'setCurrentAccount':
-      console.log('Setting Current Account', request.params.address)
       return await accountLibary.setCurrentAccount(request.params.address)
 
     case 'getBlockHeight': {
       const response = await quaiSnap.getBlockHeight()
-      console.log('block height')
-      console.log(response)
       return response.result.number
     }
     case 'signData':

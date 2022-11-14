@@ -161,7 +161,8 @@
         params: [snapId, {
           method: 'createAccountByChain',
           params: {
-            chain: document.getElementById('createByChain').value
+            chain: document.getElementById('createByChain').value,
+            testnet: true
           }
         }]
       })
@@ -178,6 +179,9 @@
         method: 'wallet_invokeSnap',
         params: [snapId, {
           method: 'generateAllAccounts',
+          params: {
+            testnet: true
+          }
         }]
       })
       alert(response)
@@ -222,10 +226,14 @@
       const response = await ethereum.request({
         method: 'wallet_invokeSnap',
         params: [snapId, {
-          method: 'getAccounts'
+          method: 'getAccounts',
+          params: {
+            //devnet: true,
+            //testnet: true
+          }
         }]
       })
-      alert(response)
+      alert(JSON.stringify(response))
     } catch (err) {
       console.error(err)
       alert('Problem happened: ' + err.message || err)
@@ -383,7 +391,10 @@
       const response = await ethereum.request({
         method: 'wallet_invokeSnap',
         params: [snapId, {
-          method: 'getTransactions'
+          method: 'getTransactions',
+          params: {
+            devnet: true,
+          }
         }]
       })
       alert(response);
@@ -415,7 +426,10 @@
       const response = await ethereum.request({
         method: 'wallet_invokeSnap',
         params: [snapId, {
-          method: 'displayMnemonic'
+          method: 'displayMnemonic',
+          params:{
+            testnet: true
+          }
         }]
       })
       alert(response);
@@ -434,7 +448,7 @@
           method: 'getCurrentAccount'
         }]
       })
-      alert(response);
+      alert(JSON.stringify(response));
     } catch (err) {
       console.error(err)
       alert('Problem happened: ' + err.message || err)

@@ -31,11 +31,11 @@ describe('Quai.js tests', () => {
   });
 
   it('should get chain from address', () => {
-    let quai = new Quai(mockWallet, mockAccountsArray[2]);
-    expect(quai.getChainFromAddr(mockAccountsArray[2].addr)).to.equal(
+    let quai = new Quai(mockWallet, mockAccountsArray[1]);
+    expect(quai.getChainFromAddr(mockAccountsArray[1].addr)).to.equal(
       'cyprus-1',
     );
-    expect(quai.getChainFromAddr(mockAccountsArray[0].addr)).to.equal('prime');
+    expect(quai.getChainFromAddr(mockAccountsArray[0].addr)).to.equal('cyprus');
   });
 
   it('should get base url', () => {
@@ -52,11 +52,11 @@ describe('Quai.js tests', () => {
 
   it('should get chain url', () => {
     let quai = new Quai(mockWallet, mockAccountsArray[2]);
-    expect(quai.getChainUrl(mockAccountsArray[2].addr)).to.equal(
+    expect(quai.getChainUrl(mockAccountsArray[1].addr)).to.equal(
       'https://cyprus1.rpc.quaiscan.io/',
     );
     expect(quai.getChainUrl(mockAccountsArray[0].addr)).to.equal(
-      'https://prime.rpc.quaiscan.io/',
+      'https://cyprus.rpc.quaiscan.io/',
     );
   });
 
@@ -98,7 +98,7 @@ describe('Quai.js tests', () => {
     mockWallet.rpcStubs.snap_getBip44Entropy.resolves(bip44Entropy);
     let data = 'test data';
     let signature = await quai.signData(data);
-    expect(signature).to.equal("0xde468b0b6663869192d9d0ef826e61c65509bbb2c6f2bd1c8b3ffae29e8d1286198392470ae7b29ef825839fa55ea0b3cb6220742cbf7ba19abada7f9a0a28871b");
+    expect(signature).to.equal("0x645b6aa060b43f39600dc3f3a42fff811cd84b04662d14317d3fb50d2e5251412d65107bafec002614fa271312782b5a6879c1a03248370f7f5941631df088771c");
     expect(mockWallet.rpcStubs.snap_confirm).to.have.been.calledOnce;
   });
 

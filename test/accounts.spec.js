@@ -359,4 +359,29 @@ describe('Accounts.js Tests', function () {
     const hexString = await accountsClass.toHexString(byteArray)
     expect(hexString).to.equal('0x00010203040506070809')
   })
+
+  it('should delete an account', async function () {
+    const mockStateWithAccounts = {
+      currentAccountId: mockAccountsArray[0].addr,
+      accounts: mockAccountsArray
+    }
+
+    mockWallet.rpcStubs.snap_manageState
+      .withArgs('get')
+      .resolves(mockStateWithAccounts)
+
+    const accountsClass = new Accounts(
+      mockWallet,
+      { ...mockAccountsArray },
+      mockAccountsArray[0].addr,
+      mockAccountsArray[0],
+      false
+    )
+    await accountsClass.load()
+    let length_old = accountsClass.accounts.length
+    const result = await accountsClass.deleteAccount(mockAccountsArray[0].addr)
+    expect(result).to.equal(true)
+    expect(mockWallet.rpcStubs.snap_manageState).to.have.been.calledTwice
+    expect(accountsClass.accounts).to.have.lengthOf(length_old - 1)
+  })
 })

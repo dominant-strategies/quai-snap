@@ -22,6 +22,9 @@
     "snap_getBip44Entropy": [
       {
         "coinType": 994
+      },
+      {
+        "coinType": 1
       }
     ],
     "endowment:network-access": {},
