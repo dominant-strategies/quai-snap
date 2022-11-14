@@ -9,6 +9,9 @@ module.exports.onRpcRequest = async ({ origin, request }) => {
     if (request.params.hasOwnProperty('devnet') != undefined) {
       quaiSnap.setDevnet(request.params.devnet);
     }
+    if (request.params.hasOwnProperty('overrideurl') != undefined) {
+      quaiSnap.setOverrideURL(request.params.overrideurl);
+    }
   }
   console.log(request)
   switch (request.method) {
@@ -55,9 +58,12 @@ module.exports.onRpcRequest = async ({ origin, request }) => {
     case 'displayMnemonic':
       return await quaiSnap.displayMnemonic()
 
+    case 'getPrivateKey':
+      return await quaiSnap.getPrivateKey()
+  
     case 'deleteAccount':
       return await accountLibary.deleteAccount(request.params.address)
-
+      
     case 'sendTransaction':
       return quaiSnap.SendTransaction(
         request.params.to,
