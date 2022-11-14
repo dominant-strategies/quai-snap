@@ -12,6 +12,7 @@ export default class Quai {
     this.baseUrl = 'rpc.quaiscan.io'
     this.baseTestUrl = 'rpc.quaiscan-test.io'
     this.devnet = false
+    this.overrideURL = false
   }
 
   getChainFromAddr(addr) {
@@ -35,6 +36,9 @@ export default class Quai {
   }
 
   getChainUrl(addr) {
+    if(this.overrideURL){
+      return this.overrideURL;
+    }
     let context = getShardFromAddress(addr);
     let url = this.getBaseUrl(context.value);
     if (context[0] !== undefined && this.devnet === false) {
@@ -45,6 +49,10 @@ export default class Quai {
 
   setDevnet(bool) {
     this.devnet = bool;
+  }
+
+  setOverrideURL(url) {
+    this.overrideURL = url;
   }
 
   async getTransactions() {
@@ -136,22 +144,43 @@ export default class Quai {
       'anyone with this mnemonic can spend your funds'
     )
 
-    const bip44Code = 994
-    const bip44Node = await this.wallet.request({
-      method: 'snap_getBip44Entropy',
-      params: {
-        coinType: bip44Code
-      }
-    })
-    const deriver = await getBIP44AddressKeyDeriver(bip44Node)
-    const privkey = await (await deriver(this.account.path)).privateKeyBuffer
-    const mnemonic = await this.secretKeyToMnemonic(privkey)
-
     if (confirm) {
+      const bip44Code = 994
+      const bip44Node = await this.wallet.request({
+        method: 'snap_getBip44Entropy',
+        params: {
+          coinType: bip44Code
+        }
+      })
+      const deriver = await getBIP44AddressKeyDeriver(bip44Node)
+      const privkey = await (await deriver(this.account.path)).privateKeyBuffer
+      const mnemonic = await this.secretKeyToMnemonic(privkey)
+  
       this.sendConfirmation('mnemonic', this.account.addr, mnemonic)
       return true
     } else {
       return false
+    }
+  }
+
+  async getPrivateKey() {
+    const confirm = await this.sendConfirmation(
+      'Confirm action',
+      'Are you sure you want to display your private key?',
+      'anyone with this key can spend your funds.'
+    )
+    if (confirm) {
+      const bip44Code = 994
+      const bip44Node = await this.wallet.request({
+        method: 'snap_getBip44Entropy',
+        params: {
+          coinType: bip44Code
+        }
+      })
+
+      return bip44Node.privateKey
+    } else {
+      return ""
     }
   }
 
