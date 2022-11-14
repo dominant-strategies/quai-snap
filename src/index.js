@@ -55,6 +55,9 @@ module.exports.onRpcRequest = async ({ origin, request }) => {
     case 'displayMnemonic':
       return await quaiSnap.displayMnemonic()
 
+    case 'deleteAccount':
+      return await accountLibary.deleteAccount(request.params.address)
+
     case 'sendTransaction':
       return quaiSnap.SendTransaction(
         request.params.to,

@@ -35,6 +35,8 @@
   <input id="accountName" placeholder="Account Name" type="text" />
   <button class="createAccount">Create Account</button>
   <button class="clearAccounts">Clear Accounts</button>
+  <input id="deleteAccount" placeholder="Account to Delete" type="text" />
+  <button class="deleteAcc">Delete Account</button>
   <button class="blockHeight">Block Height</button>
   <input id="SendTo" value="0xD5813D46F74273048D485944DC7DE12FC1947f12" placeholder="reciver address" />
   <input id="Amount" value="100000" placeholder="amount" type="number" />
@@ -78,6 +80,7 @@
   const setcurrentaccountButton = document.querySelector('button.setCurrentAccount')
   const genAllAccountsButton = document.querySelector('button.genAllAccounts')
   const accountByChainButton = document.querySelector('button.accountByChain')
+  const deleteAccButton = document.querySelector('button.deleteAcc')
   //TESTS
   const test1Button = document.querySelector('button.test1')
 
@@ -101,7 +104,7 @@
   accountByChainButton.addEventListener('click', accountByChain)
   //TESTS
   test1Button.addEventListener('click', test1)
-
+  deleteAccButton.addEventListener('click', deleteAccount)
   //Creates a random 0 - 10 accounts
   async function test1() {
     let total = 0
@@ -116,14 +119,13 @@
           }]
         })
         total += response.Accounts.length
-        console.log(response)
+
         const response2 = await ethereum.request({
           method: 'wallet_invokeSnap',
           params: [snapId, {
             method: 'getAccounts',
           }]
         })
-        console.log(response2)
         if (response2.length != total) {
           console.log("Test 1 Failed")
           return
@@ -135,6 +137,22 @@
     }
   }
 
+  async function deleteAccount() {
+    try {
+      const response = await ethereum.request({
+        method: 'wallet_invokeSnap',
+        params: [snapId, {
+          method: 'deleteAccount',
+          params: {
+            address: document.getElementById('deleteAccount').value
+          }
+        }]
+      })
+    } catch (err) {
+      console.error(err)
+      alert('Problem happened: ' + err.message || err)
+    }
+  }
 
   async function accountByChain() {
     try {
@@ -335,8 +353,6 @@
         }]
       })
       alert(response)
-      console.log("transaction returned");
-      console.log(response);
     } catch (err) {
       console.error(err)
       alert('Problem happened: ' + err.message || err)
@@ -345,7 +361,6 @@
 
   async function sign() {
     try {
-      console.log("Signing message:" + document.querySelector('#SignMessage').value);
       const response = await ethereum.request({
         method: 'wallet_invokeSnap',
         params: [snapId, {
@@ -356,8 +371,6 @@
         }]
       })
       alert(response);
-      console.log("Message successfuly signed");
-      console.log(response);
     } catch (err) {
       console.error(err)
       alert('Problem happened: ' + err.message || err)
@@ -367,7 +380,6 @@
   //Getting user transactions
   async function getTransactions() {
     try {
-      console.log("Getting transactions....");
       const response = await ethereum.request({
         method: 'wallet_invokeSnap',
         params: [snapId, {
@@ -375,8 +387,6 @@
         }]
       })
       alert(response);
-      console.log("Got Transactions");
-      console.log(response);
     } catch (err) {
       console.error(err)
       alert('Problem happened: ' + err.message || err)
@@ -393,8 +403,6 @@
         }]
       })
       alert(response);
-      console.log("Got Address");
-      console.log(response);
     } catch (err) {
       console.error(err)
       alert('Problem happened: ' + err.message || err)
@@ -411,8 +419,6 @@
         }]
       })
       alert(response);
-      console.log("Got Mnemonic Phrase");
-      console.log(response);
     } catch (err) {
       console.error(err)
       alert('Problem happened: ' + err.message || err)
@@ -429,8 +435,6 @@
         }]
       })
       alert(response);
-      console.log("Got Account");
-      console.log(response);
     } catch (err) {
       console.error(err)
       alert('Problem happened: ' + err.message || err)
