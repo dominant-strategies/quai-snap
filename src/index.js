@@ -7,10 +7,14 @@ module.exports.onRpcRequest = async ({ origin, request }) => {
   const quaiSnap = new QuaiSnap(wallet, currentAccount)
   if (request.hasOwnProperty('params')) {
     if (request.params.hasOwnProperty('devnet') != undefined) {
-      quaiSnap.setDevnet(request.params.devnet);
+      await quaiSnap.setDevnet(request.params.devnet);
     }
     if (request.params.hasOwnProperty('overrideurl') != undefined) {
-      quaiSnap.setOverrideURL(request.params.overrideurl);
+      await quaiSnap.setOverrideURL(request.params.overrideurl);
+    }
+    if (request.params.hasOwnProperty('testnet') != undefined) {
+      await quaiSnap.setTestnet(request.params.testnet);
+      await accountLibary.setTestnet(request.params.testnet);
     }
   }
   console.log(request)
@@ -60,10 +64,10 @@ module.exports.onRpcRequest = async ({ origin, request }) => {
 
     case 'getPrivateKey':
       return await quaiSnap.getPrivateKey()
-  
+
     case 'deleteAccount':
       return await accountLibary.deleteAccount(request.params.address)
-      
+
     case 'sendTransaction':
       return quaiSnap.SendTransaction(
         request.params.to,

@@ -10,6 +10,15 @@ export default class Accounts {
     this.currentAccountId = null
     this.currentAccount = null
     this.loaded = false
+    this.bip44Code = 994
+  }
+
+  async setTestnet(bool) {
+    if (bool) {
+      this.bip44Code = 1
+    } else {
+      this.bip44Code = 994
+    }
   }
 
   async load() {
@@ -49,6 +58,7 @@ export default class Accounts {
     if (!this.loaded) {
       await this.load()
     }
+    console.log(this.currentAccount)
     return this.currentAccount
   }
 
@@ -146,7 +156,8 @@ export default class Accounts {
       path,
       name,
       addr: address,
-      shard: readableShard
+      shard: readableShard,
+      chainId: this.bip44Code
     })
 
     await this.wallet.request({
@@ -217,7 +228,8 @@ export default class Accounts {
       path,
       name,
       addr: address,
-      shard: shardName
+      shard: shardName,
+      chainId: this.bip44Code
     })
 
     await this.wallet.request({
@@ -245,6 +257,7 @@ export default class Accounts {
     let found = false
     let Account = null
     let address = null
+    console.log("GENERATING ALL ACCOUNTS", this.bip44Code)
     while (!found && (await this.checkShardsToFind(shardsToFind))) {
       Account = await this.generateAccount(i)
       if (Account.addr !== null) {
@@ -265,7 +278,8 @@ export default class Accounts {
             path: i,
             name: 'Account ' + shardsToFind[shard][1],
             addr: Account.addr,
-            shard: readableShard
+            shard: readableShard,
+            chainId: this.bip44Code
           })
 
           shardsToFind[context[0].value][0] = true
@@ -317,7 +331,8 @@ export default class Accounts {
           path,
           name,
           addr: address,
-          shard: readableShard
+          shard: readableShard,
+          chainId: this.bip44Code
         })
         i++
       }
@@ -336,24 +351,29 @@ export default class Accounts {
 
   // generateAccount creates a new account with a given path.
   async generateAccount(path) {
-    const bip44Code = 994
+    console.log("generating account", this.bip44Code)
     const bip44Node = await this.wallet.request({
       method: 'snap_getBip44Entropy',
       params: {
-        coinType: bip44Code
+        coinType: this.bip44Code
       }
     })
+
+    console.log('bip44Code: ' + this.bip44Code)
 
     // m/purpose'/bip44Code'/accountIndex'/change/addressIndex
     // metamask has supplied us with entropy for "m/purpose'/bip44Code'/"
     // we need to derive the final "accountIndex'/change/addressIndex"
     const deriver = await getBIP44AddressKeyDeriver(bip44Node)
+   // console.log('deriver: ' + deriver)
 
     const Account = {}
     const key = await this.toHexString((await deriver(path)).publicKeyBuffer)
-    Account.addr = ethers.utils.computeAddress(key)
+    //console.log('original key: ' + key);
+    Account.addr = ethers.utils.computeAddress(key);
+    console.log('computed addr: ', ethers.utils.computeAddress(key))
     Account.path = path
-
+    console.log(Account.addr)
     return Account
   }
 
