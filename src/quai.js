@@ -160,13 +160,11 @@ export default class Quai {
 
   async SendTransaction(to, amount, limit, price, data, abi) {
     try {
-      const nonce = await this.getNonce();
-      // console.log('nonce', nonce);
-      // console.log('this.account', this.account);
-      // const context = getShardFromAddress(this.account.addr);
-      // if (context[0] === undefined) {
-      //   return 'Invalid Address';
-      // }
+      const nonce = await this.getNonce()
+      const context = await getShardFromAddress(this.account.addr)
+      if (context[0] === undefined) {
+        return 'Invalid Address'
+      }
 
       // const shardChainId = QUAI_MAINNET_NETWORK_ID[context[0].value];
       amount = BigInt(parseInt(0.0001));
@@ -187,6 +185,7 @@ export default class Quai {
         return 'user rejected Transaction: error 4001';
       } else {
         const wallet = await this.getWallet()
+        console.log("wallet", wallet)
         const signedTx = await wallet.signTransaction(rawTx)
         const body = {
           jsonrpc: '2.0',

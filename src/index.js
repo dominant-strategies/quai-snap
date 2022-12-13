@@ -17,11 +17,6 @@ module.exports.onRpcRequest = async ({ origin, request }) => {
       await accountLibary.setTestnet(request.params.testnet);
     }
   }
-<<<<<<< HEAD
-
-=======
-  console.log(request);
->>>>>>> 1c0f219 (Now using quais)
   switch (request.method) {
     case 'getAccounts':
       return accountLibary.getAccounts();
@@ -32,13 +27,7 @@ module.exports.onRpcRequest = async ({ origin, request }) => {
       return quaiSnap.getTransactions();
 
     case 'getBalance':
-<<<<<<< HEAD
       return quaiSnap.getBalance(request.params.address)
-=======
-      console.log('getBalance');
-      console.log(request.params.address);
-      return quaiSnap.getBalance(request.params.address);
->>>>>>> 1c0f219 (Now using quais)
 
     case 'createAccountByChain':
       return accountLibary.createNewAccountByChain(
