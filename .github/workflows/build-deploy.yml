@@ -43,10 +43,10 @@ jobs:
       run: sudo snap install yq
 
     - name: Update version in package.json
-      run: sudo yq eval -jP -i ".version=\"${{ env.VERSION }}\"" package.json
+      run: yq eval -jP -i ".version=\"${{ env.VERSION }}\"" package.json
 
     - name: Update version in snap.manifest.json
-      run: sudo yq eval -jP -i ".version=\"${{ env.VERSION }}\"" snap.manifest.json
+      run: yq eval -jP -i ".version=\"${{ env.VERSION }}\"" snap.manifest.json
 
     - name: install dependencies
       run: npm i
@@ -68,10 +68,10 @@ jobs:
       run: echo "VERSION=$(echo $VERSION | awk -F. '{print $1"."$2"."$3"."$4+1}')" >> $GITHUB_ENV
 
     - name: Update version in package.json
-      run: sudo yq eval -jP -i ".version=\"${{ env.VERSION }}\"" package.json
+      run: yq eval -jP -i ".version=\"${{ env.VERSION }}\"" package.json
 
     - name: Update version in snap.manifest.json
-      run: sudo yq eval -jP -i ".version=\"${{ env.VERSION }}\"" snap.manifest.json
+      run: yq eval -jP -i ".version=\"${{ env.VERSION }}\"" snap.manifest.json
 
     - uses: stefanzweifel/git-auto-commit-action@v4
       with:
