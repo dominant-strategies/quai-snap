@@ -13,13 +13,13 @@ on:
         required: false
         type: string
         default: ${{ github.ref }}
-      secrets:
-        GH_PAT:
-          description: 'needed for github login'
-          required: true
-        NPM:
-          description: 'needed for npm login'
-          required: true
+    secrets:
+      GH_PAT:
+        description: 'needed for github login'
+        required: true
+      NPM:
+        description: 'needed for npm login'
+        required: true
 jobs:
   build:
     runs-on: ubuntu-latest
