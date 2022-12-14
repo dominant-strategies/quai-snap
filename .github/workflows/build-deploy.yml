@@ -1,14 +1,27 @@
-name: Go
-
+name: Build and Deploy sub-action
 on:
-  pull_request:
-    types: [closed]
-    branches: [ "main" ]
+  workflow_call:
+    inputs:
+    awk:
+      required: true
+      type: string
+    rails:
+      required: false
+      type: string
+      default: echo "continuing."
+    branch:
+      required: false
+      type: string
+      default: ${{ github.ref }}
+    secrets:
+      GH_PAT:
+        description: 'needed for github login'
+        required: true
+      NPM:
+        description: 'needed for npm login'
+        required: true
 jobs:
-
   build:
-    if: github.event.pull_request.merged == true
-
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
@@ -20,8 +33,20 @@ jobs:
         node-version: '16.x'
         registry-url: 'https://registry.npmjs.org'
 
+    - name: get Version
+      run: echo "VERSION=$(sudo yq eval '.version' package.json)" >> $GITHUB_ENV
+
+    - name: Sanity Check Branch
+      run: ${{ inputs.rails }}
+
     - name: Install yq
       run: sudo snap install yq
+
+    - name: Update version in package.json
+      run: sudo yq eval -jP -i ".version=\"${{ env.VERSION }}\"" package.json
+
+    - name: Update version in snap.manifest.json
+      run: sudo yq eval -jP -i ".version=\"${{ env.VERSION }}\"" snap.manifest.json
 
     - name: install dependencies
       run: npm i

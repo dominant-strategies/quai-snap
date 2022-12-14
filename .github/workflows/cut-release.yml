@@ -1,0 +1,70 @@
+name: Cut a new Minor Release Branch
+on: workflow_dispatch
+jobs:
+  cutReleaseCandidate:
+    runs-on: ubuntu-latest
+    outputs:
+      branch: ${{ steps.set-branch.outputs.branch }}
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        ssh-key: ${{ secrets.GH_PAT }}
+
+    - name: get Version
+      run: echo "VERSION=$(sudo yq eval '.version' package.json)" >> $GITHUB_ENV
+
+    - name: Update version environment variable
+      run: echo "VERSION=$(echo $VERSION | sed 's/pre/rc/g' | awk -F. '{print $1"."$2"."$3"."0}')" >> $GITHUB_ENV
+
+    - name: Update version
+      run: sudo yq eval -jP -i ".version=\"${{ env.VERSION }}\"" package.json
+
+    - name: Update version in snap.manifest.json
+      run: sudo yq eval -jP -i ".version=\"${{ env.VERSION }}\"" snap.manifest.json
+
+    - name: Update version environment variable
+      run: echo "VERSION=$(echo $VERSION | sed 's/\.[0-9]*-.*//g')" >> $GITHUB_ENV
+
+    - name: Store version in branch variable
+      id: set-branch
+      run: echo "::set-output name=branch::${{ env.VERSION }}"
+
+    - uses: stefanzweifel/git-auto-commit-action@v4
+      with:
+        commit_message: Release ${{ env.VERSION }}
+        branch: ${{ env.VERSION }}
+        create_branch: true
+
+    - uses: actions/checkout@v3
+      with:
+        ssh-key: ${{ secrets.GH_PAT }}
+
+    - name: get Version
+      run: echo "VERSION=$(sudo yq eval '.version' package.json)" >> $GITHUB_ENV
+
+    - name: Update version environment variable
+      run: echo "VERSION=$(echo $VERSION | sed "s/-.*//g" | awk -F. '{print $1"."$2+1"."0"-pre.0"}')" >> $GITHUB_ENV
+
+    - name: Update version of package.json
+      run: yq eval -jP -i ".version=\"${{ env.VERSION }}\"" package.json
+
+    - name: Sync package-lock.json
+      run: npm i --package-lock-only --ignore-scripts
+
+    - name: Update version in snap.manifest.json
+      run: sudo yq eval -jP -i ".version=\"${{ env.VERSION }}\"" snap.manifest.json
+
+    - uses: stefanzweifel/git-auto-commit-action@v4
+      with:
+        commit_message: Rev'd main to Release ${{ env.VERSION }}
+        branch: main
+  deployReleaseCandidate:
+    uses: ./.github/workflows/build-deploy.yml
+    needs: [cutReleaseCandidate]
+    secrets:
+      NPM: ${{ secrets.NPM }}
+      GH_PAT: ${{ secrets.GH_PAT }}
+    with:
+      awk: sed -e "s/pre/rc/g" | awk -F. '{print $1"."$2"."$3"."$4+1}'
+      branch: ${{ needs.cutReleaseCandidate.outputs.branch }}
+      rails: '[[ "$VERSION" =~ "rc" ]]'

@@ -1,0 +1,14 @@
+name: Build and Deploy to Dev
+on:
+  pull_request:
+    types: [closed]
+    branches: [ "main" ]
+jobs:
+  buildDeployDev:
+    if: github.event.pull_request.merged == true
+    uses: ./.github/workflows/build-deploy.yml
+    secrets:
+      GH_PAT: ${{ secrets.GH_PAT }}
+      NPM: ${{ secrets.NPM }}
+    with:
+      awk: awk -F. '{print $1"."$2"."$3"."$4+1}'
