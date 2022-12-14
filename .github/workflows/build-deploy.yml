@@ -26,8 +26,9 @@ jobs:
     steps:
     - uses: actions/checkout@v3
       with:
-        ref: ${{ github.ref }}
+        ref: ${{ inputs.branch }}
         ssh-key: ${{ secrets.GH_PAT }}
+
     - uses: actions/setup-node@v3
       with:
         node-version: '16.x'
