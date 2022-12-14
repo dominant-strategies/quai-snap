@@ -302,3 +302,4 @@ const response = await ethereum.request({
   ],
 });
 ```
+
