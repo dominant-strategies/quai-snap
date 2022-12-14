@@ -2,24 +2,24 @@ name: Build and Deploy sub-action
 on:
   workflow_call:
     inputs:
-    awk:
-      required: true
-      type: string
-    rails:
-      required: false
-      type: string
-      default: echo "continuing."
-    branch:
-      required: false
-      type: string
-      default: ${{ github.ref }}
-    secrets:
-      GH_PAT:
-        description: 'needed for github login'
+      awk:
         required: true
-      NPM:
-        description: 'needed for npm login'
-        required: true
+        type: string
+      rails:
+        required: false
+        type: string
+        default: echo "continuing."
+      branch:
+        required: false
+        type: string
+        default: ${{ github.ref }}
+      secrets:
+        GH_PAT:
+          description: 'needed for github login'
+          required: true
+        NPM:
+          description: 'needed for npm login'
+          required: true
 jobs:
   build:
     runs-on: ubuntu-latest
