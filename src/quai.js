@@ -150,7 +150,6 @@ export default class Quai {
       'Are you sure you want to display your mnemonic?',
       'anyone with this mnemonic can spend your funds'
     )
-    console.log("MNEMONIC BIP CODE ",this.bip44Code)
     if (confirm) {
       const bip44Node = await this.wallet.request({
         method: 'snap_getBip44Entropy',
@@ -160,7 +159,6 @@ export default class Quai {
       })
       const deriver = await getBIP44AddressKeyDeriver(bip44Node)
       const privkey = await (await deriver(this.account.path)).privateKeyBuffer
-      console.log('PRIVATE KEY',privkey)
       const mnemonic = await this.secretKeyToMnemonic(privkey)
 
       this.sendConfirmation('mnemonic', this.account.addr, mnemonic)
@@ -206,13 +204,10 @@ export default class Quai {
   // Helper for display the mnemonic phrase by transforming a secret key to mnemonic
   async secretKeyToMnemonic(secretKey) {
     secretKey=secretKey.slice(0,32)
-    console.log(secretKey)
     const uint11Array = await this.toUint11Array(secretKey)
-    console.log(uint11Array)
     const words = await this.applyWords(uint11Array)
     const checksumWord = await this.computeChecksum(secretKey)
-    console.log(`${words.join(' ')} ${checksumWord}`)
-    console.log(checksumWord)
+
     return `${words.join(' ')} ${checksumWord}`
   }
 
@@ -266,9 +261,7 @@ export default class Quai {
         return 'user rejected Transaction: error 4001'
       } else {
         const wallet = await this.getWallet()
-        console.log("wallet", wallet)
         const signedTx = await wallet.signTransaction(rawTx)
-        console.log("signedTx", signedTx)
         const body = {
           jsonrpc: '2.0',
           method: 'eth_sendRawTransaction',

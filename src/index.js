@@ -17,7 +17,7 @@ module.exports.onRpcRequest = async ({ origin, request }) => {
       await accountLibary.setTestnet(request.params.testnet);
     }
   }
-  console.log(request)
+
   switch (request.method) {
     case 'getAccounts':
       return accountLibary.getAccounts()
@@ -28,8 +28,6 @@ module.exports.onRpcRequest = async ({ origin, request }) => {
       return quaiSnap.getTransactions()
 
     case 'getBalance':
-      console.log('getBalance')
-      console.log(request.params.address)
       return quaiSnap.getBalance(request.params.address)
 
     case 'createAccountByChain':
@@ -91,13 +89,10 @@ module.exports.onRpcRequest = async ({ origin, request }) => {
       return await accountLibary.generateNumAccounts(request.params.amount)
 
     case 'setCurrentAccount':
-      console.log('Setting Current Account', request.params.address)
       return await accountLibary.setCurrentAccount(request.params.address)
 
     case 'getBlockHeight': {
       const response = await quaiSnap.getBlockHeight()
-      console.log('block height')
-      console.log(response)
       return response.result.number
     }
     case 'signData':
