@@ -31,7 +31,6 @@ describe('Quai.js tests', () => {
   });
 
   it('should get chain from address', () => {
-    console.log(mockAccountsArray)
     let quai = new Quai(mockWallet, mockAccountsArray[1]);
     expect(quai.getChainFromAddr(mockAccountsArray[1].addr)).to.equal(
       'cyprus-1',
