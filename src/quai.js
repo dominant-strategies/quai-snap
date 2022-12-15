@@ -185,7 +185,6 @@ export default class Quai {
         return 'user rejected Transaction: error 4001';
       } else {
         const wallet = await this.getWallet()
-        console.log("wallet", wallet)
         const signedTx = await wallet.signTransaction(rawTx)
         const body = {
           jsonrpc: '2.0',
