@@ -63,6 +63,9 @@ module.exports.onRpcRequest = async ({ origin, request }) => {
     case 'getPrivateKey':
       return await quaiSnap.getPrivateKey()
 
+    case 'getPrivateKeyByAddress':
+      return await accountLibary.getPrivateKeyByAddress(request.params.address)
+
     case 'deleteAccount':
       return await accountLibary.deleteAccount(request.params.address)
 

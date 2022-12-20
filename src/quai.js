@@ -1,8 +1,6 @@
 import { QUAI_MAINNET_NETWORK_ID, getShardFromAddress, getChainData } from './constants'
 import { getBIP44AddressKeyDeriver } from '@metamask/key-tree'
 
-import english from './wordlists/english'
-import sha512 from 'js-sha512'
 const ethers = require('ethers')
 
 export default class Quai {
@@ -114,60 +112,6 @@ export default class Quai {
     return await request.json()
   }
 
-
-  // Mnemonic phrase helper
-  async toUint11Array(buffer8) {
-    const buffer11 = [];
-    let acc = 0;
-    let accBits = 0;
-    function add(octet) {
-        acc |= octet << accBits;
-        accBits += 8;
-        if (accBits >= 11) {
-            buffer11.push(acc & 0x7ff);
-            acc >>= 11;
-            accBits -= 11;
-        }
-    }
-    function flush() {
-        if (accBits) {
-            buffer11.push(acc);
-        }
-    }
-    buffer8.forEach(add);
-    flush();
-    return buffer11;
-}
-
-  // helper for displayMnemonic
-  async applyWords(nums) {
-    return nums.map((n) => english[n])
-  }
-
-  async displayMnemonic() {
-    const confirm = await this.sendConfirmation(
-      'confirm',
-      'Are you sure you want to display your mnemonic?',
-      'anyone with this mnemonic can spend your funds'
-    )
-    if (confirm) {
-      const bip44Node = await this.wallet.request({
-        method: 'snap_getBip44Entropy',
-        params: {
-          coinType: this.bip44Code
-        }
-      })
-      const deriver = await getBIP44AddressKeyDeriver(bip44Node)
-      const privkey = await (await deriver(this.account.path)).privateKeyBuffer
-      const mnemonic = await this.secretKeyToMnemonic(privkey)
-
-      this.sendConfirmation('mnemonic', this.account.addr, mnemonic)
-      return true
-    } else {
-      return false
-    }
-  }
-
   async getPrivateKey() {
     const confirm = await this.sendConfirmation(
       'Confirm action',
@@ -177,42 +121,18 @@ export default class Quai {
     if (confirm) {
       const bip44Node = await this.wallet.request({
         method: 'snap_getBip44Entropy',
-        params: {
+        params:
+        {
           coinType: this.bip44Code
         }
       })
-
-      return bip44Node.privateKey
+  
+      const deriver = await getBIP44AddressKeyDeriver(bip44Node)
+      const privKey = (await deriver(this.account.path)).privateKey
+      return privKey
     } else {
       return ""
     }
-  }
-
-  // Helper for displayMnemonic. Computes the final checksum word
-  async computeChecksum(secretKey) {
-    const hashBuffer = await this.genericHash(secretKey)
-    const uint11Hash = await this.toUint11Array(hashBuffer)
-    const words = await this.applyWords(uint11Hash)
-    return words[0]
-  }
-
-  // Helper for computeCheckSum
-  async genericHash(secretKey) {
-    return sha512.sha512_256.array(secretKey)
-  }
-
-  // Helper for display the mnemonic phrase by transforming a secret key to mnemonic
-  async secretKeyToMnemonic(secretKey) {
-    secretKey=secretKey.slice(0,32)
-    const uint11Array = await this.toUint11Array(secretKey)
-    const words = await this.applyWords(uint11Array)
-    const checksumWord = await this.computeChecksum(secretKey)
-
-    return `${words.join(' ')} ${checksumWord}`
-  }
-
-  getAddress() {
-    return this.account.addr
   }
 
   // Get params needs to be modified to get Quai Network gas data
@@ -237,7 +157,7 @@ export default class Quai {
   async SendTransaction(to, amount, limit, price, data, abi) {
     try {
       const nonce = await this.getNonce()
-      const context = await getShardFromAddress(this.account.addr)
+      const context = getShardFromAddress(this.account.addr)
       if (context[0] === undefined) {
         return 'Invalid Address'
       }
@@ -303,7 +223,6 @@ export default class Quai {
       return 'User rejected data signing: error 4001'
     } else {
       const wallet = await this.getWallet()
-
       const signature = await wallet.signMessage(data)
 
       return signature

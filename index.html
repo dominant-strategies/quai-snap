@@ -47,7 +47,9 @@
   <button class="messageSigner">Sign Message</button>
   <button class="getTransactions">Get Transactions</button>
   <button class="getAddress">Get Address</button>
-  <button class="mnemonic">Mnemonic</button>
+  <button class="privateKey">Get Private Key</button>
+  <input id="privateKeyAddress" placeholder="0x...." type="text" />
+  <button class="getPrivateKeyForAddress">Get Private Key For Address</button>
   <button class="getAccount">Get Current Account</button>
   <input id="setAddress" value="0x....." type="text">
   <button class="setCurrentAccount" value="Cyprus">Set Current Account</button>
@@ -75,7 +77,8 @@
   const messageButton = document.querySelector('button.messageSigner')
   const transactionsButton = document.querySelector('button.getTransactions')
   const addressButton = document.querySelector('button.getAddress')
-  const mnemonicButton = document.querySelector('button.mnemonic')
+  const privKeyButton = document.querySelector('button.privateKey')
+  const privKeyByAddressButton = document.querySelector('button.getPrivateKeyForAddress')
   const getaccountButton = document.querySelector('button.getAccount')
   const setcurrentaccountButton = document.querySelector('button.setCurrentAccount')
   const genAllAccountsButton = document.querySelector('button.genAllAccounts')
@@ -97,7 +100,8 @@
   messageButton.addEventListener('click', sign)
   transactionsButton.addEventListener('click', getTransactions)
   addressButton.addEventListener('click', getAddress)
-  mnemonicButton.addEventListener('click', displayMnemonic)
+  privKeyButton.addEventListener('click', getPrivateKey)
+  privKeyByAddressButton.addEventListener('click', getPrivateKeyByAddress)
   getaccountButton.addEventListener('click', getAccount)
   setcurrentaccountButton.addEventListener('click', setCurrentAccount)
   genAllAccountsButton.addEventListener('click', genAllAccounts)
@@ -228,8 +232,7 @@
         params: [snapId, {
           method: 'getAccounts',
           params: {
-            //devnet: true,
-            //testnet: true
+            testnet: true
           }
         }]
       })
@@ -247,7 +250,7 @@
         params: [snapId, {
           method: 'getBalance',
           params: {
-            devnet: true,
+            testnet: true,
             address: document.querySelector('#balanceAddress').value
           }
         }],
@@ -393,7 +396,7 @@
         params: [snapId, {
           method: 'getTransactions',
           params: {
-            devnet: true,
+            testnet: true
           }
         }]
       })
@@ -420,15 +423,35 @@
     }
   }
 
-  //Display mnemonic phrase
-  async function displayMnemonic() {
+  //Get private key phrase for active account
+  async function getPrivateKey() {
     try {
       const response = await ethereum.request({
         method: 'wallet_invokeSnap',
         params: [snapId, {
-          method: 'displayMnemonic',
+          method: 'getPrivateKey',
           params:{
             testnet: true
+          }
+        }]
+      })
+      alert(response);
+    } catch (err) {
+      console.error(err)
+      alert('Problem happened: ' + err.message || err)
+    }
+  }
+
+  //Get private key phrase for active account
+  async function getPrivateKeyByAddress() {
+    try {
+      const response = await ethereum.request({
+        method: 'wallet_invokeSnap',
+        params: [snapId, {
+          method: 'getPrivateKeyByAddress',
+          params:{
+            testnet: true,
+            address: document.querySelector('#privateKeyAddress').value
           }
         }]
       })
