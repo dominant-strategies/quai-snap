@@ -1,7 +1,11 @@
-import { QUAI_MAINNET_NETWORK_ID, getShardFromAddress, getChainData } from './constants'
-import { getBIP44AddressKeyDeriver } from '@metamask/key-tree'
+import {
+  QUAI_MAINNET_NETWORK_ID,
+  getShardFromAddress,
+  getChainData,
+} from './constants';
+import { getBIP44AddressKeyDeriver } from '@metamask/key-tree';
 
-const ethers = require('ethers')
+const quais = require('quais');
 
 export default class Quai {
   constructor(wallet, account) {
@@ -16,23 +20,23 @@ export default class Quai {
   }
 
   getChainFromAddr(addr) {
-    let chain = 'none'
-    const context = getShardFromAddress(addr)
+    let chain = 'none';
+    const context = getShardFromAddress(addr);
     if (context[0] !== undefined) {
-      chain = context[0].value
+      chain = context[0].value;
     }
-    return chain
+    return chain;
   }
 
   getBaseUrl(chain) {
     if (chain === undefined) {
-      chain = 'prime'
+      chain = 'prime';
     }
     if (this.devnet) {
       let chainData = getChainData(chain);
       return 'http://localhost:' + chainData.httpPort;
     }
-    return 'https://' + chain + '.' + this.baseUrl
+    return 'https://' + chain + '.' + this.baseUrl;
   }
 
   getChainUrl(addr) {
@@ -42,9 +46,9 @@ export default class Quai {
     let context = getShardFromAddress(addr);
     let url = this.getBaseUrl(context.value);
     if (context[0] !== undefined && this.devnet === false) {
-      url = context[0].rpc
+      url = context[0].rpc;
     }
-    return url
+    return url;
   }
 
   setDevnet(bool) {
@@ -66,29 +70,29 @@ export default class Quai {
 
   async getTransactions() {
     const transactions = await fetch(
-      this.getBaseUrl() + '/transactions?address=' + this.account.addr
-    )
-    return await transactions.json()
+      this.getBaseUrl() + '/transactions?address=' + this.account.addr,
+    );
+    return await transactions.json();
   }
 
   // must pass address
   async getBalance(addr) {
     const body = {
       jsonrpc: '2.0',
-      method: 'eth_getBalance',
+      method: 'quai_getBalance',
       params: [addr, 'latest'],
-      id: 1
-    }
+      id: 1,
+    };
 
     const request = await fetch(this.getChainUrl(addr), {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
       },
-      body: JSON.stringify(body)
-    })
-    const res = await request.json()
-    return parseInt(res.result, 16)
+      body: JSON.stringify(body),
+    });
+    const res = await request.json();
+    return parseInt(res.result, 16);
   }
 
   async getBlockHeight() {
@@ -96,28 +100,28 @@ export default class Quai {
 
     const body = {
       jsonrpc: '2.0',
-      method: 'eth_getBlockByNumber',
+      method: 'quai_getBlockByNumber',
       params: ['latest', true],
-      id: 1
-    }
+      id: 1,
+    };
     // this.getChainUrl(this.account.addr)
     const request = await fetch(this.getChainUrl(this.account.addr), {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
       },
-      body: JSON.stringify(body)
-    })
+      body: JSON.stringify(body),
+    });
 
-    return await request.json()
+    return await request.json();
   }
 
   async getPrivateKey() {
     const confirm = await this.sendConfirmation(
       'Confirm action',
       'Are you sure you want to display your private key?',
-      'anyone with this key can spend your funds.'
-    )
+      'anyone with this key can spend your funds.',
+    );
     if (confirm) {
       const bip44Node = await this.wallet.request({
         method: 'snap_getBip44Entropy',
@@ -131,15 +135,15 @@ export default class Quai {
       const privKey = (await deriver(this.account.path)).privateKey
       return privKey
     } else {
-      return ""
+      return '';
     }
   }
 
   // Get params needs to be modified to get Quai Network gas data
   // for when we send transactions.
   async getParams() {
-    const request = await fetch(this.getBaseUrl() + '/suggestedParams')
-    return await request.json()
+    const request = await fetch(this.getBaseUrl() + '/suggestedParams');
+    return await request.json();
   }
 
   async notify(message) {
@@ -148,22 +152,22 @@ export default class Quai {
       params: [
         {
           type: 'native',
-          message: `${message}`
-        }
-      ]
-    })
+          message: `${message}`,
+        },
+      ],
+    });
   }
 
   async SendTransaction(to, amount, limit, price, data, abi) {
     try {
-      const nonce = await this.getNonce()
-      const context = getShardFromAddress(this.account.addr)
+      const nonce = await this.getNonce();
+      const context = getShardFromAddress(this.account.addr);
       if (context[0] === undefined) {
-        return 'Invalid Address'
+        return 'Invalid Address';
       }
 
-      const shardChainId = QUAI_MAINNET_NETWORK_ID[context[0].value]
-      amount = BigInt(parseInt(amount))
+      const shardChainId = QUAI_MAINNET_NETWORK_ID[context[0].value];
+      amount = BigInt(parseInt(amount));
       // create a payment transaction
       const rawTx = {
         to,
@@ -172,89 +176,90 @@ export default class Quai {
         value: amount,
         chainId: shardChainId,
         nonce,
-        data
-      }
+        data,
+      };
 
       let confirm = await this.checkConfirmation(to, amount, data, abi);
 
       if (!confirm) {
-        return 'user rejected Transaction: error 4001'
+        return 'user rejected Transaction: error 4001';
       } else {
         const wallet = await this.getWallet()
         const signedTx = await wallet.signTransaction(rawTx)
         const body = {
           jsonrpc: '2.0',
-          method: 'eth_sendRawTransaction',
+          method: 'quai_sendRawTransaction',
           params: [signedTx],
-          id: 1
-        }
+          id: 1,
+        };
         const request = await fetch(this.getChainUrl(this.account.addr), {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
           },
-          body: JSON.stringify(body)
-        })
+          body: JSON.stringify(body),
+        });
 
-        return await request.json()
+        return await request.json();
       }
     } catch (err) {
-      console.error(`Problem found: ${err}`)
-      throw err
+      console.error(`Problem found: ${err}`);
+      throw err;
     }
   }
 
-  // Use ethers wallet and signMessage()
+  // Use quais wallet and signMessage()
   async signData(data) {
     // user confirmation for data signing
     const confirm = await this.sendConfirmation(
       'Sign Data',
       'Sign "' +
-      data +
-      '" using account address:  ' +
-      this.account.addr +
-      ' (' +
-      this.account.shard +
-      ')' +
-      ' ?'
-    )
+        data +
+        '" using account address:  ' +
+        this.account.addr +
+        ' (' +
+        this.account.shard +
+        ')' +
+        ' ?',
+    );
 
     if (!confirm) {
-      return 'User rejected data signing: error 4001'
+      return 'User rejected data signing: error 4001';
     } else {
       const wallet = await this.getWallet()
       const signature = await wallet.signMessage(data)
 
-      return signature
+      return signature;
     }
   }
 
   async getChainURL() {
-    return this.getChainUrl(this.account.addr)
+    return this.getChainUrl(this.account.addr);
   }
 
   async getNonce() {
     const body = {
       jsonrpc: '2.0',
-      method: 'eth_getTransactionCount',
+      method: 'quai_getTransactionCount',
       params: [this.account.addr, 'latest'],
-      id: 1
-    }
+      id: 1,
+    };
     const request = await fetch(this.getChainUrl(this.account.addr), {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
       },
-      body: JSON.stringify(body)
-    })
+      body: JSON.stringify(body),
+    });
 
-    const res = await request.json()
-    return res.result
+    const res = await request.json();
+    return res.result;
   }
 
   async getWallet() {
-    const chainURL = this.getChainUrl(this.account.addr)
-    const web3Provider = new ethers.providers.JsonRpcProvider(chainURL, 'any')
+    const chainURL = this.getChainUrl(this.account.addr);
+    // const web3Provider = new quais.providers.JsonRpcProvider(chainURL, 'any');
+    const web3Provider = new quais.providers.JsonRpcProvider(chainURL, 'any');
 
     const bip44Node = await this.wallet.request({
       method: 'snap_getBip44Entropy',
@@ -264,35 +269,48 @@ export default class Quai {
       }
     })
 
-    const deriver = await getBIP44AddressKeyDeriver(bip44Node)
-    const privkey = await (await deriver(this.account.path)).privateKeyBuffer
-    return new ethers.Wallet(privkey, web3Provider)
+    const deriver = await getBIP44AddressKeyDeriver(bip44Node);
+    const privkey = await (await deriver(this.account.path)).privateKeyBuffer;
+    return new quais.Wallet(privkey, web3Provider);
   }
 
   async checkConfirmation(to, value, data, abi) {
     let confirm = undefined;
     if (data.length > 0 && abi !== undefined) {
       try {
-        const iface = new ethers.utils.Interface(abi)
-        const decodedData = iface.parseTransaction({ data: data, value: value })
+        const iface = new quais.utils.Interface(abi);
+        const decodedData = iface.parseTransaction({
+          data: data,
+          value: value,
+        });
         confirm = await this.sendConfirmation(
           'Confirm Contract Call',
-          'Interact with ' + to + ' ?\n' + 'This interaction will ' + decodedData.functionFragment.name + ' with args ' + decodedData.args)
+          'Interact with ' +
+            to +
+            ' ?\n' +
+            'This interaction will ' +
+            decodedData.functionFragment.name +
+            ' with args ' +
+            decodedData.args,
+        );
       } catch (err) {
-        console.error(`Problem found: ${err}`)
-        throw err
+        console.error(`Problem found: ${err}`);
+        throw err;
       }
     } else if (data.length > 0) {
       confirm = await this.sendConfirmation(
         'Confirm Contract Call',
-        'Interact with ' + to + ' ?\n' + 'This interaction does provided an ABI to decode payload'
-      )
+        'Interact with ' +
+          to +
+          ' ?\n' +
+          'This interaction does provided an ABI to decode payload',
+      );
     } else {
       // user confirmation
       confirm = await this.sendConfirmation(
         'confirm Spend',
-        'send' + value + ' QUAI to ' + to + '?'
-      )
+        'send' + value + ' QUAI to ' + to + '?',
+      );
     }
     return confirm;
   }
@@ -304,10 +322,10 @@ export default class Quai {
         {
           prompt,
           description,
-          textAreaContent
-        }
-      ]
-    })
-    return confirm
+          textAreaContent,
+        },
+      ],
+    });
+    return confirm;
   }
 }
