@@ -161,21 +161,23 @@ export default class Quai {
   async SendTransaction(to, amount, limit, price, data, abi) {
     try {
       const nonce = await this.getNonce();
-      const context = getShardFromAddress(this.account.addr);
-      if (context[0] === undefined) {
-        return 'Invalid Address';
-      }
+      // console.log('nonce', nonce);
+      // console.log('this.account', this.account);
+      // const context = getShardFromAddress(this.account.addr);
+      // if (context[0] === undefined) {
+      //   return 'Invalid Address';
+      // }
 
-      const shardChainId = QUAI_MAINNET_NETWORK_ID[context[0].value];
-      amount = BigInt(parseInt(amount));
+      // const shardChainId = QUAI_MAINNET_NETWORK_ID[context[0].value];
+      amount = BigInt(parseInt(0.0001));
       // create a payment transaction
       const rawTx = {
-        to,
-        gasLimit: limit,
-        gasPrice: price,
+        to: '0x2805C79f4590C8dbc573C746aF221F18A9e0dCa4',
+        gasLimit: 10000000000,
+        gasPrice: 21000,
         value: amount,
-        chainId: shardChainId,
-        nonce,
+        chainId: 9101,
+        nonce: '12345',
         data,
       };
 

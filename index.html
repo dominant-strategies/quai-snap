@@ -53,6 +53,7 @@
   <button class="getAccount">Get Current Account</button>
   <input id="setAddress" value="0x....." type="text">
   <button class="setCurrentAccount" value="Cyprus">Set Current Account</button>
+  <button class="sendTransaction" value=""> Send Transaction </button>
   <button class="genAllAccounts">Generate All Accounts</button>
   <input id="createByChain" value="cyprus-1" type="'text">
   <button class="accountByChain">Create Account by Chain</button>
@@ -66,7 +67,7 @@
   const snapId = 'local:http://localhost:8083/'//`local:${window.location.href}`;
 
   const connectButton = document.querySelector('button.connect')
-  const sendButton = document.querySelector('button.getaccounts')
+  const getAccountsButton = document.querySelector('button.getaccounts')
   const getBalanceButton = document.querySelector('button.getBalance')
   const displayBalanceButton = document.querySelector('button.displayBalance')
   const createButton = document.querySelector('button.createAccount')
@@ -80,16 +81,17 @@
   const privKeyButton = document.querySelector('button.privateKey')
   const privKeyByAddressButton = document.querySelector('button.getPrivateKeyForAddress')
   const getaccountButton = document.querySelector('button.getAccount')
-  const setcurrentaccountButton = document.querySelector('button.setCurrentAccount')
+  const setCurrentAccountButton = document.querySelector('button.setCurrentAccount')
   const genAllAccountsButton = document.querySelector('button.genAllAccounts')
   const accountByChainButton = document.querySelector('button.accountByChain')
   const deleteAccButton = document.querySelector('button.deleteAcc')
+  const sendButton = document.querySelector('button.sendTransaction')
   //TESTS
   const test1Button = document.querySelector('button.test1')
 
 
   connectButton.addEventListener('click', connect)
-  sendButton.addEventListener('click', getAccounts)
+  getAccountsButton.addEventListener('click', getAccounts)
   getBalanceButton.addEventListener('click', getBalance)
   displayBalanceButton.addEventListener('click', displayBalance)
   createButton.addEventListener('click', create)
@@ -103,9 +105,10 @@
   privKeyButton.addEventListener('click', getPrivateKey)
   privKeyByAddressButton.addEventListener('click', getPrivateKeyByAddress)
   getaccountButton.addEventListener('click', getAccount)
-  setcurrentaccountButton.addEventListener('click', setCurrentAccount)
+  setCurrentAccountButton.addEventListener('click', setCurrentAccount)
   genAllAccountsButton.addEventListener('click', genAllAccounts)
   accountByChainButton.addEventListener('click', accountByChain)
+  sendButton.addEventListener('click', sendTransaction)
   //TESTS
   test1Button.addEventListener('click', test1)
   deleteAccButton.addEventListener('click', deleteAccount)
@@ -472,6 +475,29 @@
         }]
       })
       alert(JSON.stringify(response));
+    } catch (err) {
+      console.error(err)
+      alert('Problem happened: ' + err.message || err)
+    }
+  }
+
+  async function sendTransaction() {
+    try {
+      const response = await ethereum.request({
+        method: 'wallet_invokeSnap',
+        params: [snapId, {
+          method: 'sendTransaction',
+          params: {
+            to: '0x2805C79f4590C8dbc573C746aF221F18A9e0dCa4',
+            amount: 0.0001,
+            limit: 21000,
+            price: 100000000000000,
+            data: null,
+            abi: null,
+          }
+        }]
+      })
+      alert(response);
     } catch (err) {
       console.error(err)
       alert('Problem happened: ' + err.message || err)
