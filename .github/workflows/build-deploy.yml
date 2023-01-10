@@ -1,0 +1,80 @@
+name: Build and Deploy sub-action
+on:
+  workflow_call:
+    inputs:
+      awk:
+        required: true
+        type: string
+      rails:
+        required: false
+        type: string
+        default: echo "continuing."
+      branch:
+        required: false
+        type: string
+        default: ${{ github.ref }}
+    secrets:
+      GH_PAT:
+        description: 'needed for github login'
+        required: true
+      NPM:
+        description: 'needed for npm login'
+        required: true
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        ref: ${{ inputs.branch }}
+        ssh-key: ${{ secrets.GH_PAT }}
+
+    - uses: actions/setup-node@v3
+      with:
+        node-version: '16.x'
+        registry-url: 'https://registry.npmjs.org'
+
+    - name: get Version
+      run: echo "VERSION=$(sudo yq eval '.version' package.json)" >> $GITHUB_ENV
+
+    - name: Sanity Check Branch
+      run: ${{ inputs.rails }}
+
+    - name: Install yq
+      run: sudo snap install yq
+
+    - name: Update version in package.json
+      run: yq eval -jP -i ".version=\"${{ env.VERSION }}\"" package.json
+
+    - name: Update version in snap.manifest.json
+      run: yq eval -jP -i ".version=\"${{ env.VERSION }}\"" snap.manifest.json
+
+    - name: install dependencies
+      run: npm i
+
+    - name: Build
+      run: yarn build
+
+    - uses: JS-DevTools/npm-publish@v1
+      with:
+        token: ${{ secrets.NPM }}
+
+    - name: get Version
+      run: echo "VERSION=$(sudo yq eval '.version' package.json)" >> $GITHUB_ENV
+
+    - name: git tag
+      run: git tag ${{ env.VERSION }} && git push origin tag ${{ env.VERSION }}
+
+    - name: Update version environment variable
+      run: echo "VERSION=$(echo $VERSION | awk -F. '{print $1"."$2"."$3"."$4+1}')" >> $GITHUB_ENV
+
+    - name: Update version in package.json
+      run: yq eval -jP -i ".version=\"${{ env.VERSION }}\"" package.json
+
+    - name: Update version in snap.manifest.json
+      run: yq eval -jP -i ".version=\"${{ env.VERSION }}\"" snap.manifest.json
+
+    - uses: stefanzweifel/git-auto-commit-action@v4
+      with:
+        branch: ${{ inputs.branch }}
+
