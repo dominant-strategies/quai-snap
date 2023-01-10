@@ -22,6 +22,27 @@
     "snap_getBip44Entropy": [
       {
         "coinType": 994
+      },
+      {
+        "coinType": 1
+      }
+    ],
+    "snap_getBip32PublicKey": [
+      {
+        "path": [
+          "m",
+          "44'",
+          "994'"
+        ],
+        "curve": "secp256k1"
+      },
+      {
+        "path": [
+          "m",
+          "44'",
+          "1'"
+        ],
+        "curve": "secp256k1"
       }
     ],
     "endowment:network-access": {},

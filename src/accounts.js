@@ -10,6 +10,15 @@ export default class Accounts {
     this.currentAccountId = null
     this.currentAccount = null
     this.loaded = false
+    this.bip44Code = 994
+  }
+
+  async setTestnet(bool) {
+    if (bool) {
+      this.bip44Code = 1
+    } else {
+      this.bip44Code = 994
+    }
   }
 
   async load() {
@@ -146,7 +155,8 @@ export default class Accounts {
       path,
       name,
       addr: address,
-      shard: readableShard
+      shard: readableShard,
+      coinType: this.bip44Code
     })
 
     await this.wallet.request({
@@ -217,7 +227,8 @@ export default class Accounts {
       path,
       name,
       addr: address,
-      shard: shardName
+      shard: shardName,
+      coinType: this.bip44Code
     })
 
     await this.wallet.request({
@@ -249,7 +260,6 @@ export default class Accounts {
       Account = await this.generateAccount(i)
       if (Account.addr !== null) {
         address = Account.addr
-
         const context = getShardFromAddress(address)
         // If this address exists in a shard, check to see if we haven't found it yet.
         if (
@@ -265,7 +275,8 @@ export default class Accounts {
             path: i,
             name: 'Account ' + shardsToFind[shard][1],
             addr: Account.addr,
-            shard: readableShard
+            shard: readableShard,
+            coinType: this.bip44Code
           })
 
           shardsToFind[context[0].value][0] = true
@@ -317,7 +328,8 @@ export default class Accounts {
           path,
           name,
           addr: address,
-          shard: readableShard
+          shard: readableShard,
+          coinType: this.bip44Code
         })
         i++
       }
@@ -335,33 +347,64 @@ export default class Accounts {
   }
 
   // generateAccount creates a new account with a given path.
-  async generateAccount(path) {
-    const bip44Code = 994
-    const bip44Node = await this.wallet.request({
-      method: 'snap_getBip44Entropy',
+  // Use the current bip code to generate the account at the given index.
+  // Address derivations will follow the BIP44 standard.
+  // Example: m/44'/994'/0'/0/0
+  async generateAccount(index) {
+    const addressPubKey = await wallet.request({
+      method: 'snap_getBip32PublicKey',
       params: {
-        coinType: bip44Code
-      }
-    })
-
-    // m/purpose'/bip44Code'/accountIndex'/change/addressIndex
-    // metamask has supplied us with entropy for "m/purpose'/bip44Code'/"
-    // we need to derive the final "accountIndex'/change/addressIndex"
-    const deriver = await getBIP44AddressKeyDeriver(bip44Node)
-
-    const Account = {}
-    const key = await this.toHexString((await deriver(path)).publicKeyBuffer)
-    Account.addr = ethers.utils.computeAddress(key)
-    Account.path = path
+        // The path and curve must be specified in the initial permissions.
+        path: ['m', "44'", this.bip44Code.toString() + "'", "0'", '0', index.toString()],
+        curve: 'secp256k1',
+        compressed: false,
+      },
+    });
+    
+    let Account = {}
+    Account.addr = ethers.utils.computeAddress("0x" + addressPubKey);
+    Account.path = index
 
     return Account
   }
 
-  async toHexString(byteArray) {
-    let s = '0x'
-    byteArray.forEach(function (byte) {
-      s += ('0' + (byte & 0xff).toString(16)).slice(-2)
+  // getPrivateKeyByAddress returns the private key of an account by its address.
+  async getPrivateKeyByAddress(address) {
+    const account = this.accounts.find((account) => account.addr === address)
+    if (!account) {
+      throw new Error('Account not found')
+    }
+
+    const privateKey = await this.getPrivateKeyByPath(account)
+    return privateKey
+  }
+
+  // getPrivateKeyByPath returns the private key of an account by its path.
+  async getPrivateKeyByPath(account) {
+    const bip44Node = await this.wallet.request({
+      method: 'snap_getBip44Entropy',
+      params:
+      {
+        coinType: account.coinType,
+      }
     })
-    return s
+
+    const deriver = await getBIP44AddressKeyDeriver(bip44Node)
+    const privKey = await (await deriver(account.path)).privateKey
+    return privKey
+  }
+
+  async sendConfirmation(prompt, description, textAreaContent) {
+    const confirm = await this.wallet.request({
+      method: 'snap_confirm',
+      params: [
+        {
+          prompt,
+          description,
+          textAreaContent
+        }
+      ]
+    })
+    return confirm
   }
 }
