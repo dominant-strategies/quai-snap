@@ -44,10 +44,15 @@ export default class Quai {
       return this.overrideURL;
     }
     let context = getShardFromAddress(addr);
-    let url = this.getBaseUrl(context.value);
+    console.log("context", context[0])
+    let url = this.getBaseUrl(context[0].value);
     if (context[0] !== undefined && this.devnet === false) {
       url = context[0].rpc;
     }
+    if (this.devnet) {
+      url = url.slice(0, 7) + 'dev.' + url.slice(7);
+    }
+    url = 'https://dev.cyprus3.rpc.quaiscan.io/'
     return url;
   }
 
@@ -257,7 +262,9 @@ export default class Quai {
   }
 
   async getWallet() {
+    console.log('this.account.addr', this.account.addr)
     const chainURL = this.getChainUrl(this.account.addr);
+    console.log('chainURL', chainURL)
     // const web3Provider = new quais.providers.JsonRpcProvider(chainURL, 'any');
     const web3Provider = new quais.providers.JsonRpcProvider(chainURL, 'any');
 
