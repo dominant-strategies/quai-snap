@@ -1,6 +1,8 @@
+
+
 {
   "name": "@quainetwork/quai-snap",
-  "version": "0.2.0-pre.2",
+  "version": "0.2.0-pre.1",
   "description": "QuaiSnap",
   "repository": {
     "type": "git",

@@ -366,7 +366,7 @@ export default class Accounts {
       },
     });
     let Account = {}
-    Account.addr = ethers.utils.computeAddress(addressPubKey);
+    Account.addr = quais.utils.computeAddress(addressPubKey);
     Account.path = index
 
     return Account;

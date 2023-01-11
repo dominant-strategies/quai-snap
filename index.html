@@ -169,7 +169,6 @@
           method: 'createAccountByChain',
           params: {
             chain: document.getElementById('createByChain').value,
-            testnet: true
           }
         }]
       })
@@ -187,7 +186,6 @@
         params: [snapId, {
           method: 'generateAllAccounts',
           params: {
-            testnet: true
           }
         }]
       })
@@ -488,7 +486,7 @@
         params: [snapId, {
           method: 'sendTransaction',
           params: {
-            to: '0x2805C79f4590C8dbc573C746aF221F18A9e0dCa4',
+            to: '0x146F08a82299B7958a25a77A5cb6FD2Aec7c355D',
             amount: 0.0001,
             limit: 21000,
             price: 100000000000000,

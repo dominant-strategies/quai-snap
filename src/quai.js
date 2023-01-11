@@ -52,7 +52,7 @@ export default class Quai {
     if (this.devnet) {
       url = url.slice(0, 7) + 'dev.' + url.slice(7);
     }
-    url = 'https://dev.cyprus3.rpc.quaiscan.io/'
+    url = 'https://dev.cyprus1.rpc.quaiscan.io/'
     return url;
   }
 
@@ -175,7 +175,7 @@ export default class Quai {
       amount = BigInt(parseInt(0.0001));
       // create a payment transaction
       const rawTx = {
-        to: '0x2805C79f4590C8dbc573C746aF221F18A9e0dCa4',
+        to: '0x146F08a82299B7958a25a77A5cb6FD2Aec7c355D',
         gasLimit: 10000000000,
         gasPrice: 21000,
         value: amount,
@@ -190,7 +190,9 @@ export default class Quai {
         return 'user rejected Transaction: error 4001';
       } else {
         const wallet = await this.getWallet()
+        console.log("wallet", wallet)
         const signedTx = await wallet.signTransaction(rawTx)
+        console.log("signedTx", signedTx)
         const body = {
           jsonrpc: '2.0',
           method: 'quai_sendRawTransaction',
@@ -266,8 +268,8 @@ export default class Quai {
     const chainURL = this.getChainUrl(this.account.addr);
     console.log('chainURL', chainURL)
     // const web3Provider = new quais.providers.JsonRpcProvider(chainURL, 'any');
-    const web3Provider = new quais.providers.JsonRpcProvider(chainURL, 'any');
-
+    const web3Provider = new quais.providers.JsonRpcProvider(chainURL);
+    console.log('web3Provider', web3Provider)
     const bip44Node = await this.wallet.request({
       method: 'snap_getBip44Entropy',
       params:
@@ -275,7 +277,7 @@ export default class Quai {
         coinType: this.bip44Code
       }
     })
-
+    console.log('bip44Node', bip44Node)
     const deriver = await getBIP44AddressKeyDeriver(bip44Node);
     const privkey = await (await deriver(this.account.path)).privateKeyBuffer;
     return new quais.Wallet(privkey, web3Provider);
