@@ -355,14 +355,13 @@ export default class Accounts {
       method: 'snap_getBip32PublicKey',
       params: {
         // The path and curve must be specified in the initial permissions.
-        path: ['m', "44'", this.bip44Code.toString() + "'", "0'", '0', index.toString()],
+        path: ['m', "44'", this.bip44Code.toString() + "'", "0'", "0", index.toString()],
         curve: 'secp256k1',
         compressed: false,
       },
     });
-    
     let Account = {}
-    Account.addr = ethers.utils.computeAddress("0x" + addressPubKey);
+    Account.addr = ethers.utils.computeAddress(addressPubKey);
     Account.path = index
 
     return Account
