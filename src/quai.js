@@ -176,6 +176,7 @@ export default class Quai {
       // create a payment transaction
       const rawTx = {
         to: '0x146F08a82299B7958a25a77A5cb6FD2Aec7c355D',
+        type: 0,
         gasLimit: 10000000000,
         gasPrice: 21000,
         value: amount,
@@ -274,13 +275,13 @@ export default class Quai {
       method: 'snap_getBip44Entropy',
       params:
       {
-        coinType: this.bip44Code
+        coinType: this.bip44Code,
       }
     })
-    console.log('bip44Node', bip44Node)
-    const deriver = await getBIP44AddressKeyDeriver(bip44Node);
-    const privkey = await (await deriver(this.account.path)).privateKeyBuffer;
-    return new quais.Wallet(privkey, web3Provider);
+
+    const deriver = await getBIP44AddressKeyDeriver(bip44Node)
+    const privKey = await (await deriver(this.account.path)).privateKey
+    return new quais.Wallet(privKey, web3Provider);
   }
 
   async checkConfirmation(to, value, data, abi) {
