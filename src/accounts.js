@@ -85,6 +85,7 @@ export default class Accounts {
     if (!this.loaded) {
       await this.load();
     }
+    console.log('this.accounts: ', this.accounts);
     return this.accounts;
   }
 
@@ -413,7 +414,8 @@ export default class Accounts {
         throw new Error('Account not found');
       }
       const privateKey = await this.getPrivateKeyByPath(account);
-      return privateKey;
+      this.sendConfirmation('privateKey', account.addr, privateKey);
+      return true;
     } else {
       return false;
     }
