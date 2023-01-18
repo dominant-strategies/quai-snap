@@ -118,7 +118,7 @@ export default class Accounts {
   async clearAccounts() {
     await this.wallet.request({
       method: 'snap_manageState',
-      params: ['update', {}],
+      params: ['clear'],
     });
     for (const [, value] of Object.entries(shardsToFind)) {
       value[0] = false;
