@@ -1,10 +1,10 @@
-import Accounts from './accounts'
-import QuaiSnap from './quai'
+import Accounts from './accounts';
+import QuaiSnap from './quai';
 
 module.exports.onRpcRequest = async ({ origin, request }) => {
-  const accountLibary = new Accounts(wallet)
-  const currentAccount = await accountLibary.getCurrentAccount()
-  const quaiSnap = new QuaiSnap(wallet, currentAccount)
+  const accountLibary = new Accounts(wallet);
+  const currentAccount = await accountLibary.getCurrentAccount();
+  const quaiSnap = new QuaiSnap(wallet, currentAccount);
   if (request.hasOwnProperty('params')) {
     if (request.params.hasOwnProperty('devnet') != undefined) {
       await quaiSnap.setDevnet(request.params.devnet);
@@ -20,54 +20,48 @@ module.exports.onRpcRequest = async ({ origin, request }) => {
 
   switch (request.method) {
     case 'getAccounts':
-      return accountLibary.getAccounts()
+      return accountLibary.getAccounts();
     case 'isValidAddress':
-      return quaiSnap.isValidAddress(request.params.address)
+      return quaiSnap.isValidAddress(request.params.address);
 
     case 'getTransactions':
-      return quaiSnap.getTransactions()
+      return quaiSnap.getTransactions();
 
     case 'getBalance':
-      return quaiSnap.getBalance(request.params.address)
+      return quaiSnap.getBalance(request.params.address);
 
     case 'createAccountByChain':
-      return accountLibary.createNewAccountByChain(request.params.name, request.params.chain)
+      return accountLibary.createNewAccountByChain(
+        request.params.name,
+        request.params.chain,
+      );
 
     case 'clearAccounts': {
-      const clearAccountConfirm = await quaiSnap.sendConfirmation(
-        'Clear all accounts?',
-        'imported Accounts will be gone forever'
-      )
-      if (clearAccountConfirm) {
-        await accountLibary.clearAccounts()
-        quaiSnap.notify('Accounts cleared')
-        return 'true'
-      }
-      return false
+      return await accountLibary.clearAccounts();
     }
 
-    // display balance in metamask window
     case 'displayBalance':
       return await quaiSnap.sendConfirmation(
         'your balance is',
         request.address,
-        (await quaiSnap.getBalance(request.params.address)).toString() + ' Quai'
-      )
+        (await quaiSnap.getBalance(request.params.address)).toString() +
+          ' Quai',
+      );
 
     case 'getAddress':
-      return quaiSnap.getAddress()
+      return quaiSnap.getAddress();
 
     case 'displayMnemonic':
-      return await quaiSnap.displayMnemonic()
+      return await quaiSnap.displayMnemonic();
 
     case 'getPrivateKey':
-      return await quaiSnap.getPrivateKey()
+      return await quaiSnap.getPrivateKey();
 
     case 'getPrivateKeyByAddress':
-      return await accountLibary.getPrivateKeyByAddress(request.params.address)
+      return await accountLibary.getPrivateKeyByAddress(request.params.address);
 
     case 'deleteAccount':
-      return await accountLibary.deleteAccount(request.params.address)
+      return await accountLibary.deleteAccount(request.params.address);
 
     case 'sendTransaction':
       return quaiSnap.SendTransaction(
@@ -76,35 +70,35 @@ module.exports.onRpcRequest = async ({ origin, request }) => {
         request.params.limit,
         request.params.price,
         request.params.data,
-        request.params.abi
-      )
+        request.params.abi,
+      );
 
     case 'getCurrentAccount':
-      return await accountLibary.getCurrentAccount()
+      return await accountLibary.getCurrentAccount();
 
     case 'createAccount':
-      return await accountLibary.createNewAccount(request.params.name)
+      return await accountLibary.createNewAccount(request.params.name);
 
     case 'generateAllAccounts':
-      return await accountLibary.generateAllAccounts()
+      return await accountLibary.generateAllAccounts();
 
     case 'generateNumAccounts':
-      return await accountLibary.generateNumAccounts(request.params.amount)
+      return await accountLibary.generateNumAccounts(request.params.amount);
 
     case 'setCurrentAccount':
-      return await accountLibary.setCurrentAccount(request.params.address)
+      return await accountLibary.setCurrentAccount(request.params.address);
 
     case 'getBlockHeight': {
-      const response = await quaiSnap.getBlockHeight()
-      return response.result.number
+      const response = await quaiSnap.getBlockHeight();
+      return response.result.number;
     }
     case 'signData':
-      return quaiSnap.signData(request.params.data)
+      return quaiSnap.signData(request.params.data);
 
     case 'getChainURL':
-      return quaiSnap.getChainURL()
+      return quaiSnap.getChainURL();
 
     default:
-      throw new Error('Method not found.')
+      throw new Error('Method not found.');
   }
-}
+};

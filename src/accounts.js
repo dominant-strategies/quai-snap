@@ -116,14 +116,22 @@ export default class Accounts {
   }
 
   async clearAccounts() {
-    await this.wallet.request({
-      method: 'snap_manageState',
-      params: ['clear'],
-    });
-    for (const [, value] of Object.entries(shardsToFind)) {
-      value[0] = false;
+    const confirm = await this.sendConfirmation(
+      'DELETE ALL ACCOUNTS',
+      'Are you sure you want to delete all accounts?',
+      'After deleting accounts, your accounts and funds cannot be recovered.',
+    );
+    if (confirm) {
+      await this.wallet.request({
+        method: 'snap_manageState',
+        params: ['clear'],
+      });
+      for (const [, value] of Object.entries(shardsToFind)) {
+        value[0] = false;
+      }
+      return true;
     }
-    return true;
+    return false;
   }
 
   // createAccount creates a new account with a given name.
