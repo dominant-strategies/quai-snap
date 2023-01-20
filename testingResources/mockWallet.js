@@ -7,7 +7,8 @@ export default class MockWallet {
     snap_confirm: sinon.stub(),
     snap_getBip44Entropy: sinon.stub(),
     snap_manageState: sinon.stub(),
-    web3_clientVersion: sinon.stub()
+    web3_clientVersion: sinon.stub(),
+    snap_getBip32PublicKey: sinon.stub(),
   }
 
   request (args) {

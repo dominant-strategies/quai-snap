@@ -52,7 +52,6 @@ export default class Quai {
     if (this.devnet) {
       url = url.slice(0, 7) + 'dev.' + url.slice(7);
     }
-    url = 'https://dev.cyprus1.rpc.quaiscan.io/'
     return url;
   }
 

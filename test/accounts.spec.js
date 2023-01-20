@@ -5,6 +5,7 @@ import MockWallet from '../testingResources/mockWallet'
 import {
   mockAccountsArray,
   getBip44EntropyStub,
+  getBip32PublicKeyStub,
   testShardsToFind
 } from '../testingResources/testConstantsAndHelpers'
 import Accounts from '../src/accounts'
@@ -17,8 +18,8 @@ describe('Accounts.js Tests', function () {
 
   beforeEach(async function () {
     mockWallet.rpcStubs.snap_getBip44Entropy.callsFake(getBip44EntropyStub)
+    mockWallet.rpcStubs.snap_getBip32PublicKey.callsFake(getBip32PublicKeyStub)
   })
-
   afterEach(function () {
     mockWallet.reset()
     sandbox.restore()
@@ -198,16 +199,23 @@ describe('Accounts.js Tests', function () {
     mockWallet.rpcStubs.snap_manageState
       .withArgs('get')
       .resolves(mockStateWithAccounts)
+    mockWallet.rpcStubs.snap_manageState
+      .withArgs('update', { accounts: [] })
+      .resolves({})
 
-    const accountsClass = new Accounts(
-      mockWallet,
-      mockAccountsArray,
-      mockAccountsArray[0].addr,
-      mockAccountsArray[0],
-      false
-    )
+    const accountsClass = new Accounts(mockWallet)
+    accountsClass.wallet = mockWallet
+    accountsClass.accounts = mockAccountsArray
+    accountsClass.currentAccountId = mockAccountsArray[0].addr
+    accountsClass.currentAccount = mockAccountsArray[0]
 
-    await accountsClass.createNewAccount('Test Account')
+
+    mockWallet.rpcStubs.snap_getBip32PublicKey
+    //console.log(accountsClass.accounts)
+    const result = await accountsClass.createNewAccount('Test Account')
+    console.log('HERE5')
+    console.log('result',result)
+    //console.log(accountsClass.accounts)
     expect(
       accountsClass.accounts[accountsClass.accounts.length - 1].name
     ).to.equal('Test Account')

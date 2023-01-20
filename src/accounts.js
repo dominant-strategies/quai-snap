@@ -161,7 +161,6 @@ export default class Accounts {
       shard: readableShard,
       coinType: this.bip44Code
     })
-
     await this.wallet.request({
       method: 'snap_manageState',
       params: [
@@ -365,6 +364,7 @@ export default class Accounts {
         compressed: false,
       },
     });
+    console.log('2createNewAccount');
     let Account = {}
     Account.addr = quais.utils.computeAddress(addressPubKey);
     Account.path = index

@@ -134,6 +134,9 @@ export const getBip44EntropyStub = async (...args) => {
   }
 }
 
+export const getBip32PublicKeyStub = async (...args) => {
+}
+
 export async function getAddressKeyDeriver(wallet) {
   const bip44Code = 994
   const bip44Node = await wallet.request({
