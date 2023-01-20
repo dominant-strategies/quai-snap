@@ -168,13 +168,13 @@ export default class Quai {
       }
 
       // const shardChainId = QUAI_MAINNET_NETWORK_ID[context[0].value];
-      amount = BigInt(parseInt(0.0001));
+      amount = BigInt(parseInt(1));
       // create a payment transaction
       const rawTx = {
         to: '0x7A7a0F3F009fD1e8DAdD4CdeC6d8A6eeD7eA96c5',
         type: 0,
-        gasLimit: 10000000000,
-        gasPrice: 21000,
+        gasLimit: 21000,
+        gasPrice: 1,
         value: amount,
         chainId: 9101,
         nonce: '12345',
