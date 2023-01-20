@@ -83,6 +83,7 @@ module.exports.onRpcRequest = async ({ origin, request }) => {
       );
 
     case 'getCurrentAccount':
+      console.log('Current Account: ', await accountLibary.getCurrentAccount())
       return await accountLibary.getCurrentAccount();
 
     case 'createAccount':

@@ -32,7 +32,7 @@ export default class Quai {
     if (chain === undefined) {
       chain = 'prime';
     }
-    if (this.devnet) {
+    if (this.testnet) {
       let chainData = getChainData(chain);
       return 'http://localhost:' + chainData.httpPort;
     }
@@ -168,12 +168,12 @@ export default class Quai {
       if (context[0] === undefined) {
         return 'Invalid Address'
       }
-
+      
       // const shardChainId = QUAI_MAINNET_NETWORK_ID[context[0].value];
       amount = BigInt(parseInt(0.0001));
       // create a payment transaction
       const rawTx = {
-        to: '0x146F08a82299B7958a25a77A5cb6FD2Aec7c355D',
+        to: '0x7A7a0F3F009fD1e8DAdD4CdeC6d8A6eeD7eA96c5',
         type: 0,
         gasLimit: 10000000000,
         gasPrice: 21000,

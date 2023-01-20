@@ -40,7 +40,7 @@ export const QUAI_CONTEXTS = [
     httpPort: 8546,
     rpc: 'https://prime.rpc.quaiscan.io/',
     provider: 'ws://45.76.19.78:8547',
-    blockExplorerUrl: 'https://quaiscan.io'
+    blockExplorerUrl: 'https://prime.quaiscan.io'
   },
   {
     name: 'Cyprus',
@@ -50,7 +50,7 @@ export const QUAI_CONTEXTS = [
     httpPort: 8578,
     rpc: 'https://cyprus.rpc.quaiscan.io/',
     provider: 'ws://45.76.19.78:8579',
-    blockExplorerUrl: 'https://quaiscan.io'
+    blockExplorerUrl: 'https://cyprus.quaiscan.io'
   },
   {
     name: 'Cyprus One',
@@ -60,7 +60,7 @@ export const QUAI_CONTEXTS = [
     httpPort: 8610,
     rpc: 'https://cyprus1.rpc.quaiscan.io/',
     provider: 'ws://45.76.19.78:8611',
-    blockExplorerUrl: 'https://quaiscan.io'
+    blockExplorerUrl: 'https://cyprus1.quaiscan.io'
   },
   {
     name: 'Cyprus Two',
@@ -70,7 +70,7 @@ export const QUAI_CONTEXTS = [
     httpPort: 8542,
     rpc: 'https://cyprus2.rpc.quaiscan.io/',
     provider: 'ws://45.76.19.78:8543',
-    blockExplorerUrl: 'https://quaiscan.io'
+    blockExplorerUrl: 'https://cyprus2.quaiscan.io'
   },
   {
     name: 'Cyprus Three',
@@ -80,7 +80,7 @@ export const QUAI_CONTEXTS = [
     httpPort: 8674,
     rpc: 'https://cyprus3.rpc.quaiscan.io/',
     provider: 'ws://45.76.19.78:8675',
-    blockExplorerUrl: 'https://quaiscan.io'
+    blockExplorerUrl: 'https://cyprus3.quaiscan.io'
   },
   {
     name: 'Paxos',
@@ -90,7 +90,7 @@ export const QUAI_CONTEXTS = [
     httpPort: 8580,
     rpc: 'https://paxos.rpc.quaiscan.io/',
     provider: 'ws://45.76.19.78:8581',
-    blockExplorerUrl: 'https://quaiscan.io'
+    blockExplorerUrl: 'https://paxos.quaiscan.io'
   },
   {
     name: 'Paxos One',
@@ -100,7 +100,7 @@ export const QUAI_CONTEXTS = [
     httpPort: 8512,
     rpc: 'https://paxos1.rpc.quaiscan.io/',
     provider: 'ws://45.76.19.78:8513',
-    blockExplorerUrl: 'https://quaiscan.io'
+    blockExplorerUrl: 'https://paxos1.quaiscan.io'
   },
   {
     name: 'Paxos Two',
@@ -110,7 +110,7 @@ export const QUAI_CONTEXTS = [
     httpPort: 8544,
     rpc: 'https://paxos2.rpc.quaiscan.io/',
     provider: 'ws://45.76.19.78:8645',
-    blockExplorerUrl: 'https://quaiscan.io'
+    blockExplorerUrl: 'https://paxos2.quaiscan.io'
   },
   {
     name: 'Paxos Three',
@@ -120,7 +120,7 @@ export const QUAI_CONTEXTS = [
     httpPort: 8576,
     rpc: 'https://paxos3.rpc.quaiscan.io/',
     provider: 'ws://45.76.19.78:8577',
-    blockExplorerUrl: 'https://quaiscan.io'
+    blockExplorerUrl: 'https://paxos3.quaiscan.io'
   },
   {
     name: 'Hydra',
@@ -130,7 +130,7 @@ export const QUAI_CONTEXTS = [
     httpPort: 8582,
     rpc: 'https://hydra.rpc.quaiscan.io/',
     provider: 'ws://45.76.19.78:8583',
-    blockExplorerUrl: 'https://quaiscan.io'
+    blockExplorerUrl: 'https://hydra.quaiscan.io'
   },
   {
     name: 'Hydra One',
@@ -140,7 +140,7 @@ export const QUAI_CONTEXTS = [
     httpPort: 8614,
     rpc: 'https://hydra1.rpc.quaiscan.io/',
     provider: 'ws://45.76.19.78:8615',
-    blockExplorerUrl: 'https://quaiscan.io'
+    blockExplorerUrl: 'https://hydra1.quaiscan.io'
   },
   {
     name: 'Hydra Two',
@@ -150,7 +150,7 @@ export const QUAI_CONTEXTS = [
     httpPort: 8646,
     rpc: 'https://hydra2.rpc.quaiscan.io/',
     provider: 'ws://45.76.19.78:8647',
-    blockExplorerUrl: 'https://quaiscan.io'
+    blockExplorerUrl: 'https://hydra2.quaiscan.io'
   },
   {
     name: 'Hydra Three',
@@ -160,7 +160,7 @@ export const QUAI_CONTEXTS = [
     httpPort: 8678,
     rpc: 'https://hydra3.rpc.quaiscan.io/',
     provider: 'ws://45.76.19.78:8679',
-    blockExplorerUrl: 'https://quaiscan.io'
+    blockExplorerUrl: 'https://hydra3.quaiscan.io'
   }
 ]
 
@@ -181,10 +181,10 @@ export const QUAI_OPTIONS = [
 ]
 
 export const shardsToFind = {
-  prime: [false, 1],
-  cyprus: [false, 2],
-  paxos: [false, 3],
-  hydra: [false, 4],
+  'prime': [false, 1],
+  'cyprus': [false, 2],
+  'paxos': [false, 3],
+  'hydra': [false, 4],
   'cyprus-1': [false, 5],
   'cyprus-2': [false, 6],
   'cyprus-3': [false, 7],
