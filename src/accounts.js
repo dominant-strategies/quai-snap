@@ -85,7 +85,6 @@ export default class Accounts {
     if (!this.loaded) {
       await this.load();
     }
-    console.log(JSON.stringify(this.accounts));
     return this.accounts;
   }
 
