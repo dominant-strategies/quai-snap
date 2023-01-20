@@ -44,13 +44,11 @@ export default class Quai {
       return this.overrideURL;
     }
     let context = getShardFromAddress(addr);
-    let url = this.getBaseUrl(context[0].value);
-    if (context[0] !== undefined && this.devnet === false) {
-      url = context[0].rpc;
-    }
+    let url = context[0].rpc;
     if (this.devnet) {
-      url = url.slice(0, 7) + 'dev.' + url.slice(7);
+      url = url.slice(0, 8) + 'dev.' + url.slice(8);
     }
+    console.log('url', url)
     return url;
   }
 
@@ -168,7 +166,7 @@ export default class Quai {
       if (context[0] === undefined) {
         return 'Invalid Address'
       }
-      
+
       // const shardChainId = QUAI_MAINNET_NETWORK_ID[context[0].value];
       amount = BigInt(parseInt(0.0001));
       // create a payment transaction
@@ -196,6 +194,7 @@ export default class Quai {
           params: [signedTx],
           id: 1,
         };
+        console.log('Body',body)
         const request = await fetch(this.getChainUrl(this.account.addr), {
           method: 'POST',
           headers: {
@@ -203,7 +202,7 @@ export default class Quai {
           },
           body: JSON.stringify(body),
         });
-
+        console.log('Request',request)
         return await request.json();
       }
     } catch (err) {
