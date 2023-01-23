@@ -134,7 +134,27 @@ export const getBip44EntropyStub = async (...args) => {
   }
 }
 
+export const bip32PublicKey = {
+  bip32PublicKey: '0x04445de10915886f4a6508649faac032299393aa6c190ee07d3a2fbc49106fabe3daedada90be594f1ae2dec0474a842c83638a0b95be89b5e756796a68bbfa9a1',
+  addr: "0x146F08a82299B7958a25a77A5cb6FD2Aec7c355D",
+  coin_type: 994,
+  path: "m / 44' / 994' / 0' / 0 / 33",
+}
+
 export const getBip32PublicKeyStub = async (...args) => {
+  console.log('STUBBING BIP32')
+  let _a
+  if (
+    ((_a = args === null || args === void 0 ? void 0 : args[0]) === null ||
+      _a === void 0
+      ? void 0
+      : _a.coinType) === 994
+  ) {
+    console.log('getBip32PublicKeyStub called with args', args)
+    return bip32PublicKey
+  } else {
+    return null
+  }
 }
 
 export async function getAddressKeyDeriver(wallet) {

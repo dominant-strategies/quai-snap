@@ -12,6 +12,7 @@ export default class MockWallet {
   }
 
   request (args) {
+    console.log('MOCK WALLET REQUEST', args)
     let _a
     const method = args.method
     const params = args.params
@@ -22,6 +23,7 @@ export default class MockWallet {
         return this.rpcStubs[method](params)
       }
     }
+    console.log('MOCK WALLET REQUEST FALLING BACK TO STUB', args)
     return this.requestStub(args)
   }
 

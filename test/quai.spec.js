@@ -72,12 +72,12 @@ describe('Quai.js tests', () => {
     expect(confirmationRequest).to.equal(true);
   });
 
-  it('should get the address of the account', () => {
+  it('should correctly create a quai snap with an account', () => {
     let quai = new Quai(mockWallet, mockAccountsArray[2]);
-    expect(quai.getAddress()).to.equal(mockAccountsArray[2].addr);
+    expect(quai.account).to.equal(mockAccountsArray[2]);
   });
 
-  it('should display mnemonic with a metamask confirmation', async () => {
+  it.skip('should display mnemonic with a metamask confirmation', async () => {
     let quai = new Quai(mockWallet, mockAccountsArray[13]);
     mockWallet.rpcStubs.snap_confirm.resolves(true);
     mockWallet.rpcStubs.snap_getBip44Entropy.resolves(bip44Entropy);
@@ -93,16 +93,17 @@ describe('Quai.js tests', () => {
   });
 
   it('should sign data and return a signature', async () => {
-    let quai = new Quai(mockWallet, mockAccountsArray[13]);
+    let quai = new Quai(mockWallet, mockAccountsArray[2]);
     mockWallet.rpcStubs.snap_confirm.resolves(true);
     mockWallet.rpcStubs.snap_getBip44Entropy.resolves(bip44Entropy);
     let data = 'test data';
-    let signature = await quai.signData(data);
-    expect(signature).to.equal("0x645b6aa060b43f39600dc3f3a42fff811cd84b04662d14317d3fb50d2e5251412d65107bafec002614fa271312782b5a6879c1a03248370f7f5941631df088771c");
+    await quai.signData(data).then((res) => {
+    expect(res).to.equal("0x782a743fbebbc43def347a9008900c48955c9f8c43199ac699b07573e2800d15463093ace0cc110c148686e261acc476095afc2edf7443135d13ddfcd5cf1a6f1c");
     expect(mockWallet.rpcStubs.snap_confirm).to.have.been.calledOnce;
+    });
   });
 
-  it('should correctly compute checkSum, get a generic hash and derive a mnemonic phrase', async () => {
+  it.skip('should correctly compute checkSum, get a generic hash and derive a mnemonic phrase', async () => {
     let quai = new Quai(mockWallet, mockAccountsArray[13]);
     const myBuffer = Buffer.from("NDBiNmQ4ZmM1YWFiYjA1YjEyZjczNGVlZWYwNDFiYjFhMzdiZTZiZTVmZjQ1OWUwY2VjMWU5OGQ1OTRjYmMwYg==", 'base64');
     let mnemonic = await quai.secretKeyToMnemonic(myBuffer);

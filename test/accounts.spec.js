@@ -17,7 +17,6 @@ describe('Accounts.js Tests', function () {
   const mockWallet = new MockWallet()
 
   beforeEach(async function () {
-    mockWallet.rpcStubs.snap_getBip44Entropy.callsFake(getBip44EntropyStub)
     mockWallet.rpcStubs.snap_getBip32PublicKey.callsFake(getBip32PublicKeyStub)
   })
   afterEach(function () {
@@ -209,9 +208,7 @@ describe('Accounts.js Tests', function () {
     accountsClass.currentAccountId = mockAccountsArray[0].addr
     accountsClass.currentAccount = mockAccountsArray[0]
 
-
-    mockWallet.rpcStubs.snap_getBip32PublicKey
-    //console.log(accountsClass.accounts)
+    mockWallet.rpcStubs.snap_getBip32PublicKey.callsFake(getBip32PublicKeyStub)
     const result = await accountsClass.createNewAccount('Test Account')
     console.log('HERE5')
     console.log('result',result)

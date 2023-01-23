@@ -58,6 +58,7 @@ export default class Accounts {
     if (!this.loaded) {
       await this.load();
     }
+    console.log(JSON.stringify(this.currentAccount));
     return this.currentAccount;
   }
 
@@ -355,6 +356,7 @@ export default class Accounts {
   // Address derivations will follow the BIP44 standard.
   // Example: m/44'/994'/0'/0/0
   async generateAccount(index) {
+    console.log('Generating account ');
     const addressPubKey = await wallet.request({
       method: 'snap_getBip32PublicKey',
       params: {
@@ -364,7 +366,7 @@ export default class Accounts {
         compressed: false,
       },
     });
-    console.log('2createNewAccount');
+    console.log('BIP32PUBLICKEY: ', addressPubKey);
     let Account = {}
     Account.addr = quais.utils.computeAddress(addressPubKey);
     Account.path = index
