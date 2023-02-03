@@ -36,6 +36,7 @@ module.exports.onRpcRequest = async ({ origin, request }) => {
       );
 
     case 'clearAccounts': {
+<<<<<<< HEAD
       const clearAccountConfirm = await quaiSnap.sendConfirmation(
         'Clear all accounts?',
         'imported Accounts will be gone forever',
@@ -46,9 +47,11 @@ module.exports.onRpcRequest = async ({ origin, request }) => {
         return 'true';
       }
       return false;
+=======
+      return await accountLibary.clearAccounts();
+>>>>>>> main
     }
 
-    // display balance in metamask window
     case 'displayBalance':
       return await quaiSnap.sendConfirmation(
         'your balance is',

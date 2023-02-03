@@ -1,23 +1,27 @@
 import { getBIP44AddressKeyDeriver } from '@metamask/key-tree';
 
 import { getShardFromAddress, shardsToFind } from './constants';
+<<<<<<< HEAD
 const quais = require('quais');
+=======
+const ethers = require('ethers');
+>>>>>>> main
 
 export default class Accounts {
   constructor(wallet) {
-    this.wallet = wallet
-    this.accounts = []
-    this.currentAccountId = null
-    this.currentAccount = null
-    this.loaded = false
-    this.bip44Code = 994
+    this.wallet = wallet;
+    this.accounts = [];
+    this.currentAccountId = null;
+    this.currentAccount = null;
+    this.loaded = false;
+    this.bip44Code = 994;
   }
 
   async setTestnet(bool) {
     if (bool) {
-      this.bip44Code = 1
+      this.bip44Code = 1;
     } else {
-      this.bip44Code = 994
+      this.bip44Code = 994;
     }
   }
 
@@ -85,6 +89,10 @@ export default class Accounts {
     if (!this.loaded) {
       await this.load();
     }
+<<<<<<< HEAD
+=======
+    console.log('this.accounts: ', this.accounts);
+>>>>>>> main
     return this.accounts;
   }
 
@@ -115,14 +123,22 @@ export default class Accounts {
   }
 
   async clearAccounts() {
-    await this.wallet.request({
-      method: 'snap_manageState',
-      params: ['update', {}],
-    });
-    for (const [, value] of Object.entries(shardsToFind)) {
-      value[0] = false;
+    const confirm = await this.sendConfirmation(
+      'DELETE ALL ACCOUNTS',
+      'Are you sure you want to delete all accounts?',
+      'After deleting accounts, your accounts and funds cannot be recovered.',
+    );
+    if (confirm) {
+      await this.wallet.request({
+        method: 'snap_manageState',
+        params: ['clear'],
+      });
+      for (const [, value] of Object.entries(shardsToFind)) {
+        value[0] = false;
+      }
+      return true;
     }
-    return true;
+    return false;
   }
 
   // createAccount creates a new account with a given name.
@@ -158,8 +174,8 @@ export default class Accounts {
       name,
       addr: address,
       shard: readableShard,
-      coinType: this.bip44Code
-    })
+      coinType: this.bip44Code,
+    });
 
     await this.wallet.request({
       method: 'snap_manageState',
@@ -232,8 +248,8 @@ export default class Accounts {
       name,
       addr: address,
       shard: shardName,
-      coinType: this.bip44Code
-    })
+      coinType: this.bip44Code,
+    });
 
     await this.wallet.request({
       method: 'snap_manageState',
@@ -263,8 +279,8 @@ export default class Accounts {
     while (!found && (await this.checkShardsToFind(shardsToFind))) {
       Account = await this.generateAccount(i);
       if (Account.addr !== null) {
-        address = Account.addr
-        const context = getShardFromAddress(address)
+        address = Account.addr;
+        const context = getShardFromAddress(address);
         // If this address exists in a shard, check to see if we haven't found it yet.
         if (
           context[0] !== undefined &&
@@ -280,8 +296,8 @@ export default class Accounts {
             name: 'Account ' + shardsToFind[shard][1],
             addr: Account.addr,
             shard: readableShard,
-            coinType: this.bip44Code
-          })
+            coinType: this.bip44Code,
+          });
 
           shardsToFind[context[0].value][0] = true;
           found = true;
@@ -333,9 +349,9 @@ export default class Accounts {
           name,
           addr: address,
           shard: readableShard,
-          coinType: this.bip44Code
-        })
-        i++
+          coinType: this.bip44Code,
+        });
+        i++;
       }
       oldPath++;
     }
@@ -359,42 +375,85 @@ export default class Accounts {
       method: 'snap_getBip32PublicKey',
       params: {
         // The path and curve must be specified in the initial permissions.
-        path: ['m', "44'", this.bip44Code.toString() + "'", "0'", "0", index.toString()],
+        path: [
+          'm',
+          "44'",
+          this.bip44Code.toString() + "'",
+          "0'",
+          '0',
+          index.toString(),
+        ],
         curve: 'secp256k1',
         compressed: false,
       },
     });
+<<<<<<< HEAD
     let Account = {}
     Account.addr = quais.utils.computeAddress(addressPubKey);
     Account.path = index
+=======
+    let Account = {};
+    Account.addr = ethers.utils.computeAddress(addressPubKey);
+    Account.path = index;
+>>>>>>> main
 
     return Account;
   }
 
-  // getPrivateKeyByAddress returns the private key of an account by its address.
-  async getPrivateKeyByAddress(address) {
-    const account = this.accounts.find((account) => account.addr === address)
-    if (!account) {
-      throw new Error('Account not found')
-    }
+  async displayMnemonic() {
+    const bip44Code = 994;
+    const bip44Node = await this.wallet.request({
+      method: `snap_getBip44Entropy`,
+      params: [
+        {
+          coinType: bip44Code,
+        },
+      ],
+    });
+    const deriver = await getBIP44AddressKeyDeriver(bip44Node);
+    const privkey = await (await deriver(this.account.path)).privateKeyBuffer;
+    const mnemonic = await this.secretKeyToMnemonic(privkey);
 
-    const privateKey = await this.getPrivateKeyByPath(account)
-    return privateKey
+    if (confirm) {
+      this.sendConfirmation('mnemonic', this.account.addr, mnemonic);
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  async getPrivateKeyByAddress(address) {
+    const confirm = await this.sendConfirmation(
+      'confirm',
+      'Are you sure you want to display your private key for this account?',
+      'anyone with this private key can spend your funds',
+    );
+
+    if (confirm) {
+      const account = this.accounts.find((account) => account.addr === address);
+      if (!account) {
+        throw new Error('Account not found');
+      }
+      const privateKey = await this.getPrivateKeyByPath(account);
+      this.sendConfirmation('privateKey', account.addr, privateKey);
+      return true;
+    } else {
+      return false;
+    }
   }
 
   // getPrivateKeyByPath returns the private key of an account by its path.
   async getPrivateKeyByPath(account) {
     const bip44Node = await this.wallet.request({
       method: 'snap_getBip44Entropy',
-      params:
-      {
+      params: {
         coinType: account.coinType,
-      }
-    })
+      },
+    });
 
-    const deriver = await getBIP44AddressKeyDeriver(bip44Node)
-    const privKey = await (await deriver(account.path)).privateKey
-    return privKey
+    const deriver = await getBIP44AddressKeyDeriver(bip44Node);
+    const privKey = await (await deriver(account.path)).privateKey;
+    return privKey;
   }
 
   async sendConfirmation(prompt, description, textAreaContent) {
@@ -404,10 +463,10 @@ export default class Accounts {
         {
           prompt,
           description,
-          textAreaContent
-        }
-      ]
-    })
-    return confirm
+          textAreaContent,
+        },
+      ],
+    });
+    return confirm;
   }
 }
