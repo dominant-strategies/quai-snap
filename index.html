@@ -44,6 +44,10 @@
     <br />
     <br />
     <button class="getAccount">Get Current Account</button>
+   
+    <br />
+    <br />
+    <input id="privateKeyAddress" placeholder="0x...." type="text" />
     <button class="getPrivateKeyForAddress">Get Private Key For Address</button>
     <br />
     <br />
@@ -96,8 +100,6 @@
     const clearButton = document.querySelector('button.clearAccounts');
     const blockHeightButton = document.querySelector('button.blockHeight');
     const generateNButton = document.querySelector('button.generateNum');
-    const messageButton = document.querySelector('button.messageSigner');
-    const transactionsButton = document.querySelector('button.getTransactions');
     const privKeyByAddressButton = document.querySelector(
       'button.getPrivateKeyForAddress',
     );
@@ -121,8 +123,6 @@
     clearButton.addEventListener('click', clearAccounts);
     blockHeightButton.addEventListener('click', blockHeight);
     generateNButton.addEventListener('click', generateNumAccounts);
-    messageButton.addEventListener('click', sign);
-    transactionsButton.addEventListener('click', getTransactions);
     privKeyByAddressButton.addEventListener('click', getPrivateKeyByAddress);
     getaccountButton.addEventListener('click', getAccount);
     setCurrentAccountButton.addEventListener('click', setCurrentAccount);
@@ -425,29 +425,6 @@
     }
 
     //Get private key phrase for active account
-    async function getPrivateKey() {
-      try {
-        const response = await ethereum.request({
-          method: 'wallet_invokeSnap',
-          params: [
-            snapId,
-            {
-              method: 'getPrivateKey',
-              params: {
-                testnet: true,
-              },
-            },
-          ],
-        });
-        alert(response);
-        console.log(response);
-      } catch (err) {
-        console.error(err);
-        alert('Problem happened: ' + err.message || err);
-      }
-    }
-
-    //Get private key phrase for active account
     async function getPrivateKeyByAddress() {
       try {
         const response = await ethereum.request({
@@ -457,7 +434,6 @@
             {
               method: 'getPrivateKeyByAddress',
               params: {
-                testnet: true,
                 address: document.querySelector('#privateKeyAddress').value,
               },
             },
@@ -484,6 +460,7 @@
           ],
         });
         alert(JSON.stringify(response));
+        console.log(response);
       } catch (err) {
         console.error(err);
         alert('Problem happened: ' + err.message || err);

@@ -36,20 +36,7 @@ module.exports.onRpcRequest = async ({ origin, request }) => {
       );
 
     case 'clearAccounts': {
-<<<<<<< HEAD
-      const clearAccountConfirm = await quaiSnap.sendConfirmation(
-        'Clear all accounts?',
-        'imported Accounts will be gone forever',
-      );
-      if (clearAccountConfirm) {
-        await accountLibary.clearAccounts();
-        quaiSnap.notify('Accounts cleared');
-        return 'true';
-      }
-      return false;
-=======
       return await accountLibary.clearAccounts();
->>>>>>> main
     }
 
     case 'displayBalance':

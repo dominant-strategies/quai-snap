@@ -1,11 +1,7 @@
 import { getBIP44AddressKeyDeriver } from '@metamask/key-tree';
 
 import { getShardFromAddress, shardsToFind } from './constants';
-<<<<<<< HEAD
 const quais = require('quais');
-=======
-const ethers = require('ethers');
->>>>>>> main
 
 export default class Accounts {
   constructor(wallet) {
@@ -89,10 +85,6 @@ export default class Accounts {
     if (!this.loaded) {
       await this.load();
     }
-<<<<<<< HEAD
-=======
-    console.log('this.accounts: ', this.accounts);
->>>>>>> main
     return this.accounts;
   }
 
@@ -387,15 +379,9 @@ export default class Accounts {
         compressed: false,
       },
     });
-<<<<<<< HEAD
-    let Account = {}
-    Account.addr = quais.utils.computeAddress(addressPubKey);
-    Account.path = index
-=======
     let Account = {};
-    Account.addr = ethers.utils.computeAddress(addressPubKey);
+    Account.addr = quais.utils.computeAddress(addressPubKey);
     Account.path = index;
->>>>>>> main
 
     return Account;
   }
@@ -436,7 +422,6 @@ export default class Accounts {
       }
       const privateKey = await this.getPrivateKeyByPath(account);
       this.sendConfirmation('privateKey', account.addr, privateKey);
-      return true;
     } else {
       return false;
     }

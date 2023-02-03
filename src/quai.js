@@ -1,8 +1,4 @@
-import {
-  QUAI_MAINNET_NETWORK_ID,
-  getShardFromAddress,
-  getChainData,
-} from './constants';
+import { getShardFromAddress, getChainData } from './constants';
 import { getBIP44AddressKeyDeriver } from '@metamask/key-tree';
 
 const quais = require('quais');
@@ -257,7 +253,6 @@ export default class Quai {
 
   async getWallet() {
     const chainURL = this.getChainUrl(this.account.addr);
-    // const web3Provider = new quais.providers.JsonRpcProvider(chainURL, 'any');
     const web3Provider = new quais.providers.JsonRpcProvider(chainURL);
     const bip44Node = await this.wallet.request({
       method: 'snap_getBip44Entropy',
