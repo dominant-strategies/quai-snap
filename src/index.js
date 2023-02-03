@@ -17,7 +17,6 @@ module.exports.onRpcRequest = async ({ origin, request }) => {
       await accountLibary.setTestnet(request.params.testnet);
     }
   }
-
   switch (request.method) {
     case 'getAccounts':
       return accountLibary.getAccounts();
@@ -47,9 +46,6 @@ module.exports.onRpcRequest = async ({ origin, request }) => {
         (await quaiSnap.getBalance(request.params.address)).toString() +
           ' Quai',
       );
-
-    case 'getAddress':
-      return quaiSnap.getAddress();
 
     case 'displayMnemonic':
       return await quaiSnap.displayMnemonic();
