@@ -9,14 +9,14 @@ const quais = require('quais');
 
 export default class Quai {
   constructor(wallet, account) {
-    this.wallet = wallet
-    this.account = account
-    this.baseUrl = 'rpc.quaiscan.io'
-    this.baseTestUrl = 'rpc.quaiscan-test.io'
-    this.devnet = false
-    this.testnet = false
-    this.overrideURL = false
-    this.bip44Code =  994
+    this.wallet = wallet;
+    this.account = account;
+    this.baseUrl = 'rpc.quaiscan.io';
+    this.baseTestUrl = 'rpc.quaiscan-test.io';
+    this.devnet = false;
+    this.testnet = false;
+    this.overrideURL = false;
+    this.bip44Code = 994;
   }
 
   getChainFromAddr(addr) {
@@ -48,7 +48,6 @@ export default class Quai {
     if (this.devnet) {
       url = url.slice(0, 8) + 'dev.' + url.slice(8);
     }
-    console.log('url', url)
     return url;
   }
 
@@ -63,9 +62,9 @@ export default class Quai {
   setTestnet(bool) {
     this.testnet = bool;
     if (bool) {
-      this.bip44Code = 1
+      this.bip44Code = 1;
     } else {
-      this.bip44Code = 994
+      this.bip44Code = 994;
     }
   }
 
@@ -126,15 +125,14 @@ export default class Quai {
     if (confirm) {
       const bip44Node = await this.wallet.request({
         method: 'snap_getBip44Entropy',
-        params:
-        {
-          coinType: this.bip44Code
-        }
-      })
-  
-      const deriver = await getBIP44AddressKeyDeriver(bip44Node)
-      const privKey = (await deriver(this.account.path)).privateKey
-      return privKey
+        params: {
+          coinType: this.bip44Code,
+        },
+      });
+
+      const deriver = await getBIP44AddressKeyDeriver(bip44Node);
+      const privKey = (await deriver(this.account.path)).privateKey;
+      return privKey;
     } else {
       return '';
     }
@@ -161,10 +159,10 @@ export default class Quai {
 
   async SendTransaction(to, amount, limit, price, data, abi) {
     try {
-      const nonce = await this.getNonce()
-      const context = await getShardFromAddress(this.account.addr)
+      const nonce = await this.getNonce();
+      const context = await getShardFromAddress(this.account.addr);
       if (context[0] === undefined) {
-        return 'Invalid Address'
+        return 'Invalid Address';
       }
 
       // const shardChainId = QUAI_MAINNET_NETWORK_ID[context[0].value];
@@ -186,15 +184,14 @@ export default class Quai {
       if (!confirm) {
         return 'user rejected Transaction: error 4001';
       } else {
-        const wallet = await this.getWallet()
-        const signedTx = await wallet.signTransaction(rawTx)
+        const wallet = await this.getWallet();
+        const signedTx = await wallet.signTransaction(rawTx);
         const body = {
           jsonrpc: '2.0',
           method: 'quai_sendRawTransaction',
           params: [signedTx],
           id: 1,
         };
-        console.log('Body',body)
         const request = await fetch(this.getChainUrl(this.account.addr), {
           method: 'POST',
           headers: {
@@ -202,7 +199,6 @@ export default class Quai {
           },
           body: JSON.stringify(body),
         });
-        console.log('Request',request)
         return await request.json();
       }
     } catch (err) {
@@ -229,8 +225,8 @@ export default class Quai {
     if (!confirm) {
       return 'User rejected data signing: error 4001';
     } else {
-      const wallet = await this.getWallet()
-      const signature = await wallet.signMessage(data)
+      const wallet = await this.getWallet();
+      const signature = await wallet.signMessage(data);
 
       return signature;
     }
@@ -265,14 +261,13 @@ export default class Quai {
     const web3Provider = new quais.providers.JsonRpcProvider(chainURL);
     const bip44Node = await this.wallet.request({
       method: 'snap_getBip44Entropy',
-      params:
-      {
+      params: {
         coinType: this.bip44Code,
-      }
-    })
+      },
+    });
 
-    const deriver = await getBIP44AddressKeyDeriver(bip44Node)
-    const privKey = await (await deriver(this.account.path)).privateKey
+    const deriver = await getBIP44AddressKeyDeriver(bip44Node);
+    const privKey = await (await deriver(this.account.path)).privateKey;
     return new quais.Wallet(privKey, web3Provider);
   }
 

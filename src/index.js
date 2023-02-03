@@ -27,7 +27,7 @@ module.exports.onRpcRequest = async ({ origin, request }) => {
       return quaiSnap.getTransactions();
 
     case 'getBalance':
-      return quaiSnap.getBalance(request.params.address)
+      return quaiSnap.getBalance(request.params.address);
 
     case 'createAccountByChain':
       return accountLibary.createNewAccountByChain(
@@ -57,20 +57,17 @@ module.exports.onRpcRequest = async ({ origin, request }) => {
           ' Quai',
       );
 
-    case 'getAddress':
-      return quaiSnap.getAddress();
-
     case 'displayMnemonic':
       return await quaiSnap.displayMnemonic();
 
     case 'getPrivateKey':
-      return await quaiSnap.getPrivateKey()
+      return await quaiSnap.getPrivateKey();
 
     case 'getPrivateKeyByAddress':
-      return await accountLibary.getPrivateKeyByAddress(request.params.address)
+      return await accountLibary.getPrivateKeyByAddress(request.params.address);
 
     case 'deleteAccount':
-      return await accountLibary.deleteAccount(request.params.address)
+      return await accountLibary.deleteAccount(request.params.address);
 
     case 'sendTransaction':
       return quaiSnap.SendTransaction(
@@ -83,7 +80,6 @@ module.exports.onRpcRequest = async ({ origin, request }) => {
       );
 
     case 'getCurrentAccount':
-      console.log('Current Account: ', await accountLibary.getCurrentAccount())
       return await accountLibary.getCurrentAccount();
 
     case 'createAccount':
@@ -96,11 +92,11 @@ module.exports.onRpcRequest = async ({ origin, request }) => {
       return await accountLibary.generateNumAccounts(request.params.amount);
 
     case 'setCurrentAccount':
-      return await accountLibary.setCurrentAccount(request.params.address)
+      return await accountLibary.setCurrentAccount(request.params.address);
 
     case 'getBlockHeight': {
-      const response = await quaiSnap.getBlockHeight()
-      return response.result.number
+      const response = await quaiSnap.getBlockHeight();
+      return response.result.number;
     }
     case 'signData':
       return quaiSnap.signData(request.params.data);
