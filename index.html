@@ -64,6 +64,9 @@
     <button class="sendTransaction">Transact</button>
     <br />
     <br />
+    <button class="send">Send</button>
+    <br />
+    <br />
     <input id="setAddress" value="0x....." type="text" />
     <button class="setCurrentAccount" value="Cyprus">
       Set Current Account
@@ -114,7 +117,9 @@
       'button.accountByChain',
     );
     const deleteAccButton = document.querySelector('button.deleteAcc');
+    const sendButton = document.querySelector('button.send');
 
+    sendButton.addEventListener('click', sendTransaction);
     connectButton.addEventListener('click', connect);
     getAccountsButton.addEventListener('click', getAccounts);
     getBalanceButton.addEventListener('click', getBalance);
@@ -476,13 +481,10 @@
             {
               method: 'sendTransaction',
               params: {
-                to: '0x7A7a0F3F009fD1e8DAdD4CdeC6d8A6eeD7eA96c5',
-                amount: 0.0001,
-                limit: 21000,
-                price: 100000000000000,
-                data: '',
-                abi: null,
-                devnet: true,
+                to: '0x146F08a82299B7958a25a77A5cb6FD2Aec7c355D',
+                value: 100000,
+               
+                testnet: true,
               },
             },
           ],
