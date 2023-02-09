@@ -234,14 +234,15 @@ export default class Accounts {
     const address = Account.addr;
     this.currentAccountId = address;
     this.currentAccount = Account;
-    this.accounts.push({
+    const addedAccount = {
       type: 'generated',
       path,
       name,
       addr: address,
       shard: shardName,
       coinType: this.bip44Code,
-    });
+    };
+    this.accounts.push(addedAccount);
 
     await this.wallet.request({
       method: 'snap_manageState',
@@ -250,7 +251,7 @@ export default class Accounts {
         { currentAccountId: this.currentAccountId, accounts: this.accounts },
       ],
     });
-    return { currentAccountId: address, accounts: this.accounts };
+    return { addedAccount: addedAccount, accounts: this.accounts };
   }
 
   async checkShardsToFind(shardsToFind) {
