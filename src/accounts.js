@@ -430,8 +430,6 @@ export default class Accounts {
 
   // getPrivateKeyByPath returns the private key of an account by its path.
   async getPrivateKeyByPath(account) {
-    console.log(account);
-    console.log('getPrivateKeyByPath path: ', account.path);
     const bip44Node = await this.wallet.request({
       method: 'snap_getBip44Entropy',
       params: {
