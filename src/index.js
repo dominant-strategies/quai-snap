@@ -1,6 +1,6 @@
+import { getShardForAddress } from './utils';
 import Accounts from './accounts';
 import QuaiSnap from './quai';
-
 module.exports.onRpcRequest = async ({ origin, request }) => {
   const accountLibary = new Accounts(wallet);
   const currentAccount = await accountLibary.getCurrentAccount();
@@ -17,6 +17,18 @@ module.exports.onRpcRequest = async ({ origin, request }) => {
       await accountLibary.setTestnet(request.params.testnet);
     }
   }
+
+  const determineTypeOfTransaction = (data) => {
+    const fromAddress = currentAccount.addr;
+    const toAddress = data.to;
+    const fromAddressShard = getShardForAddress(fromAddress);
+    const toAddressShard = getShardForAddress(toAddress);
+    if (fromAddressShard !== toAddressShard) {
+      return false;
+    }
+    return true;
+  };
+
   switch (request.method) {
     case 'getAccounts':
       return accountLibary.getAccounts();
@@ -60,15 +72,27 @@ module.exports.onRpcRequest = async ({ origin, request }) => {
       return await accountLibary.deleteAccount(request.params.address);
 
     case 'sendTransaction':
-      return quaiSnap.SendTransaction(
-        request.params.to,
-        request.params.amount,
-        request.params.limit,
-        request.params.price,
-        request.params.data,
-        request.params.abi,
-      );
-
+      const isExternalTransaction = determineTypeOfTransaction(request.params);
+      if (isExternalTransaction) {
+        return quaiSnap.SendTransaction(
+          request.params.to,
+          request.params.value,
+          request.params.externalGasLimit,
+          request.params.externalGasPrice,
+          request.params.externalGasTip,
+          request.params.gasLimit,
+          request.params.maxFeePerGas,
+          request.params.maxPriorityFeePerGas,
+        );
+      } else {
+        return quaiSnap.SendTransaction(
+          request.params.to,
+          request.params.value,
+          request.params.gasLimit,
+          request.params.maxFeePerGas,
+          request.params.maxPriorityFeePerGas,
+        );
+      }
     case 'getCurrentAccount':
       return await accountLibary.getCurrentAccount();
 

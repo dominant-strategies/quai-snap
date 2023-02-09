@@ -1,6 +1,6 @@
 import { getBIP44AddressKeyDeriver } from '@metamask/key-tree';
 
-import { getShardFromAddress, shardsToFind } from './constants';
+import { getShardContextForAddress, shardsToFind } from './constants';
 const quais = require('quais');
 
 export default class Accounts {
@@ -151,11 +151,11 @@ export default class Accounts {
     }
     const Account = await this.generateAccount(path);
     const address = Account.addr;
-    let context = getShardFromAddress(address);
+    let context = getShardContextForAddress(address);
     while (context === undefined || context === null || context.length === 0) {
       const Account = await this.generateAccount(path + 1);
       const address = Account.addr;
-      context = getShardFromAddress(address);
+      context = getShardContextForAddress(address);
       path++;
     }
     const shard = context[0].value;
@@ -212,7 +212,7 @@ export default class Accounts {
     while (!found) {
       Account = await this.generateAccount(oldPath + i);
       const addr = Account.addr;
-      const context = getShardFromAddress(addr);
+      const context = getShardContextForAddress(addr);
       if (context[0] !== undefined) {
         if (
           context[0].value === chain &&
@@ -234,14 +234,15 @@ export default class Accounts {
     const address = Account.addr;
     this.currentAccountId = address;
     this.currentAccount = Account;
-    this.accounts.push({
+    const addedAccount = {
       type: 'generated',
       path,
       name,
       addr: address,
       shard: shardName,
       coinType: this.bip44Code,
-    });
+    };
+    this.accounts.push(addedAccount);
 
     await this.wallet.request({
       method: 'snap_manageState',
@@ -250,7 +251,7 @@ export default class Accounts {
         { currentAccountId: this.currentAccountId, accounts: this.accounts },
       ],
     });
-    return { currentAccountId: address, accounts: this.accounts };
+    return { addedAccount: addedAccount, accounts: this.accounts };
   }
 
   async checkShardsToFind(shardsToFind) {
@@ -272,7 +273,7 @@ export default class Accounts {
       Account = await this.generateAccount(i);
       if (Account.addr !== null) {
         address = Account.addr;
-        const context = getShardFromAddress(address);
+        const context = getShardContextForAddress(address);
         // If this address exists in a shard, check to see if we haven't found it yet.
         if (
           context[0] !== undefined &&
@@ -328,7 +329,7 @@ export default class Accounts {
       const name = 'Account ' + (oldPath + 1);
       const Account = await this.generateAccount(oldPath + 1);
       const address = Account.addr;
-      const context = getShardFromAddress(address);
+      const context = getShardContextForAddress(address);
       if (context[0] !== undefined) {
         const shard = context[0].value;
         const readableShard = shard.charAt(0).toUpperCase() + shard.slice(1);
@@ -437,7 +438,7 @@ export default class Accounts {
     });
 
     const deriver = await getBIP44AddressKeyDeriver(bip44Node);
-    const privKey = await (await deriver(account.path)).privateKey;
+    const privKey = (await deriver(account.path)).privateKey;
     return privKey;
   }
 

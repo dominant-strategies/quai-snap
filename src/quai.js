@@ -1,5 +1,6 @@
-import { getShardFromAddress, getChainData } from './constants';
+import { getChainData, getShardContextForAddress } from './constants';
 import { getBIP44AddressKeyDeriver } from '@metamask/key-tree';
+import { getShardForAddress } from './utils';
 
 const quais = require('quais');
 
@@ -11,17 +12,9 @@ export default class Quai {
     this.baseTestUrl = 'rpc.quaiscan-test.io';
     this.devnet = false;
     this.testnet = false;
+    this.local = false;
     this.overrideURL = false;
     this.bip44Code = 994;
-  }
-
-  getChainFromAddr(addr) {
-    let chain = 'none';
-    const context = getShardFromAddress(addr);
-    if (context[0] !== undefined) {
-      chain = context[0].value;
-    }
-    return chain;
   }
 
   getBaseUrl(chain) {
@@ -39,10 +32,19 @@ export default class Quai {
     if (this.overrideURL) {
       return this.overrideURL;
     }
-    let context = getShardFromAddress(addr);
+    let context = getShardContextForAddress(addr);
     let url = context[0].rpc;
     if (this.devnet) {
-      url = url.slice(0, 8) + 'dev.' + url.slice(8);
+      parts = url.split('.');
+      url =
+        parts[0] + '.' + parts[1] + '.colosseum.' + parts[2] + '.' + parts[3];
+    }
+    if (this.testnet) {
+      parts = url.split('.');
+      url = parts[0] + '.' + parts[1] + '.garden.' + parts[2] + '.' + parts[3];
+    }
+    if (this.local) {
+      return 'http://localhost:' + context[0].httpPort;
     }
     return url;
   }
@@ -58,7 +60,7 @@ export default class Quai {
   setTestnet(bool) {
     this.testnet = bool;
     if (bool) {
-      this.bip44Code = 1;
+      this.bip44Code = 994;
     } else {
       this.bip44Code = 994;
     }
@@ -128,6 +130,7 @@ export default class Quai {
 
       const deriver = await getBIP44AddressKeyDeriver(bip44Node);
       const privKey = (await deriver(this.account.path)).privateKey;
+
       return privKey;
     } else {
       return '';
@@ -153,53 +156,63 @@ export default class Quai {
     });
   }
 
-  async SendTransaction(to, amount, limit, price, data, abi) {
+  async SendTransaction(
+    to,
+    value,
+    externalGasLimit = 110000,
+    externalGasPrice = 2000000000,
+    externalGasTip = 2000000000,
+    gasLimit = 21000,
+    maxFeePerGas = 1,
+    maxPriorityFeePerGas = 1,
+  ) {
     try {
-      const nonce = await this.getNonce();
-      const context = await getShardFromAddress(this.account.addr);
-      if (context[0] === undefined) {
-        return 'Invalid Address';
-      }
-
-      // const shardChainId = QUAI_MAINNET_NETWORK_ID[context[0].value];
-      amount = BigInt(parseInt(1));
-      // create a payment transaction
-      const rawTx = {
-        to: '0x7A7a0F3F009fD1e8DAdD4CdeC6d8A6eeD7eA96c5',
-        type: 0,
-        gasLimit: 21000,
-        gasPrice: 1,
-        value: amount,
-        chainId: 9101,
-        nonce: '12345',
-        data,
-      };
-
-      let confirm = await this.checkConfirmation(to, amount, data, abi);
-
-      if (!confirm) {
-        return 'user rejected Transaction: error 4001';
-      } else {
-        const wallet = await this.getWallet();
-        const signedTx = await wallet.signTransaction(rawTx);
-        const body = {
-          jsonrpc: '2.0',
-          method: 'quai_sendRawTransaction',
-          params: [signedTx],
-          id: 1,
+      const fromShard = getShardForAddress(this.account.addr);
+      const toShard = getShardForAddress(to);
+      const currentAccountAddr = this.account.addr;
+      const confirm = await this.sendConfirmation(
+        'Confirm Transaction',
+        'Are you sure you want to sign the following transaction?',
+        'From: (' +
+          fromShard +
+          ') ' +
+          currentAccountAddr +
+          '\n\n' +
+          'To: (' +
+          toShard +
+          ') ' +
+          to +
+          '\n\n' +
+          'Amount: ' +
+          value +
+          ' QWEI',
+      );
+      if (confirm) {
+        let rawTx = {
+          to: to,
+          from: this.account.addr,
+          value: value,
         };
-        const request = await fetch(this.getChainUrl(this.account.addr), {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(body),
-        });
-        return await request.json();
+        if (fromShard !== toShard) {
+          rawTx = {
+            to: to,
+            from: this.account.addr,
+            value: value,
+            externalGasLimit: externalGasLimit,
+            externalGasPrice: externalGasPrice,
+            externalGasTip: externalGasTip,
+            gasLimit: gasLimit,
+            maxFeePerGas: maxFeePerGas,
+            maxPriorityFeePerGas: maxPriorityFeePerGas,
+            type: 2,
+          };
+        }
+        const wallet = await this.getWallet();
+        const tx = await wallet.sendTransaction(rawTx);
+        return JSON.stringify(tx);
       }
     } catch (err) {
-      console.error(`Problem found: ${err}`);
-      throw err;
+      console.log(err);
     }
   }
 
@@ -262,7 +275,7 @@ export default class Quai {
     });
 
     const deriver = await getBIP44AddressKeyDeriver(bip44Node);
-    const privKey = await (await deriver(this.account.path)).privateKey;
+    const privKey = (await deriver(this.account.path)).privateKey;
     return new quais.Wallet(privKey, web3Provider);
   }
 
