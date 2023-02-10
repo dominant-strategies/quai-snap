@@ -16,6 +16,9 @@ module.exports.onRpcRequest = async ({ origin, request }) => {
       await quaiSnap.setTestnet(request.params.testnet);
       await accountLibary.setTestnet(request.params.testnet);
     }
+    if (request.params.hasOwnProperty('local') != undefined) {
+      await quaiSnap.setLocal(request.params.local);
+    }
   }
 
   const determineTypeOfTransaction = (data) => {

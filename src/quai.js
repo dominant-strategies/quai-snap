@@ -57,6 +57,10 @@ export default class Quai {
     this.overrideURL = url;
   }
 
+  setLocal(bool) {
+    this.local = bool;
+  }
+
   setTestnet(bool) {
     this.testnet = bool;
     if (bool) {
