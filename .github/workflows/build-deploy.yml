@@ -49,6 +49,9 @@ jobs:
     - name: Update version in snap.manifest.json
       run: yq eval -jP -i ".version=\"${{ env.VERSION }}\"" snap.manifest.json
 
+    - name: Install dependencies
+      run: yarn install
+
     - name: Build
       run: yarn build
 
