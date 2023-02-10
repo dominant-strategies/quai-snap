@@ -48,9 +48,6 @@ jobs:
     - name: Update version of package.json
       run: yq eval -jP -i ".version=\"${{ env.VERSION }}\"" package.json
 
-    - name: Sync package-lock.json
-      run: npm i --package-lock-only --ignore-scripts
-
     - name: Update version in snap.manifest.json
       run: sudo yq eval -jP -i ".version=\"${{ env.VERSION }}\"" snap.manifest.json
 
