@@ -26,10 +26,7 @@ module.exports.onRpcRequest = async ({ origin, request }) => {
     const toAddress = data.to;
     const fromAddressShard = getShardForAddress(fromAddress);
     const toAddressShard = getShardForAddress(toAddress);
-    if (fromAddressShard !== toAddressShard) {
-      return false;
-    }
-    return true;
+    return fromAddressShard !== toAddressShard;
   };
 
   switch (request.method) {
@@ -80,12 +77,12 @@ module.exports.onRpcRequest = async ({ origin, request }) => {
         return quaiSnap.SendTransaction(
           request.params.to,
           request.params.value,
-          request.params.externalGasLimit,
-          request.params.externalGasPrice,
-          request.params.externalGasTip,
           request.params.gasLimit,
           request.params.maxFeePerGas,
           request.params.maxPriorityFeePerGas,
+          request.params.externalGasLimit,
+          request.params.externalGasPrice,
+          request.params.externalGasTip,
         );
       } else {
         return quaiSnap.SendTransaction(

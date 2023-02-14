@@ -163,12 +163,12 @@ export default class Quai {
   async SendTransaction(
     to,
     value,
-    externalGasLimit = 110000,
-    externalGasPrice = 2000000000,
-    externalGasTip = 2000000000,
     gasLimit = 21000,
     maxFeePerGas = 1,
     maxPriorityFeePerGas = 1,
+    externalGasLimit = 110000,
+    externalGasPrice = 2000000000,
+    externalGasTip = 2000000000,
   ) {
     try {
       const fromShard = getShardForAddress(this.account.addr);
