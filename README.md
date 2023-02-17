@@ -16,7 +16,7 @@ This is an **EXPERIMENTAL** snap for Quai Network.
 
 ### connect
 
-Call the below function to connect to your wallet. If the user has Matamask Flask installed it also installs the quai-snap automatically.
+Call the below function to connect to your snap. If the user has Matamask Flask installed it also installs the quai-snap automatically.
 
 ```javascript
 await ethereum.request({

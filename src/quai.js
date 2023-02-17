@@ -5,8 +5,8 @@ import { getShardForAddress } from './utils';
 const quais = require('quais');
 
 export default class Quai {
-  constructor(wallet, account) {
-    this.wallet = wallet;
+  constructor(snap, account) {
+    this.snap = snap;
     this.account = account;
     this.baseUrl = 'rpc.quaiscan.io';
     this.baseTestUrl = 'rpc.quaiscan-test.io';
@@ -125,7 +125,7 @@ export default class Quai {
       'anyone with this key can spend your funds.',
     );
     if (confirm) {
-      const bip44Node = await this.wallet.request({
+      const bip44Node = await this.snap.request({
         method: 'snap_getBip44Entropy',
         params: {
           coinType: this.bip44Code,
@@ -149,7 +149,7 @@ export default class Quai {
   }
 
   async notify(message) {
-    wallet.request({
+    snap.request({
       method: 'snap_notify',
       params: [
         {
@@ -174,6 +174,7 @@ export default class Quai {
       const fromShard = getShardForAddress(this.account.addr);
       const toShard = getShardForAddress(to);
       const currentAccountAddr = this.account.addr;
+      console.log('value: ', value);
       const confirm = await this.sendConfirmation(
         'Confirm Transaction',
         'Are you sure you want to sign the following transaction?',
@@ -186,10 +187,12 @@ export default class Quai {
           toShard +
           ') ' +
           to +
+          +'HELLo' +
           '\n\n' +
           'Amount: ' +
           value +
           ' QWEI',
+        '\n\n' + value * 10 ** 18 + ' QUAI',
       );
       if (confirm) {
         let rawTx = {
@@ -212,7 +215,7 @@ export default class Quai {
           };
         }
         const wallet = await this.getWallet();
-        const tx = await wallet.sendTransaction(rawTx);
+        const tx = await snap.sendTransaction(rawTx);
         return JSON.stringify(tx);
       }
     } catch (err) {
@@ -239,7 +242,7 @@ export default class Quai {
       return 'User rejected data signing: error 4001';
     } else {
       const wallet = await this.getWallet();
-      const signature = await wallet.signMessage(data);
+      const signature = await snap.signMessage(data);
 
       return signature;
     }
@@ -271,7 +274,7 @@ export default class Quai {
   async getWallet() {
     const chainURL = this.getChainUrl(this.account.addr);
     const web3Provider = new quais.providers.JsonRpcProvider(chainURL);
-    const bip44Node = await this.wallet.request({
+    const bip44Node = await this.snap.request({
       method: 'snap_getBip44Entropy',
       params: {
         coinType: this.bip44Code,
@@ -325,7 +328,7 @@ export default class Quai {
   }
 
   async sendConfirmation(prompt, description, textAreaContent) {
-    const confirm = await this.wallet.request({
+    const confirm = await this.snap.request({
       method: 'snap_confirm',
       params: [
         {
