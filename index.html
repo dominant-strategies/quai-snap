@@ -3,6 +3,7 @@
   <head>
     <title>Hello, Snaps!</title>
     <link rel="icon" type="image/svg" href="./images/icon.svg" />
+    <link rel="stylesheet" href="styles.css" />
   </head>
 
   <body>
@@ -34,240 +35,200 @@
     </details>
     <br />
 
-    <button class="connect">Connect</button>
+    <button class="connect btn connect">Connect</button>
     <br />
     <br />
-    <button class="genAllAccounts">Generate All Accounts</button>
+    <button class="genAllAccounts btn hoverEffect">Generate All Accounts</button>
     <br />
     <br />
-    <button class="getaccounts">GetAccounts</button>
+    <button class="getaccounts btn hoverEffect">GetAccounts</button>
     <br />
     <br />
-    <button class="getAccount">Get Current Account</button>
-   
+    <button class="getCurrentAccount btn hoverEffect">Get Current Account</button>
+
     <br />
     <br />
     <input id="privateKeyAddress" placeholder="0x...." type="text" />
-    <button class="getPrivateKeyForAddress">Get Private Key For Address</button>
+    <button class="getPrivKey btn hoverEffect">Get Private Key For Address</button>
     <br />
     <br />
-    <input id="balanceAddress" placeholder="0x...." type="text" />
-    <button class="getBalance">Get Balance</button>
+    <input id="SendTo" placeholder="0x...." type="text" />
+    <input id="SendToAmount" placeholder="amount" type="number" />
+    <button class="send btn hoverEffect">Send Transaction</button>
     <br />
     <br />
-    <input
-      id="SendTo"
-      value="0xD5813D46F74273048D485944DC7DE12FC1947f12"
-      placeholder="reciver address"
-    />
-    <input id="Amount" value="100000" placeholder="amount" type="number" />
-    <button class="sendTransaction">Transact</button>
-    <br />
-    <br />
-    <button class="send">Send</button>
-    <br />
-    <br />
-    <input id="setAddress" value="0x....." type="text" />
-    <button class="setCurrentAccount" value="Cyprus">
+    <input id="setAddress" placeholder="0x....." type="text" />
+    <button class="setCurrentAccount btn hoverEffect" value="Cyprus">
       Set Current Account
     </button>
     <br />
     <br />
-    <button class="clearAccounts">Clear Accounts</button>
-    <br />
-    <br />
+
     <input id="accountName" placeholder="Account Name" type="text" />
-    <button class="createAccount">Create Account</button>
+    <button class="createAccount btn hoverEffect">Create Account</button>
     <br />
     <br />
     <input id="createByChain" value="cyprus-1" type="'text" />
-    <button class="accountByChain">Create Account by Chain</button>
-    <br />
-    <br />
-    <button class="blockHeight">Block Height</button>
-
+    <button class="createQuaiAccountByChain btn hoverEffect">Create Account by Chain</button>
     <br />
     <br />
 
     <input id="NumAccounts" value="25" placeholder="amount" type="number" />
-    <button class="generateNum">Generate N Accounts</button>
+    <button class="generateNum btn hoverEffect">Generate N Accounts</button>
+    <br />
+    <br />
+    <button
+      class="clearAccounts btn delete"
+    >
+      Clear Accounts
+    </button>
   </body>
   <script>
-    const snapId = 'local:http://localhost:8083/'; //`local:${window.location.href}`;
-
+    const snapId = `local:${location.href}`;
     const connectButton = document.querySelector('button.connect');
-    const getAccountsButton = document.querySelector('button.getaccounts');
-    const getBalanceButton = document.querySelector('button.getBalance');
-
-    const createButton = document.querySelector('button.createAccount');
-    const clearButton = document.querySelector('button.clearAccounts');
-    const blockHeightButton = document.querySelector('button.blockHeight');
-    const generateNButton = document.querySelector('button.generateNum');
-    const privKeyByAddressButton = document.querySelector(
-      'button.getPrivateKeyForAddress',
-    );
-    const getaccountButton = document.querySelector('button.getAccount');
-    const setCurrentAccountButton = document.querySelector(
-      'button.setCurrentAccount',
-    );
     const genAllAccountsButton = document.querySelector(
       'button.genAllAccounts',
     );
-    const accountByChainButton = document.querySelector(
-      'button.accountByChain',
+    const getCurrentAccountButton = document.querySelector(
+      'button.getCurrentAccount',
     );
-    const deleteAccButton = document.querySelector('button.deleteAcc');
-    const sendButton = document.querySelector('button.send');
+    const setCurrentAccountButton = document.querySelector(
+      'button.setCurrentAccount',
+    );
+    const createAccountButton = document.querySelector('button.createAccount');
+    const accountByChainButton = document.querySelector(
+      'button.createQuaiAccountByChain',
+    );
+    const getAccountsButton = document.querySelector('button.getaccounts');
+    const generateNButton = document.querySelector('button.generateNum');
+    const clearButton = document.querySelector('button.clearAccounts');
+    const privKeyByAddressButton = document.querySelector('button.getPrivKey');
 
+    const sendButton = document.querySelector('button.send');
     sendButton.addEventListener('click', sendTransaction);
     connectButton.addEventListener('click', connect);
     getAccountsButton.addEventListener('click', getAccounts);
-    getBalanceButton.addEventListener('click', getBalance);
-
-    createButton.addEventListener('click', create);
+    createAccountButton.addEventListener('click', createAccount);
     clearButton.addEventListener('click', clearAccounts);
-    blockHeightButton.addEventListener('click', blockHeight);
     generateNButton.addEventListener('click', generateNumAccounts);
-    privKeyByAddressButton.addEventListener('click', getPrivateKeyByAddress);
-    getaccountButton.addEventListener('click', getAccount);
+    privKeyByAddressButton.addEventListener('click', getPrivKeyByAddress);
+    getCurrentAccountButton.addEventListener('click', getCurrentAccount);
     setCurrentAccountButton.addEventListener('click', setCurrentAccount);
     genAllAccountsButton.addEventListener('click', genAllAccounts);
-    accountByChainButton.addEventListener('click', accountByChain);
+    accountByChainButton.addEventListener('click', createQuaiAccountByChain);
 
-    async function deleteAccount() {
-      try {
-        const response = await ethereum.request({
-          method: 'wallet_invokeSnap',
-          params: [
-            snapId,
-            {
-              method: 'deleteAccount',
-              params: {
-                address: document.getElementById('deleteAccount').value,
-              },
-            },
-          ],
-        });
-      } catch (err) {
-        console.error(err);
-        alert('Problem happened: ' + err.message || err);
-      }
-    }
-
-    async function accountByChain() {
-      try {
-        const response = await ethereum.request({
-          method: 'wallet_invokeSnap',
-          params: [
-            snapId,
-            {
-              method: 'createAccountByChain',
-              params: {
-                chain: document.getElementById('createByChain').value,
-              },
-            },
-          ],
-        });
-        alert(response);
-        console.log(response);
-      } catch (err) {
-        console.error(err);
-        alert('Problem happened: ' + err.message || err);
-      }
+    async function connect() {
+      await ethereum.request({
+        method: 'wallet_requestSnaps',
+        params: {
+          [snapId]: {},
+        },
+      });
     }
 
     async function genAllAccounts() {
       try {
         const response = await ethereum.request({
           method: 'wallet_invokeSnap',
-          params: [
-            snapId,
-            {
-              method: 'generateAllAccounts',
-              params: {},
-            },
-          ],
+          params: {
+            snapId: snapId,
+            request: { method: 'generateAllAccounts' },
+          },
         });
-        alert(response);
         console.log(response);
+        alert(JSON.stringify(response));
       } catch (err) {
         console.error(err);
         alert('Problem happened: ' + err.message || err);
       }
     }
 
-    //set your current account to be different
+    async function getCurrentAccount() {
+      try {
+        const response = await ethereum.request({
+          method: 'wallet_invokeSnap',
+          params: { snapId: snapId, request: { method: 'getCurrentAccount' } },
+        });
+        console.log(response);
+        alert(JSON.stringify(response));
+      } catch (err) {
+        console.error(err);
+        alert('Problem happened: ' + err.message || err);
+      }
+    }
+
     async function setCurrentAccount() {
       try {
         const response = await ethereum.request({
           method: 'wallet_invokeSnap',
-          params: [
-            snapId,
-            {
+          params: {
+            snapId: snapId,
+            request: {
               method: 'setCurrentAccount',
               params: {
                 address: document.querySelector('#setAddress').value,
               },
             },
-          ],
+          },
         });
-        alert(response);
         console.log(response);
+        alert(JSON.stringify(response));
       } catch (err) {
         console.error(err);
         alert('Problem happened: ' + err.message || err);
       }
     }
 
-    // here we get permissions to interact with and install the snap
-    async function connect() {
-      await ethereum.request({
-        method: 'wallet_enable',
-        params: [
-          {
-            wallet_snap: { [snapId]: {} }, // version: "0.1.0-pre.30"
-          },
-        ],
-      });
-    }
-
-    // here we call the snap's "hello" method
     async function getAccounts() {
       try {
         const response = await ethereum.request({
           method: 'wallet_invokeSnap',
-          params: [
-            snapId,
-            {
-              method: 'getAccounts',
-              params: {
-                testnet: true,
-              },
-            },
-          ],
+          params: { snapId: snapId, request: { method: 'getAccounts' } },
         });
+        console.log(response);
         alert(JSON.stringify(response));
-        console.log(response);
       } catch (err) {
         console.error(err);
         alert('Problem happened: ' + err.message || err);
       }
     }
 
-    async function getBalance() {
+    async function createAccount() {
       try {
         const response = await ethereum.request({
           method: 'wallet_invokeSnap',
-          params: [
-            snapId,
-            {
-              method: 'getBalance',
+          params: {
+            snapId: snapId,
+            request: {
+              method: 'createAccountByName',
               params: {
-                testnet: true,
-                address: document.querySelector('#balanceAddress').value,
+                name: document.querySelector('#accountName').value,
               },
             },
-          ],
+          },
+        });
+        console.log(response);
+        alert(JSON.stringify(response));
+      } catch (err) {
+        console.error(err);
+        alert('Problem happened: ' + err.message || err);
+      }
+    }
+
+    async function createQuaiAccountByChain() {
+      try {
+        const response = await ethereum.request({
+          method: 'wallet_invokeSnap',
+          params: {
+            snapId: snapId,
+            request: {
+              method: 'createAccountByChain',
+              params: {
+                name: document.querySelector('#accountName').value,
+                chain: document.getElementById('createByChain').value,
+              },
+            },
+          },
         });
         alert(response);
         console.log(response);
@@ -277,42 +238,19 @@
       }
     }
 
-    async function displayBalance() {
+    async function generateNumAccounts() {
       try {
         const response = await ethereum.request({
           method: 'wallet_invokeSnap',
-          params: [
-            snapId,
-            {
-              method: 'displayBalance',
+          params: {
+            snapId: snapId,
+            request: {
+              method: 'generateNumAccounts',
               params: {
-                address: document.querySelector('#balanceAddress').value,
+                amount: document.querySelector('#NumAccounts').value,
               },
             },
-          ],
-        });
-        alert(response);
-        console.log(response);
-      } catch (err) {
-        console.error(err);
-        alert('Problem happened: ' + err.message || err);
-      }
-    }
-
-    // here we call the snap's "hello" method
-    async function create() {
-      try {
-        const response = await ethereum.request({
-          method: 'wallet_invokeSnap',
-          params: [
-            snapId,
-            {
-              method: 'createAccount',
-              params: {
-                name: document.querySelector('#accountName').value, //Name can be anything
-              },
-            },
-          ],
+          },
         });
         alert(response);
         console.log(response);
@@ -326,57 +264,30 @@
       try {
         const response = await ethereum.request({
           method: 'wallet_invokeSnap',
-          params: [
-            snapId,
-            {
-              method: 'clearAccounts',
-            },
-          ],
+          params: { snapId: snapId, request: { method: 'clearAccounts' } },
         });
-        alert(response);
         console.log(response);
+        alert(JSON.stringify(response));
       } catch (err) {
         console.error(err);
         alert('Problem happened: ' + err.message || err);
       }
     }
 
-    // here we call the snap's "hello" method
-    async function blockHeight() {
+    async function getPrivKeyByAddress() {
       try {
         const response = await ethereum.request({
           method: 'wallet_invokeSnap',
-          params: [
-            snapId,
-            {
-              method: 'getBlockHeight',
-            },
-          ],
-        });
-        alert(response);
-        console.log(response);
-      } catch (err) {
-        console.error(err);
-        alert('Problem happened: ' + err.message || err);
-      }
-    }
-
-    // generate N number of accounts
-    async function generateNumAccounts() {
-      try {
-        const response = await ethereum.request({
-          method: 'wallet_invokeSnap',
-          params: [
-            snapId,
-            {
-              method: 'generateNumAccounts',
+          params: {
+            snapId: snapId,
+            request: {
+              method: 'getPrivateKeyByAddress',
               params: {
-                amount: document.querySelector('#NumAccounts').value,
+                address: document.querySelector('#privateKeyAddress').value,
               },
             },
-          ],
+          },
         });
-        alert(response);
         console.log(response);
       } catch (err) {
         console.error(err);
@@ -388,83 +299,18 @@
       try {
         const response = await ethereum.request({
           method: 'wallet_invokeSnap',
-          params: [
-            snapId,
-            {
+          params: {
+            snapId: snapId,
+            request: {
               method: 'signData',
               params: {
-                data: document.querySelector('#SignMessage').value,
+                local: true,
+                address: document.querySelector('#SignMessage').value,
               },
             },
-          ],
+          },
         });
         alert(response);
-        console.log(response);
-      } catch (err) {
-        console.error(err);
-        alert('Problem happened: ' + err.message || err);
-      }
-    }
-
-    //Getting user transactions
-    async function getTransactions() {
-      try {
-        const response = await ethereum.request({
-          method: 'wallet_invokeSnap',
-          params: [
-            snapId,
-            {
-              method: 'getTransactions',
-              params: {
-                testnet: true,
-              },
-            },
-          ],
-        });
-        alert(response);
-        console.log(response);
-      } catch (err) {
-        console.error(err);
-        alert('Problem happened: ' + err.message || err);
-      }
-    }
-
-    //Get private key phrase for active account
-    async function getPrivateKeyByAddress() {
-      try {
-        const response = await ethereum.request({
-          method: 'wallet_invokeSnap',
-          params: [
-            snapId,
-            {
-              method: 'getPrivateKeyByAddress',
-              params: {
-                address: document.querySelector('#privateKeyAddress').value,
-              },
-            },
-          ],
-        });
-        alert(response);
-        console.log(response);
-      } catch (err) {
-        console.error(err);
-        alert('Problem happened: ' + err.message || err);
-      }
-    }
-
-    //GetAccount api call test
-    async function getAccount() {
-      try {
-        const response = await ethereum.request({
-          method: 'wallet_invokeSnap',
-          params: [
-            snapId,
-            {
-              method: 'getCurrentAccount',
-            },
-          ],
-        });
-        alert(JSON.stringify(response));
         console.log(response);
       } catch (err) {
         console.error(err);
@@ -476,18 +322,17 @@
       try {
         const response = await ethereum.request({
           method: 'wallet_invokeSnap',
-          params: [
-            snapId,
-            {
+          params: {
+            snapId: snapId,
+            request: {
               method: 'sendTransaction',
               params: {
-                to: '0x146F08a82299B7958a25a77A5cb6FD2Aec7c355D',
-                value: 100000,
-               
-                testnet: true,
+                toAddress: document.querySelector('#SendTo').value,
+                value: document.querySelector('#SendToAmount').value,
+                local: true,
               },
             },
-          ],
+          },
         });
         alert(response);
         console.log(response);

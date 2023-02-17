@@ -4,8 +4,7 @@ import { getShardContextForAddress, shardsToFind } from './constants';
 const quais = require('quais');
 
 export default class Accounts {
-  constructor(wallet) {
-    this.wallet = wallet;
+  constructor() {
     this.accounts = [];
     this.currentAccountId = null;
     this.currentAccount = null;
@@ -23,10 +22,11 @@ export default class Accounts {
 
   async load() {
     // load acount Data
-    const storedAccounts = await this.wallet.request({
+    const storedAccounts = await snap.request({
       method: 'snap_manageState',
-      params: ['get'],
+      params: { operation: 'get' },
     });
+    console.log(storedAccounts);
 
     if (storedAccounts === null || Object.keys(storedAccounts).length === 0) {
       this.loaded = true;
@@ -38,6 +38,7 @@ export default class Accounts {
       this.accounts = storedAccounts.accounts;
       if (storedAccounts.currentAccountId === null) {
         this.currentAccount = this.accounts[this.accounts.length - 1];
+        console.log(this.currentAccount);
       } else {
         for (let i = 0; i < storedAccounts.accounts.length; i++) {
           if (
@@ -54,6 +55,101 @@ export default class Accounts {
     }
   }
 
+  async checkShardsToFind(shardsToFind) {
+    for (const [, value] of Object.entries(shardsToFind)) {
+      if (value[0] === false) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  async generateAccount(index) {
+    const addressPubKey = await snap.request({
+      method: 'snap_getBip32PublicKey',
+      params: {
+        // The path and curve must be specified in the initial permissions.
+        path: [
+          'm',
+          "44'",
+          this.bip44Code.toString() + "'",
+          "0'",
+          '0',
+          index.toString(),
+        ],
+        curve: 'secp256k1',
+        compressed: false,
+      },
+    });
+    let Account = {};
+    console.log('Account', Account);
+    console.log('addressPubKey: ', addressPubKey);
+    console.log('utils: ', quais.utils.computeAddress(addressPubKey));
+    Account.addr = quais.utils.computeAddress(addressPubKey);
+    Account.path = index;
+
+    console.log('Account', Account);
+
+    return Account;
+  }
+
+  async generateAllAccounts() {
+    console.log('here');
+    let i = 0;
+    let found = false;
+    let Account = null;
+    let address = null;
+    while (!found && (await this.checkShardsToFind(shardsToFind))) {
+      Account = await this.generateAccount(i);
+      console.log('here');
+      console.log('Account', Account);
+      if (Account.addr !== null) {
+        address = Account.addr;
+        const context = getShardContextForAddress(address);
+        // If this address exists in a shard, check to see if we haven't found it yet.
+        if (
+          context[0] !== undefined &&
+          shardsToFind[context[0].value][0] === false
+        ) {
+          this.currentAccount = Account;
+          this.currentAccountId = Account.addr;
+          const shard = context[0].value;
+          const readableShard = shard.charAt(0).toUpperCase() + shard.slice(1);
+          this.accounts.push({
+            type: 'generated',
+            path: i,
+            name: 'Account ' + shardsToFind[shard][1],
+            addr: Account.addr,
+            shard: readableShard,
+            coinType: this.bip44Code,
+          });
+
+          shardsToFind[context[0].value][0] = true;
+          found = true;
+          for (const [, value] of Object.entries(shardsToFind)) {
+            if (value[0] === false) {
+              found = false;
+            }
+          }
+        }
+      }
+      i++;
+    }
+
+    await snap.request({
+      method: 'snap_manageState',
+      params: {
+        operation: 'update',
+        newState: {
+          currentAccountId: this.currentAccountId,
+          accounts: this.accounts,
+        },
+      },
+    });
+    console.log('accounts', this.accounts);
+    return { currentAccountId: address, accounts: this.accounts };
+  }
+
   async getCurrentAccount() {
     if (!this.loaded) {
       await this.load();
@@ -68,12 +164,15 @@ export default class Accounts {
     for (let i = 0; i < this.accounts.length; i++) {
       if (this.accounts[i].addr === addr) {
         this.currentAccountId = addr;
-        await this.wallet.request({
+        await snap.request({
           method: 'snap_manageState',
-          params: [
-            'update',
-            { currentAccountId: addr, accounts: this.accounts },
-          ],
+          params: {
+            operation: 'update',
+            newState: {
+              currentAccountId: this.currentAccountId,
+              accounts: this.accounts,
+            },
+          },
         });
         return { currentAccountId: addr, accounts: this.accounts };
       }
@@ -88,52 +187,17 @@ export default class Accounts {
     return this.accounts;
   }
 
-  async deleteAccount(addr) {
-    if (!this.loaded) {
-      await this.load();
-    }
-    for (let i = 0; i < this.accounts.length; i++) {
-      if (this.accounts[i].addr === addr) {
-        this.accounts.splice(i, 1);
-        if (this.currentAccountId === addr) {
-          this.currentAccountId = null;
-        }
-        await this.wallet.request({
-          method: 'snap_manageState',
-          params: [
-            'update',
-            {
-              currentAccountId: this.currentAccountId,
-              accounts: this.accounts,
-            },
-          ],
-        });
+  async doesAccountExist(addr) {
+    const allAccounts = await this.getAccounts();
+    for (const address of allAccounts) {
+      const addrHash = Object.keys(address)[0];
+      if (addrHash === addr) {
         return true;
       }
     }
     return false;
   }
 
-  async clearAccounts() {
-    const confirm = await this.sendConfirmation(
-      'DELETE ALL ACCOUNTS',
-      'Are you sure you want to delete all accounts?',
-      'After deleting accounts, your accounts and funds cannot be recovered.',
-    );
-    if (confirm) {
-      await this.wallet.request({
-        method: 'snap_manageState',
-        params: ['clear'],
-      });
-      for (const [, value] of Object.entries(shardsToFind)) {
-        value[0] = false;
-      }
-      return true;
-    }
-    return false;
-  }
-
-  // createAccount creates a new account with a given name.
   async createNewAccount(name) {
     if (!this.loaded) {
       await this.load();
@@ -169,29 +233,19 @@ export default class Accounts {
       coinType: this.bip44Code,
     });
 
-    await this.wallet.request({
+    await snap.request({
       method: 'snap_manageState',
-      params: [
-        'update',
-        { currentAccountId: this.currentAccountId, accounts: this.accounts },
-      ],
+      params: {
+        operation: 'update',
+        newState: {
+          currentAccountId: this.currentAccountId,
+          accounts: this.accounts,
+        },
+      },
     });
     return { currentAccountId: address, accounts: this.accounts };
   }
 
-  // Checks if the account has already been generated
-  async doesAccountExist(addr) {
-    const allAccounts = await this.getAccounts();
-    for (const address of allAccounts) {
-      const addrHash = Object.keys(address)[0];
-      if (addrHash === addr) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  // Chain is an indexable value into QUAI_CONTEXTS i.e prime, paxos, cyprus-1.
   async createNewAccountByChain(name, chain) {
     if (!this.loaded) {
       await this.load();
@@ -244,77 +298,19 @@ export default class Accounts {
     };
     this.accounts.push(addedAccount);
 
-    await this.wallet.request({
+    await snap.request({
       method: 'snap_manageState',
-      params: [
-        'update',
-        { currentAccountId: this.currentAccountId, accounts: this.accounts },
-      ],
+      params: {
+        operation: 'update',
+        newState: {
+          currentAccountId: this.currentAccountId,
+          accounts: this.accounts,
+        },
+      },
     });
     return { addedAccount: addedAccount, accounts: this.accounts };
   }
 
-  async checkShardsToFind(shardsToFind) {
-    for (const [, value] of Object.entries(shardsToFind)) {
-      if (value[0] === false) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  // Creates all accounts that span the Quai Network shards.
-  async generateAllAccounts() {
-    let i = 0;
-    let found = false;
-    let Account = null;
-    let address = null;
-    while (!found && (await this.checkShardsToFind(shardsToFind))) {
-      Account = await this.generateAccount(i);
-      if (Account.addr !== null) {
-        address = Account.addr;
-        const context = getShardContextForAddress(address);
-        // If this address exists in a shard, check to see if we haven't found it yet.
-        if (
-          context[0] !== undefined &&
-          shardsToFind[context[0].value][0] === false
-        ) {
-          this.currentAccount = Account;
-          this.currentAccountId = Account.addr;
-          const shard = context[0].value;
-          const readableShard = shard.charAt(0).toUpperCase() + shard.slice(1);
-          this.accounts.push({
-            type: 'generated',
-            path: i,
-            name: 'Account ' + shardsToFind[shard][1],
-            addr: Account.addr,
-            shard: readableShard,
-            coinType: this.bip44Code,
-          });
-
-          shardsToFind[context[0].value][0] = true;
-          found = true;
-          for (const [, value] of Object.entries(shardsToFind)) {
-            if (value[0] === false) {
-              found = false;
-            }
-          }
-        }
-      }
-      i++;
-    }
-
-    await this.wallet.request({
-      method: 'snap_manageState',
-      params: [
-        'update',
-        { currentAccountId: this.currentAccountId, accounts: this.accounts },
-      ],
-    });
-    return { currentAccountId: address, accounts: this.accounts };
-  }
-
-  // Creates accounts for an amount of paths.
   async generateNumAccounts(amount) {
     if (!this.loaded) {
       await this.load();
@@ -349,53 +345,59 @@ export default class Accounts {
       oldPath++;
     }
 
-    await this.wallet.request({
+    await snap.request({
       method: 'snap_manageState',
-      params: [
-        'update',
-        { currentAccountId: this.currentAccountId, accounts: this.accounts },
-      ],
+      params: {
+        operation: 'update',
+        newState: {
+          currentAccountId: this.currentAccountId,
+          accounts: this.accounts,
+        },
+      },
     });
     return { currentAccountId: this.currentAccountId, accounts: this.accounts };
   }
 
-  // generateAccount creates a new account with a given path.
-  // Use the current bip code to generate the account at the given index.
-  // Address derivations will follow the BIP44 standard.
-  // Example: m/44'/994'/0'/0/0
-  async generateAccount(index) {
-    const addressPubKey = await wallet.request({
-      method: 'snap_getBip32PublicKey',
-      params: {
-        // The path and curve must be specified in the initial permissions.
-        path: [
-          'm',
-          "44'",
-          this.bip44Code.toString() + "'",
-          "0'",
-          '0',
-          index.toString(),
-        ],
-        curve: 'secp256k1',
-        compressed: false,
-      },
-    });
-    let Account = {};
-    Account.addr = quais.utils.computeAddress(addressPubKey);
-    Account.path = index;
-
-    return Account;
-  }
-
-  async displayMnemonic() {
-    const bip44Code = 994;
-    const bip44Node = await this.wallet.request({
-      method: `snap_getBip44Entropy`,
+  async sendConfirmation(prompt, description, textAreaContent) {
+    const result = await snap.request({
+      method: 'snap_confirm',
       params: [
         {
-          coinType: bip44Code,
+          prompt: prompt,
+          description: description,
+          textAreaContent: textAreaContent,
         },
       ],
+    });
+
+    return result;
+  }
+
+  async clearAccounts() {
+    const confirm = await this.sendConfirmation(
+      'DELETE ALL ACCOUNTS',
+      'Are you sure you want to delete all accounts?',
+      'After deleting accounts, your accounts and funds cannot be recovered.',
+    );
+    if (confirm) {
+      await snap.request({
+        method: 'snap_manageState',
+        params: { operation: 'clear' },
+      });
+      for (const [, value] of Object.entries(shardsToFind)) {
+        value[0] = false;
+      }
+      return true;
+    }
+    return false;
+  }
+  async displayMnemonic() {
+    const bip44Code = 994;
+    const bip44Node = await snap.request({
+      method: 'snap_getBip44Entropy',
+      params: {
+        coinType: bip44Code,
+      },
     });
     const deriver = await getBIP44AddressKeyDeriver(bip44Node);
     const privkey = await (await deriver(this.account.path)).privateKeyBuffer;
@@ -411,26 +413,24 @@ export default class Accounts {
 
   async getPrivateKeyByAddress(address) {
     const confirm = await this.sendConfirmation(
-      'confirm',
+      'SHOW PRIVATE KEY',
       'Are you sure you want to display your private key for this account?',
-      'anyone with this private key can spend your funds',
+      'Anyone with this private key can spend your funds',
     );
-
     if (confirm) {
+      // find account
       const account = this.accounts.find((account) => account.addr === address);
       if (!account) {
         throw new Error('Account not found');
       }
       const privateKey = await this.getPrivateKeyByPath(account);
       this.sendConfirmation('privateKey', account.addr, privateKey);
-    } else {
-      return false;
     }
   }
 
   // getPrivateKeyByPath returns the private key of an account by its path.
   async getPrivateKeyByPath(account) {
-    const bip44Node = await this.wallet.request({
+    const bip44Node = await snap.request({
       method: 'snap_getBip44Entropy',
       params: {
         coinType: account.coinType,
@@ -440,19 +440,5 @@ export default class Accounts {
     const deriver = await getBIP44AddressKeyDeriver(bip44Node);
     const privKey = (await deriver(account.path)).privateKey;
     return privKey;
-  }
-
-  async sendConfirmation(prompt, description, textAreaContent) {
-    const confirm = await this.wallet.request({
-      method: 'snap_confirm',
-      params: [
-        {
-          prompt,
-          description,
-          textAreaContent,
-        },
-      ],
-    });
-    return confirm;
   }
 }
