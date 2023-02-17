@@ -3,6 +3,7 @@
   <head>
     <title>Hello, Snaps!</title>
     <link rel="icon" type="image/svg" href="./images/icon.svg" />
+    <link rel="stylesheet" href="styles.css" />
   </head>
 
   <body>
@@ -34,60 +35,53 @@
     </details>
     <br />
 
-    <button class="connect">Connect</button>
+    <button class="connect btn connect">Connect</button>
     <br />
     <br />
-    <button class="genAllAccounts">Generate All Accounts</button>
+    <button class="genAllAccounts btn hoverEffect">Generate All Accounts</button>
     <br />
     <br />
-    <button class="getaccounts">GetAccounts</button>
+    <button class="getaccounts btn hoverEffect">GetAccounts</button>
     <br />
     <br />
-    <button class="getCurrentAccount">Get Current Account</button>
+    <button class="getCurrentAccount btn hoverEffect">Get Current Account</button>
 
     <br />
     <br />
     <input id="privateKeyAddress" placeholder="0x...." type="text" />
-    <button class="getPrivKey">Get Private Key For Address</button>
+    <button class="getPrivKey btn hoverEffect">Get Private Key For Address</button>
     <br />
     <br />
-    <input id="balanceAddress" placeholder="0x...." type="text" />
-    <button class="getBalance">Get Balance</button>
+    <input id="SendTo" placeholder="0x...." type="text" />
+    <input id="SendToAmount" placeholder="amount" type="number" />
+    <button class="send btn hoverEffect">Send Transaction</button>
     <br />
     <br />
-    <input
-      id="SendTo"
-      value="0xD5813D46F74273048D485944DC7DE12FC1947f12"
-      placeholder="reciver address"
-    />
-    <input id="Amount" value="100000" placeholder="amount" type="number" />
-    <button class="send">Send</button>
-    <br />
-    <br />
-    <input id="setAddress" value="0x....." type="text" />
-    <button class="setCurrentAccount" value="Cyprus">
+    <input id="setAddress" placeholder="0x....." type="text" />
+    <button class="setCurrentAccount btn hoverEffect" value="Cyprus">
       Set Current Account
     </button>
     <br />
     <br />
-    <button class="clearAccounts">Clear Accounts</button>
-    <br />
-    <br />
+
     <input id="accountName" placeholder="Account Name" type="text" />
-    <button class="createAccount">Create Account</button>
+    <button class="createAccount btn hoverEffect">Create Account</button>
     <br />
     <br />
     <input id="createByChain" value="cyprus-1" type="'text" />
-    <button class="createQuaiAccountByChain">Create Account by Chain</button>
-    <br />
-    <br />
-    <button class="blockHeight">Block Height</button>
-
+    <button class="createQuaiAccountByChain btn hoverEffect">Create Account by Chain</button>
     <br />
     <br />
 
     <input id="NumAccounts" value="25" placeholder="amount" type="number" />
-    <button class="generateNum">Generate N Accounts</button>
+    <button class="generateNum btn hoverEffect">Generate N Accounts</button>
+    <br />
+    <br />
+    <button
+      class="clearAccounts btn delete"
+    >
+      Clear Accounts
+    </button>
   </body>
   <script>
     const snapId = `local:${location.href}`;
@@ -109,17 +103,13 @@
     const generateNButton = document.querySelector('button.generateNum');
     const clearButton = document.querySelector('button.clearAccounts');
     const privKeyByAddressButton = document.querySelector('button.getPrivKey');
-    const getBalanceButton = document.querySelector('button.getBalance');
-    const blockHeightButton = document.querySelector('button.blockHeight');
 
     const sendButton = document.querySelector('button.send');
     sendButton.addEventListener('click', sendTransaction);
     connectButton.addEventListener('click', connect);
     getAccountsButton.addEventListener('click', getAccounts);
     createAccountButton.addEventListener('click', createAccount);
-    getBalanceButton.addEventListener('click', getBalance);
     clearButton.addEventListener('click', clearAccounts);
-    blockHeightButton.addEventListener('click', blockHeight);
     generateNButton.addEventListener('click', generateNumAccounts);
     privKeyByAddressButton.addEventListener('click', getPrivKeyByAddress);
     getCurrentAccountButton.addEventListener('click', getCurrentAccount);
@@ -298,72 +288,6 @@
             },
           },
         });
-        alert(response);
-        console.log(response);
-      } catch (err) {
-        console.error(err);
-        alert('Problem happened: ' + err.message || err);
-      }
-    }
-
-    async function getBalance() {
-      try {
-        const response = await ethereum.request({
-          method: 'wallet_invokeSnap',
-          params: [
-            snapId,
-            {
-              method: 'getBalance',
-              params: {
-                testnet: true,
-                address: document.querySelector('#balanceAddress').value,
-              },
-            },
-          ],
-        });
-        alert(response);
-        console.log(response);
-      } catch (err) {
-        console.error(err);
-        alert('Problem happened: ' + err.message || err);
-      }
-    }
-
-    async function displayBalance() {
-      try {
-        const response = await ethereum.request({
-          method: 'wallet_invokeSnap',
-          params: [
-            snapId,
-            {
-              method: 'displayBalance',
-              params: {
-                address: document.querySelector('#balanceAddress').value,
-              },
-            },
-          ],
-        });
-        alert(response);
-        console.log(response);
-      } catch (err) {
-        console.error(err);
-        alert('Problem happened: ' + err.message || err);
-      }
-    }
-
-    // here we call the snap's "hello" method
-    async function blockHeight() {
-      try {
-        const response = await ethereum.request({
-          method: 'wallet_invokeSnap',
-          params: [
-            snapId,
-            {
-              method: 'getBlockHeight',
-            },
-          ],
-        });
-        alert(response);
         console.log(response);
       } catch (err) {
         console.error(err);
@@ -375,38 +299,16 @@
       try {
         const response = await ethereum.request({
           method: 'wallet_invokeSnap',
-          params: [
-            snapId,
-            {
+          params: {
+            snapId: snapId,
+            request: {
               method: 'signData',
               params: {
-                data: document.querySelector('#SignMessage').value,
+                local: true,
+                address: document.querySelector('#SignMessage').value,
               },
             },
-          ],
-        });
-        alert(response);
-        console.log(response);
-      } catch (err) {
-        console.error(err);
-        alert('Problem happened: ' + err.message || err);
-      }
-    }
-
-    //Getting user transactions
-    async function getTransactions() {
-      try {
-        const response = await ethereum.request({
-          method: 'wallet_invokeSnap',
-          params: [
-            snapId,
-            {
-              method: 'getTransactions',
-              params: {
-                testnet: true,
-              },
-            },
-          ],
+          },
         });
         alert(response);
         console.log(response);
@@ -420,18 +322,17 @@
       try {
         const response = await ethereum.request({
           method: 'wallet_invokeSnap',
-          params: [
-            snapId,
-            {
+          params: {
+            snapId: snapId,
+            request: {
               method: 'sendTransaction',
               params: {
-                to: '0x146F08a82299B7958a25a77A5cb6FD2Aec7c355D',
-                value: 100000,
-
-                testnet: true,
+                toAddress: document.querySelector('#SendTo').value,
+                value: document.querySelector('#SendToAmount').value,
+                local: true,
               },
             },
-          ],
+          },
         });
         alert(response);
         console.log(response);

@@ -1217,6 +1217,14 @@
     "@metamask/utils" "^3.3.1"
     superstruct "^0.16.7"
 
+"@metamask/snaps-ui@^0.29.0":
+  version "0.29.0"
+  resolved "https://registry.yarnpkg.com/@metamask/snaps-ui/-/snaps-ui-0.29.0.tgz#22b4261bd507837f04e3273f171a6539b0d696f2"
+  integrity sha512-CyjSR6mlGceCK4StdG9WoKJcs2GMQj1MYTubbarSzEJvUfYAbWaOgk/wdJvc47XaF6sWmMAnJCkHQfA5ePbdUA==
+  dependencies:
+    "@metamask/utils" "^3.4.1"
+    superstruct "^1.0.3"
+
 "@metamask/snaps-utils@^0.27.1":
   version "0.27.1"
   resolved "https://registry.yarnpkg.com/@metamask/snaps-utils/-/snaps-utils-0.27.1.tgz#996e6771d6975a15120801d36d2534a1763a4e08"
@@ -1238,7 +1246,7 @@
     superstruct "^0.16.7"
     validate-npm-package-name "^5.0.0"
 
-"@metamask/utils@^3.3.0", "@metamask/utils@^3.3.1":
+"@metamask/utils@^3.3.0", "@metamask/utils@^3.3.1", "@metamask/utils@^3.4.1":
   version "3.5.0"
   resolved "https://registry.yarnpkg.com/@metamask/utils/-/utils-3.5.0.tgz#2b0050baaefff3e42fd75069d9503a18345c0cee"
   integrity sha512-TqZBbL12VtRL4oz1Z0cubKr4cgxLtLFjgEaGeW6L5GTDna+R5gFy8nANTCClTj7SFxLhpJtqT18am9uIbZIy5Q==

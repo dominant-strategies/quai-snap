@@ -1,12 +1,12 @@
 import { getChainData, getShardContextForAddress } from './constants';
 import { getBIP44AddressKeyDeriver } from '@metamask/key-tree';
+import { panel, text, heading } from '@metamask/snaps-ui';
 import { getShardForAddress } from './utils';
 
 const quais = require('quais');
 
 export default class Quai {
-  constructor(snap, account) {
-    this.snap = snap;
+  constructor(account) {
     this.account = account;
     this.baseUrl = 'rpc.quaiscan.io';
     this.baseTestUrl = 'rpc.quaiscan-test.io';
@@ -77,47 +77,6 @@ export default class Quai {
     return await transactions.json();
   }
 
-  // must pass address
-  async getBalance(addr) {
-    const body = {
-      jsonrpc: '2.0',
-      method: 'quai_getBalance',
-      params: [addr, 'latest'],
-      id: 1,
-    };
-
-    const request = await fetch(this.getChainUrl(addr), {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(body),
-    });
-    const res = await request.json();
-    return parseInt(res.result, 16);
-  }
-
-  async getBlockHeight() {
-    // creates a notifican when the transaction is broadcast
-
-    const body = {
-      jsonrpc: '2.0',
-      method: 'quai_getBlockByNumber',
-      params: ['latest', true],
-      id: 1,
-    };
-    // this.getChainUrl(this.account.addr)
-    const request = await fetch(this.getChainUrl(this.account.addr), {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(body),
-    });
-
-    return await request.json();
-  }
-
   async getPrivateKey() {
     const confirm = await this.sendConfirmation(
       'Confirm action',
@@ -125,7 +84,7 @@ export default class Quai {
       'anyone with this key can spend your funds.',
     );
     if (confirm) {
-      const bip44Node = await this.snap.request({
+      const bip44Node = await snap.request({
         method: 'snap_getBip44Entropy',
         params: {
           coinType: this.bip44Code,
@@ -141,8 +100,6 @@ export default class Quai {
     }
   }
 
-  // Get params needs to be modified to get Quai Network gas data
-  // for when we send transactions.
   async getParams() {
     const request = await fetch(this.getBaseUrl() + '/suggestedParams');
     return await request.json();
@@ -169,36 +126,63 @@ export default class Quai {
     externalGasLimit = 110000,
     externalGasPrice = 2000000000,
     externalGasTip = 2000000000,
+    data = null,
+    abi = null,
   ) {
     try {
-      const fromShard = getShardForAddress(this.account.addr);
-      const toShard = getShardForAddress(to);
       const currentAccountAddr = this.account.addr;
-      console.log('value: ', value);
-      const confirm = await this.sendConfirmation(
-        'Confirm Transaction',
-        'Are you sure you want to sign the following transaction?',
-        'From: (' +
-          fromShard +
-          ') ' +
-          currentAccountAddr +
-          '\n\n' +
-          'To: (' +
-          toShard +
-          ') ' +
-          to +
-          +'HELLo' +
-          '\n\n' +
-          'Amount: ' +
-          value +
-          ' QWEI',
-        '\n\n' + value * 10 ** 18 + ' QUAI',
-      );
+      const fromShard = getShardForAddress(currentAccountAddr)[0].value;
+      const toShard = getShardForAddress(to)[0].value;
+
+      const valueInQuai = value * 10 ** -18;
+
+      let confirm;
+
+      if (data !== null) {
+        confirm = await this.sendConfirmation(
+          'Confirm Contract Transaction',
+          'Are you sure you want to sign the following transaction?',
+          'From: (' +
+            fromShard +
+            ') ' +
+            currentAccountAddr +
+            '\n\n' +
+            'To: (' +
+            toShard +
+            ') ' +
+            to +
+            '\n\n' +
+            'Amount: ' +
+            value +
+            ' QWEI',
+          '\n\n' + 'Data: ' + data + '\n\n' + 'ABI: ' + abi,
+        );
+      } else {
+        confirm = await this.sendConfirmation(
+          'Confirm Transaction',
+          'Are you sure you want to sign the following transaction?',
+          'From: (' +
+            fromShard +
+            ') ' +
+            currentAccountAddr +
+            '\n\n' +
+            'To: (' +
+            toShard +
+            ') ' +
+            to +
+            '\n\n' +
+            'Amount: ' +
+            value +
+            ' QWEI',
+          '\n\n' + valueInQuai + ' QUAI',
+        );
+      }
       if (confirm) {
         let rawTx = {
           to: to,
           from: this.account.addr,
           value: value,
+          data: data,
         };
         if (fromShard !== toShard) {
           rawTx = {
@@ -212,10 +196,11 @@ export default class Quai {
             maxFeePerGas: maxFeePerGas,
             maxPriorityFeePerGas: maxPriorityFeePerGas,
             type: 2,
+            data: data,
           };
         }
         const wallet = await this.getWallet();
-        const tx = await snap.sendTransaction(rawTx);
+        const tx = await wallet.sendTransaction(rawTx);
         return JSON.stringify(tx);
       }
     } catch (err) {
@@ -223,9 +208,7 @@ export default class Quai {
     }
   }
 
-  // Use quais wallet and signMessage()
   async signData(data) {
-    // user confirmation for data signing
     const confirm = await this.sendConfirmation(
       'Sign Data',
       'Sign "' +
@@ -242,7 +225,7 @@ export default class Quai {
       return 'User rejected data signing: error 4001';
     } else {
       const wallet = await this.getWallet();
-      const signature = await snap.signMessage(data);
+      const signature = await wallet.signMessage(data);
 
       return signature;
     }
@@ -252,35 +235,15 @@ export default class Quai {
     return this.getChainUrl(this.account.addr);
   }
 
-  async getNonce() {
-    const body = {
-      jsonrpc: '2.0',
-      method: 'quai_getTransactionCount',
-      params: [this.account.addr, 'latest'],
-      id: 1,
-    };
-    const request = await fetch(this.getChainUrl(this.account.addr), {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(body),
-    });
-
-    const res = await request.json();
-    return res.result;
-  }
-
   async getWallet() {
     const chainURL = this.getChainUrl(this.account.addr);
     const web3Provider = new quais.providers.JsonRpcProvider(chainURL);
-    const bip44Node = await this.snap.request({
+    const bip44Node = await snap.request({
       method: 'snap_getBip44Entropy',
       params: {
         coinType: this.bip44Code,
       },
     });
-
     const deriver = await getBIP44AddressKeyDeriver(bip44Node);
     const privKey = (await deriver(this.account.path)).privateKey;
     return new quais.Wallet(privKey, web3Provider);
@@ -328,16 +291,16 @@ export default class Quai {
   }
 
   async sendConfirmation(prompt, description, textAreaContent) {
-    const confirm = await this.snap.request({
+    const result = await snap.request({
       method: 'snap_confirm',
       params: [
         {
-          prompt,
-          description,
-          textAreaContent,
+          prompt: prompt,
+          description: description,
+          textAreaContent: textAreaContent,
         },
       ],
     });
-    return confirm;
+    return result;
   }
 }

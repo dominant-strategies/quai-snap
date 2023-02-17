@@ -391,7 +391,6 @@ export default class Accounts {
     }
     return false;
   }
-
   async displayMnemonic() {
     const bip44Code = 994;
     const bip44Node = await snap.request({
@@ -422,14 +421,10 @@ export default class Accounts {
       // find account
       const account = this.accounts.find((account) => account.addr === address);
       if (!account) {
-        console.log('account: ', account);
-        console.log('in');
         throw new Error('Account not found');
       }
       const privateKey = await this.getPrivateKeyByPath(account);
       this.sendConfirmation('privateKey', account.addr, privateKey);
-    } else {
-      return false;
     }
   }
 
