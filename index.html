@@ -61,6 +61,8 @@
     <button class="setCurrentAccount btn hoverEffect" value="Cyprus">
       Set Current Account
     </button>
+    <input id="signMessage" placeholder="message" type="text" />
+    <button class="sign btn hoverEffect">Sign Message</button>
     <br />
     <br />
 
@@ -103,7 +105,7 @@
     const generateNButton = document.querySelector('button.generateNum');
     const clearButton = document.querySelector('button.clearAccounts');
     const privKeyByAddressButton = document.querySelector('button.getPrivKey');
-
+    const signMessageButton = document.querySelector('button.sign');
     const sendButton = document.querySelector('button.send');
     sendButton.addEventListener('click', sendTransaction);
     connectButton.addEventListener('click', connect);
@@ -116,7 +118,7 @@
     setCurrentAccountButton.addEventListener('click', setCurrentAccount);
     genAllAccountsButton.addEventListener('click', genAllAccounts);
     accountByChainButton.addEventListener('click', createQuaiAccountByChain);
-
+    signMessageButton.addEventListener('click', sign);
     async function connect() {
       await ethereum.request({
         method: 'wallet_requestSnaps',
@@ -304,8 +306,7 @@
             request: {
               method: 'signData',
               params: {
-                local: true,
-                address: document.querySelector('#SignMessage').value,
+                data: document.querySelector('#signMessage').value,
               },
             },
           },

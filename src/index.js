@@ -87,6 +87,7 @@ export const onRpcRequest = async ({ origin, request }) => {
         );
       }
     case 'signData':
+      console.log('signing data: ' + request.params.data);
       return quaiSnap.signData(request.params.data);
     case 'getChainURL':
       return quaiSnap.getChainURL();

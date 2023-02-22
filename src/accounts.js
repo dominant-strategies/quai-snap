@@ -26,8 +26,6 @@ export default class Accounts {
       method: 'snap_manageState',
       params: { operation: 'get' },
     });
-    console.log(storedAccounts);
-
     if (storedAccounts === null || Object.keys(storedAccounts).length === 0) {
       this.loaded = true;
       return {
@@ -38,7 +36,6 @@ export default class Accounts {
       this.accounts = storedAccounts.accounts;
       if (storedAccounts.currentAccountId === null) {
         this.currentAccount = this.accounts[this.accounts.length - 1];
-        console.log(this.currentAccount);
       } else {
         for (let i = 0; i < storedAccounts.accounts.length; i++) {
           if (
@@ -82,27 +79,20 @@ export default class Accounts {
       },
     });
     let Account = {};
-    console.log('Account', Account);
-    console.log('addressPubKey: ', addressPubKey);
-    console.log('utils: ', quais.utils.computeAddress(addressPubKey));
+
     Account.addr = quais.utils.computeAddress(addressPubKey);
     Account.path = index;
-
-    console.log('Account', Account);
 
     return Account;
   }
 
   async generateAllAccounts() {
-    console.log('here');
     let i = 0;
     let found = false;
     let Account = null;
     let address = null;
     while (!found && (await this.checkShardsToFind(shardsToFind))) {
       Account = await this.generateAccount(i);
-      console.log('here');
-      console.log('Account', Account);
       if (Account.addr !== null) {
         address = Account.addr;
         const context = getShardContextForAddress(address);
@@ -146,7 +136,6 @@ export default class Accounts {
         },
       },
     });
-    console.log('accounts', this.accounts);
     return { currentAccountId: address, accounts: this.accounts };
   }
 
