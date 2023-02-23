@@ -9,7 +9,7 @@ export default class Accounts {
     this.currentAccountId = null;
     this.currentAccount = null;
     this.loaded = false;
-    this.bip44Code = 994;
+    this.bip44Code = 1;
   }
 
   async load() {
