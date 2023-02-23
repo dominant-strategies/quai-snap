@@ -44,12 +44,11 @@ export const onRpcRequest = async ({ origin, request }) => {
       return await accountLib.getPrivateKeyByPath(request.params.path);
     case 'getBaseUrl':
       return await quaiSnap.getBaseUrl();
-    case 'getBalance':
-      return await quaiSnap.getBalance(request.params.address);
-    case 'getBlockHeight': {
-      const response = await quaiSnap.getBlockHeight();
-      return response.result.number;
-    }
+    case 'renameAccount':
+      return await accountLib.renameAccount(
+        request.params.address,
+        request.params.name,
+      );
     case 'sendTransaction':
       const isExternalTransaction = determineTypeOfTransaction(
         currentAccount,

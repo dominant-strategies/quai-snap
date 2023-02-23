@@ -61,6 +61,8 @@
     <button class="setCurrentAccount btn hoverEffect" value="Cyprus">
       Set Current Account
     </button>
+    <input id="signMessage" placeholder="message" type="text" />
+    <button class="sign btn hoverEffect">Sign Message</button>
     <br />
     <br />
 
@@ -82,6 +84,13 @@
     >
       Clear Accounts
     </button>
+    <br />
+    <br />
+    <input id="addressRename" placeholder="0x...." type="text" />
+    <input id="newName" placeholder="new name" type="text" />
+    <button class="renameAccount btn hoverEffect">Rename Account</button>
+    <br />
+    <br />
   </body>
   <script>
     const snapId = `local:${location.href}`;
@@ -99,11 +108,12 @@
     const accountByChainButton = document.querySelector(
       'button.createQuaiAccountByChain',
     );
+    const renameAccountButton = document.querySelector('button.renameAccount');
     const getAccountsButton = document.querySelector('button.getaccounts');
     const generateNButton = document.querySelector('button.generateNum');
     const clearButton = document.querySelector('button.clearAccounts');
     const privKeyByAddressButton = document.querySelector('button.getPrivKey');
-
+    const signMessageButton = document.querySelector('button.sign');
     const sendButton = document.querySelector('button.send');
     sendButton.addEventListener('click', sendTransaction);
     connectButton.addEventListener('click', connect);
@@ -115,7 +125,8 @@
     setCurrentAccountButton.addEventListener('click', setCurrentAccount);
     genAllAccountsButton.addEventListener('click', genAllAccounts);
     accountByChainButton.addEventListener('click', createQuaiAccountByChain);
-
+    signMessageButton.addEventListener('click', sign);
+    renameAccountButton.addEventListener('click', renameAccount);
     async function connect() {
       await ethereum.request({
         method: 'wallet_requestSnaps',
@@ -123,6 +134,28 @@
           [snapId]: {},
         },
       });
+    }
+
+    async function renameAccount() {
+      const address = document.getElementById('addressRename').value;
+      const newName = document.getElementById('newName').value;
+      try {
+        const response = await ethereum.request({
+          method: 'wallet_invokeSnap',
+          params: {
+            snapId: snapId,
+            request: {
+              method: 'renameAccount',
+              params: { address: address, name: newName },
+            },
+          },
+        });
+        console.log(response);
+        alert(JSON.stringify(response));
+      } catch (err) {
+        console.error(err);
+        alert('Problem happened: ' + err.message || err);
+      }
     }
 
     async function genAllAccounts() {
@@ -268,8 +301,7 @@
             request: {
               method: 'signData',
               params: {
-                local: true,
-                address: document.querySelector('#SignMessage').value,
+                data: document.querySelector('#signMessage').value,
               },
             },
           },

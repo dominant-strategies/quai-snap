@@ -9,7 +9,7 @@ export default class Quai {
     this.account = account;
     this.network = "colosseum";
     this.overrideURL = false;
-    this.bip44Code = 994;
+    this.bip44Code = 1;
   }
 
   getBaseUrl(chain) {
