@@ -110,7 +110,6 @@
     getAccountsButton.addEventListener('click', getAccounts);
     createAccountButton.addEventListener('click', createAccount);
     clearButton.addEventListener('click', clearAccounts);
-    generateNButton.addEventListener('click', generateNumAccounts);
     privKeyByAddressButton.addEventListener('click', getPrivKeyByAddress);
     getCurrentAccountButton.addEventListener('click', getCurrentAccount);
     setCurrentAccountButton.addEventListener('click', setCurrentAccount);
@@ -135,10 +134,8 @@
             request: { method: 'generateAllAccounts' },
           },
         });
-        console.log(response);
         alert(JSON.stringify(response));
       } catch (err) {
-        console.error(err);
         alert('Problem happened: ' + err.message || err);
       }
     }
@@ -149,10 +146,8 @@
           method: 'wallet_invokeSnap',
           params: { snapId: snapId, request: { method: 'getCurrentAccount' } },
         });
-        console.log(response);
         alert(JSON.stringify(response));
       } catch (err) {
-        console.error(err);
         alert('Problem happened: ' + err.message || err);
       }
     }
@@ -167,14 +162,13 @@
               method: 'setCurrentAccount',
               params: {
                 address: document.querySelector('#setAddress').value,
+                network: "local"
               },
             },
           },
         });
-        console.log(response);
         alert(JSON.stringify(response));
       } catch (err) {
-        console.error(err);
         alert('Problem happened: ' + err.message || err);
       }
     }
@@ -185,10 +179,8 @@
           method: 'wallet_invokeSnap',
           params: { snapId: snapId, request: { method: 'getAccounts' } },
         });
-        console.log(response);
         alert(JSON.stringify(response));
       } catch (err) {
-        console.error(err);
         alert('Problem happened: ' + err.message || err);
       }
     }
@@ -203,14 +195,13 @@
               method: 'createAccountByName',
               params: {
                 name: document.querySelector('#accountName').value,
+                network: "local"
               },
             },
           },
         });
-        console.log(response);
         alert(JSON.stringify(response));
       } catch (err) {
-        console.error(err);
         alert('Problem happened: ' + err.message || err);
       }
     }
@@ -226,36 +217,13 @@
               params: {
                 name: document.querySelector('#accountName').value,
                 chain: document.getElementById('createByChain').value,
+                network: "local"
               },
             },
           },
         });
         alert(response);
-        console.log(response);
       } catch (err) {
-        console.error(err);
-        alert('Problem happened: ' + err.message || err);
-      }
-    }
-
-    async function generateNumAccounts() {
-      try {
-        const response = await ethereum.request({
-          method: 'wallet_invokeSnap',
-          params: {
-            snapId: snapId,
-            request: {
-              method: 'generateNumAccounts',
-              params: {
-                amount: document.querySelector('#NumAccounts').value,
-              },
-            },
-          },
-        });
-        alert(response);
-        console.log(response);
-      } catch (err) {
-        console.error(err);
         alert('Problem happened: ' + err.message || err);
       }
     }
@@ -266,10 +234,8 @@
           method: 'wallet_invokeSnap',
           params: { snapId: snapId, request: { method: 'clearAccounts' } },
         });
-        console.log(response);
         alert(JSON.stringify(response));
       } catch (err) {
-        console.error(err);
         alert('Problem happened: ' + err.message || err);
       }
     }
@@ -288,9 +254,7 @@
             },
           },
         });
-        console.log(response);
       } catch (err) {
-        console.error(err);
         alert('Problem happened: ' + err.message || err);
       }
     }
@@ -311,9 +275,7 @@
           },
         });
         alert(response);
-        console.log(response);
       } catch (err) {
-        console.error(err);
         alert('Problem happened: ' + err.message || err);
       }
     }
@@ -329,15 +291,13 @@
               params: {
                 toAddress: document.querySelector('#SendTo').value,
                 value: document.querySelector('#SendToAmount').value,
-                local: true,
+                network: "local"
               },
             },
           },
         });
         alert(response);
-        console.log(response);
       } catch (err) {
-        console.error(err);
         alert('Problem happened: ' + err.message || err);
       }
     }
