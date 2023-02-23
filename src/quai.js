@@ -1,6 +1,5 @@
 import { getChainData, getShardContextForAddress } from './constants';
 import { getBIP44AddressKeyDeriver } from '@metamask/key-tree';
-import { panel, text, heading } from '@metamask/snaps-ui';
 import { getShardForAddress } from './utils';
 
 const quais = require('quais');
@@ -8,11 +7,7 @@ const quais = require('quais');
 export default class Quai {
   constructor(account) {
     this.account = account;
-    this.baseUrl = 'rpc.quaiscan.io';
-    this.baseTestUrl = 'rpc.quaiscan-test.io';
-    this.devnet = false;
-    this.testnet = false;
-    this.local = false;
+    this.network = "colosseum";
     this.overrideURL = false;
     this.bip44Code = 994;
   }
@@ -21,60 +16,31 @@ export default class Quai {
     if (chain === undefined) {
       chain = 'prime';
     }
-    if (this.testnet) {
-      let chainData = getChainData(chain);
-      return 'http://localhost:' + chainData.httpPort;
+    switch (this.network){
+      case "colosseum":
+        return 'https://rpc.' + chain.replace(/-/g, '') + '.colosseum.quaiscan.io';
+      case "garden":
+        return 'https://rpc.' + chain.replace(/-/g, '') + '.garden.quaiscan.io';
+      case "local":
+        let chainData = getChainData(chain);
+        return 'http://localhost:' + chainData.httpPort;
     }
-    return 'https://' + chain + '.' + this.baseUrl;
   }
-
+  
   getChainUrl(addr) {
     if (this.overrideURL) {
       return this.overrideURL;
     }
     let context = getShardContextForAddress(addr);
-    let url = context[0].rpc;
-    if (this.devnet) {
-      parts = url.split('.');
-      url =
-        parts[0] + '.' + parts[1] + '.colosseum.' + parts[2] + '.' + parts[3];
-    }
-    if (this.testnet) {
-      parts = url.split('.');
-      url = parts[0] + '.' + parts[1] + '.garden.' + parts[2] + '.' + parts[3];
-    }
-    if (this.local) {
-      return 'http://localhost:' + context[0].httpPort;
-    }
-    return url;
+    return this.getBaseUrl(context[0].value)
   }
 
-  setDevnet(bool) {
-    this.devnet = bool;
+  setNetwork(network) {
+    this.network = network;
   }
 
   setOverrideURL(url) {
     this.overrideURL = url;
-  }
-
-  setLocal(bool) {
-    this.local = bool;
-  }
-
-  setTestnet(bool) {
-    this.testnet = bool;
-    if (bool) {
-      this.bip44Code = 994;
-    } else {
-      this.bip44Code = 994;
-    }
-  }
-
-  async getTransactions() {
-    const transactions = await fetch(
-      this.getBaseUrl() + '/transactions?address=' + this.account.addr,
-    );
-    return await transactions.json();
   }
 
   async getPrivateKey() {
@@ -98,11 +64,6 @@ export default class Quai {
     } else {
       return '';
     }
-  }
-
-  async getParams() {
-    const request = await fetch(this.getBaseUrl() + '/suggestedParams');
-    return await request.json();
   }
 
   async notify(message) {
@@ -137,7 +98,6 @@ export default class Quai {
       const valueInQuai = value * 10 ** -18;
 
       let confirm;
-
       if (data !== null) {
         confirm = await this.sendConfirmation(
           'Confirm Contract Transaction',
@@ -182,6 +142,9 @@ export default class Quai {
           to: to,
           from: this.account.addr,
           value: value,
+          maxFeePerGas: maxFeePerGas,
+          maxPriorityFeePerGas: maxPriorityFeePerGas,
+          gasLimit: gasLimit,
           data: data,
         };
         if (fromShard !== toShard) {
@@ -244,6 +207,7 @@ export default class Quai {
         coinType: this.bip44Code,
       },
     });
+    console.log("BIP CODE", this.bip44Code)
     const deriver = await getBIP44AddressKeyDeriver(bip44Node);
     const privKey = (await deriver(this.account.path)).privateKey;
     return new quais.Wallet(privKey, web3Provider);
