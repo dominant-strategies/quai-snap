@@ -190,52 +190,6 @@ describe('Accounts.js Tests', function () {
     expect(accountsClass.accounts).to.deep.equal([])
   })
 
-  it('should generate an account given a name', async function () {
-    const mockStateWithAccounts = {
-      currentAccountId: mockAccountsArray[0].addr,
-      accounts: mockAccountsArray
-    }
-    mockWallet.rpcStubs.snap_manageState
-      .withArgs('get')
-      .resolves(mockStateWithAccounts)
-
-    const accountsClass = new Accounts(
-      mockWallet,
-      mockAccountsArray,
-      mockAccountsArray[0].addr,
-      mockAccountsArray[0],
-      false
-    )
-
-    await accountsClass.createNewAccount('Test Account')
-    expect(
-      accountsClass.accounts[accountsClass.accounts.length - 1].name
-    ).to.equal('Test Account')
-  })
-
-  it('should generate an account with the name Account + number when given no name', async function () {
-    const mockStateWithAccounts = {
-      currentAccountId: mockAccountsArray[0].addr,
-      accounts: mockAccountsArray
-    }
-    mockWallet.rpcStubs.snap_manageState
-      .withArgs('get')
-      .resolves(mockStateWithAccounts)
-
-    const accountsClass = new Accounts(
-      mockWallet,
-      mockAccountsArray,
-      mockAccountsArray[0].addr,
-      mockAccountsArray[0],
-      false
-    )
-
-    await accountsClass.createNewAccount()
-    expect(
-      accountsClass.accounts[accountsClass.accounts.length - 1].name
-    ).to.equal('Account 16')
-  })
-
   it('should generate an account with a given name and chainId', async function () {
     const mockStateWithAccounts = {
       currentAccountId: mockAccountsArray[0].addr,
@@ -308,28 +262,6 @@ describe('Accounts.js Tests', function () {
     const generatedAccount = await accountsClass.generateAccount(14)
     expect(generatedAccount).to.have.property('addr')
     expect(generatedAccount).to.have.property('path')
-  })
-
-  it('should generate a specified number of accounts', async function () {
-    const mockStateWithAccounts = {
-      currentAccountId: mockAccountsArray[0].addr,
-      accounts: mockAccountsArray
-    }
-
-    mockWallet.rpcStubs.snap_manageState
-      .withArgs('get')
-      .resolves(mockStateWithAccounts)
-
-    const accountsClass = new Accounts(
-      mockWallet,
-      mockAccountsArray,
-      mockAccountsArray[0].addr,
-      mockAccountsArray[0],
-      false
-    )
-    const mockAccountsArrayLengthBefore = mockAccountsArray.length
-    const result = await accountsClass.generateNumAccounts(2)
-    expect(result.accounts).to.have.lengthOf(mockAccountsArrayLengthBefore + 2)
   })
 
   it('should generate all accounts', async function () {

@@ -9,15 +9,7 @@ export default class Accounts {
     this.currentAccountId = null;
     this.currentAccount = null;
     this.loaded = false;
-    this.bip44Code = 994;
-  }
-
-  async setTestnet(bool) {
-    if (bool) {
-      this.bip44Code = 1;
-    } else {
-      this.bip44Code = 994;
-    }
+    this.bip44Code = 1;
   }
 
   async load() {
@@ -79,7 +71,6 @@ export default class Accounts {
       },
     });
     let Account = {};
-
     Account.addr = quais.utils.computeAddress(addressPubKey);
     Account.path = index;
 
@@ -136,7 +127,6 @@ export default class Accounts {
         },
       },
     });
-
     return { currentAccountId: address, accounts: this.accounts };
   }
 
@@ -186,78 +176,6 @@ export default class Accounts {
       }
     }
     return false;
-  }
-
-  async createNewAccount(name) {
-    if (!this.loaded) {
-      await this.load();
-    }
-    // If there is an account with such a name, return an error
-    const oldPath = 0;
-    for (let i = 0; i < this.accounts.length; i++) {
-      if (this.accounts[i].name === name) {
-        return { error: 'account name already exists' };
-      }
-    }
-    let path = oldPath + 1;
-    if (name === undefined || name === '') {
-      name = 'Account ' + path;
-    }
-    const Account = await this.generateAccount(path);
-    const address = Account.addr;
-    let context = getShardContextForAddress(address);
-    while (context === undefined || context === null || context.length === 0) {
-      const Account = await this.generateAccount(path + 1);
-      const address = Account.addr;
-      context = getShardContextForAddress(address);
-      path++;
-    }
-    const shard = context[0].value;
-    const readableShard = shard.charAt(0).toUpperCase() + shard.slice(1);
-    this.accounts.push({
-      type: 'generated',
-      path: path,
-      name: name,
-      addr: address,
-      shard: readableShard,
-      coinType: this.bip44Code,
-    });
-
-    await snap.request({
-      method: 'snap_manageState',
-      params: {
-        operation: 'update',
-        newState: {
-          currentAccountId: this.currentAccountId,
-          accounts: this.accounts,
-        },
-      },
-    });
-    return { currentAccountId: address, accounts: this.accounts };
-  }
-
-  async renameAccount(address, name) {
-    if (!this.loaded) {
-      await this.load();
-    }
-    if (this.doesAccountExist(address)) {
-      for (let i = 0; i < this.accounts.length; i++) {
-        if (this.accounts[i].addr === address) {
-          this.accounts[i].name = name;
-          await snap.request({
-            method: 'snap_manageState',
-            params: {
-              operation: 'update',
-              newState: {
-                currentAccountId: this.currentAccountId,
-                accounts: this.accounts,
-              },
-            },
-          });
-          return { currentAccountId: address, accounts: this.accounts };
-        }
-      }
-    }
   }
 
   async createNewAccountByChain(name, chain) {
@@ -323,53 +241,6 @@ export default class Accounts {
     return { addedAccount: addedAccount, accounts: this.accounts };
   }
 
-  async generateNumAccounts(amount) {
-    if (!this.loaded) {
-      await this.load();
-    }
-    let oldPath = 0;
-    if (this.accounts.length !== 0) {
-      oldPath = this.accounts[this.accounts.length - 1].path;
-    }
-
-    let i = 0;
-    while (i < amount) {
-      const name = 'Account ' + (oldPath + 1);
-      const Account = await this.generateAccount(oldPath + 1);
-      const address = Account.addr;
-      const context = getShardContextForAddress(address);
-      if (context[0] !== undefined) {
-        const shard = context[0].value;
-        const readableShard = shard.charAt(0).toUpperCase() + shard.slice(1);
-        const path = oldPath + 1;
-        this.currentAccount = Account;
-        this.currentAccountId = address;
-        this.accounts.push({
-          type: 'generated',
-          path,
-          name,
-          addr: address,
-          shard: readableShard,
-          coinType: this.bip44Code,
-        });
-        i++;
-      }
-      oldPath++;
-    }
-
-    await snap.request({
-      method: 'snap_manageState',
-      params: {
-        operation: 'update',
-        newState: {
-          currentAccountId: this.currentAccountId,
-          accounts: this.accounts,
-        },
-      },
-    });
-    return { currentAccountId: this.currentAccountId, accounts: this.accounts };
-  }
-
   async sendConfirmation(prompt, description, textAreaContent) {
     const result = await snap.request({
       method: 'snap_confirm',
@@ -403,25 +274,6 @@ export default class Accounts {
     }
     return false;
   }
-  async displayMnemonic() {
-    const bip44Code = 994;
-    const bip44Node = await snap.request({
-      method: 'snap_getBip44Entropy',
-      params: {
-        coinType: bip44Code,
-      },
-    });
-    const deriver = await getBIP44AddressKeyDeriver(bip44Node);
-    const privkey = await (await deriver(this.account.path)).privateKeyBuffer;
-    const mnemonic = await this.secretKeyToMnemonic(privkey);
-
-    if (confirm) {
-      this.sendConfirmation('mnemonic', this.account.addr, mnemonic);
-      return true;
-    } else {
-      return false;
-    }
-  }
 
   async getPrivateKeyByAddress(address) {
     const confirm = await this.sendConfirmation(
@@ -452,5 +304,35 @@ export default class Accounts {
     const deriver = await getBIP44AddressKeyDeriver(bip44Node);
     const privKey = (await deriver(account.path)).privateKey;
     return privKey;
+  }
+
+  // renameAccount renames an account by its address.
+  async renameAccount(address, name) {
+    // Check if account exists
+    let account = this.accounts.find((account) => account.addr === address);
+    if (!account) {
+      throw new Error('Account not found');
+    }
+    
+    // Update in place
+    this.accounts.map((account) => {
+      if (account.addr === address) {
+        account.name = name.toString();
+      }
+      return account;
+    });
+
+    // Save to state
+    await snap.request({
+      method: 'snap_manageState',
+      params: {
+        operation: 'update',
+        newState: {
+          currentAccountId: this.currentAccountId,
+          accounts: this.accounts,
+        },
+      },
+    });
+    return account;
   }
 }
