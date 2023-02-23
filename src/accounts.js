@@ -93,11 +93,9 @@ export default class Accounts {
     let found = false;
     while (!found && (await this.checkShardsToFind())) {
       Account = await this.generateAccount(i);
-      console.log('Account', Account);
       if (Account.addr !== null) {
         let address = Account.addr;
         const context = getShardContextForAddress(address);
-        console.log('context', context[0]);
         // If this address exists in a shard, check to see if we haven't found it yet.
         if (
           context[0] !== undefined &&
@@ -270,10 +268,6 @@ export default class Accounts {
     if (!chains.includes(chain)) {
       return { error: 'chain not found' };
     }
-    console.log(shardsToFind);
-    console.log('chain', chain);
-    console.log('ovbject', shardsToFind[chain]);
-    console.log('index', shardsToFind[chain].index);
     let i = shardsToFind[chain].index + 1;
     let found = false;
     let Account = null;
@@ -282,8 +276,6 @@ export default class Accounts {
       Account = await this.generateAccount(i);
       const addr = Account.addr;
       const context = getShardContextForAddress(addr);
-      console.log(Account);
-      console.log('context', context[0]);
       if (context[0] !== undefined) {
         if (
           context[0].value === chain &&
