@@ -44,7 +44,7 @@ describe('Quai.js tests', () => {
     expect(quai.getBaseUrl('cyprus-1')).to.equal(
       'https://cyprus-1.rpc.quaiscan.io',
     );
-    quai.setNetwork("garden");
+    quai.setNetwork("local");
     expect(quai.getBaseUrl('cyprus-1')).to.equal(
       'http://localhost:8610',
     );
@@ -89,7 +89,7 @@ describe('Quai.js tests', () => {
   it('should be able to set devnet', () => {
     let quai = new Quai(mockWallet, mockAccountsArray[2]);
     quai.setNetwork("garden");
-    expect(quai.devnet).to.equal(true);
+    expect(quai.network).to.equal("garden");
   });
 
   it('should sign data and return a signature', async () => {

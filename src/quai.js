@@ -207,7 +207,6 @@ export default class Quai {
         coinType: this.bip44Code,
       },
     });
-    console.log("BIP CODE", this.bip44Code)
     const deriver = await getBIP44AddressKeyDeriver(bip44Node);
     const privKey = (await deriver(this.account.path)).privateKey;
     return new quais.Wallet(privKey, web3Provider);
