@@ -305,4 +305,34 @@ export default class Accounts {
     const privKey = (await deriver(account.path)).privateKey;
     return privKey;
   }
+
+  // renameAccount renames an account by its address.
+  async renameAccount(address, name) {
+    // Check if account exists
+    let account = this.accounts.find((account) => account.addr === address);
+    if (!account) {
+      throw new Error('Account not found');
+    }
+    
+    // Update in place
+    this.accounts.map((account) => {
+      if (account.addr === address) {
+        account.name = name.toString();
+      }
+      return account;
+    });
+
+    // Save to state
+    await snap.request({
+      method: 'snap_manageState',
+      params: {
+        operation: 'update',
+        newState: {
+          currentAccountId: this.currentAccountId,
+          accounts: this.accounts,
+        },
+      },
+    });
+    return account;
+  }
 }
