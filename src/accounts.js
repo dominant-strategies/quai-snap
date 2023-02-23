@@ -52,9 +52,9 @@ export default class Accounts {
     }
   }
 
-  async checkShardsToFind(shardsToFind) {
-    for (const [, value] of Object.entries(shardsToFind)) {
-      if (value[0] === false) {
+  async checkShardsToFind() {
+    for (const shard in shardsToFind) {
+      if (shardsToFind[shard].found === false) {
         return true;
       }
     }
@@ -88,18 +88,20 @@ export default class Accounts {
 
   async generateAllAccounts() {
     let i = 0;
-    let found = false;
     let Account = null;
     let address = null;
-    while (!found && (await this.checkShardsToFind(shardsToFind))) {
+    let found = false;
+    while (!found && (await this.checkShardsToFind())) {
       Account = await this.generateAccount(i);
+      console.log('Account', Account);
       if (Account.addr !== null) {
-        address = Account.addr;
+        let address = Account.addr;
         const context = getShardContextForAddress(address);
+        console.log('context', context[0]);
         // If this address exists in a shard, check to see if we haven't found it yet.
         if (
           context[0] !== undefined &&
-          shardsToFind[context[0].value][0] === false
+          shardsToFind[context[0].value].found === false
         ) {
           this.currentAccount = Account;
           this.currentAccountId = Account.addr;
@@ -108,16 +110,17 @@ export default class Accounts {
           this.accounts.push({
             type: 'generated',
             path: i,
-            name: 'Account ' + shardsToFind[shard][1],
+            name: 'Account ' + i,
             addr: Account.addr,
             shard: readableShard,
             coinType: this.bip44Code,
           });
 
-          shardsToFind[context[0].value][0] = true;
+          shardsToFind[context[0].value].found = true;
+          shardsToFind[context[0].value].index = i;
           found = true;
-          for (const [, value] of Object.entries(shardsToFind)) {
-            if (value[0] === false) {
+          for (const shard in shardsToFind) {
+            if (shardsToFind[shard].found === false) {
               found = false;
             }
           }
@@ -125,7 +128,6 @@ export default class Accounts {
       }
       i++;
     }
-
     await snap.request({
       method: 'snap_manageState',
       params: {
@@ -136,6 +138,7 @@ export default class Accounts {
         },
       },
     });
+
     return { currentAccountId: address, accounts: this.accounts };
   }
 
@@ -192,7 +195,7 @@ export default class Accounts {
       await this.load();
     }
     // If there is an account with such a name, return an error
-    const oldPath = this.accounts.length;
+    const oldPath = 0;
     for (let i = 0; i < this.accounts.length; i++) {
       if (this.accounts[i].name === name) {
         return { error: 'account name already exists' };
@@ -215,8 +218,8 @@ export default class Accounts {
     const readableShard = shard.charAt(0).toUpperCase() + shard.slice(1);
     this.accounts.push({
       type: 'generated',
-      path,
-      name,
+      path: path,
+      name: name,
       addr: address,
       shard: readableShard,
       coinType: this.bip44Code,
@@ -235,6 +238,30 @@ export default class Accounts {
     return { currentAccountId: address, accounts: this.accounts };
   }
 
+  async renameAccount(address, name) {
+    if (!this.loaded) {
+      await this.load();
+    }
+    if (this.doesAccountExist(address)) {
+      for (let i = 0; i < this.accounts.length; i++) {
+        if (this.accounts[i].addr === address) {
+          this.accounts[i].name = name;
+          await snap.request({
+            method: 'snap_manageState',
+            params: {
+              operation: 'update',
+              newState: {
+                currentAccountId: this.currentAccountId,
+                accounts: this.accounts,
+              },
+            },
+          });
+          return { currentAccountId: address, accounts: this.accounts };
+        }
+      }
+    }
+  }
+
   async createNewAccountByChain(name, chain) {
     if (!this.loaded) {
       await this.load();
@@ -243,19 +270,20 @@ export default class Accounts {
     if (!chains.includes(chain)) {
       return { error: 'chain not found' };
     }
-    let oldPath = 0;
-    if (this.accounts.length > 0) {
-      oldPath = this.accounts[this.accounts.length - 1].path;
-    }
-
-    let i = 1;
+    console.log(shardsToFind);
+    console.log('chain', chain);
+    console.log('ovbject', shardsToFind[chain]);
+    console.log('index', shardsToFind[chain].index);
+    let i = shardsToFind[chain].index + 1;
     let found = false;
     let Account = null;
     let shardName = null;
     while (!found) {
-      Account = await this.generateAccount(oldPath + i);
+      Account = await this.generateAccount(i);
       const addr = Account.addr;
       const context = getShardContextForAddress(addr);
+      console.log(Account);
+      console.log('context', context[0]);
       if (context[0] !== undefined) {
         if (
           context[0].value === chain &&
@@ -265,22 +293,25 @@ export default class Accounts {
             context[0].value.charAt(0).toUpperCase() +
             context[0].value.slice(1);
           found = true;
+          shardsToFind[context[0].value].index = i;
+          if (shardsToFind[context[0].value].found === false) {
+            shardsToFind[context[0].value].found = true;
+          }
           break;
         }
       }
       i++;
     }
-    const path = oldPath + i;
     if (!name) {
-      name = 'Account ' + path;
+      name = 'Account ' + i;
     }
     const address = Account.addr;
     this.currentAccountId = address;
     this.currentAccount = Account;
     const addedAccount = {
       type: 'generated',
-      path,
-      name,
+      path: i,
+      name: name,
       addr: address,
       shard: shardName,
       coinType: this.bip44Code,
