@@ -65,18 +65,8 @@
     <button class="sign btn hoverEffect">Sign Message</button>
     <br />
     <br />
-
-    <input id="accountName" placeholder="Account Name" type="text" />
-    <button class="createAccount btn hoverEffect">Create Account</button>
-    <br />
-    <br />
     <input id="createByChain" value="cyprus-1" type="'text" />
     <button class="createQuaiAccountByChain btn hoverEffect">Create Account by Chain</button>
-    <br />
-    <br />
-
-    <input id="NumAccounts" value="25" placeholder="amount" type="number" />
-    <button class="generateNum btn hoverEffect">Generate N Accounts</button>
     <br />
     <br />
     <button
@@ -110,7 +100,6 @@
     );
     const renameAccountButton = document.querySelector('button.renameAccount');
     const getAccountsButton = document.querySelector('button.getaccounts');
-    const generateNButton = document.querySelector('button.generateNum');
     const clearButton = document.querySelector('button.clearAccounts');
     const privKeyByAddressButton = document.querySelector('button.getPrivKey');
     const signMessageButton = document.querySelector('button.sign');
@@ -118,7 +107,6 @@
     sendButton.addEventListener('click', sendTransaction);
     connectButton.addEventListener('click', connect);
     getAccountsButton.addEventListener('click', getAccounts);
-    createAccountButton.addEventListener('click', createAccount);
     clearButton.addEventListener('click', clearAccounts);
     privKeyByAddressButton.addEventListener('click', getPrivKeyByAddress);
     getCurrentAccountButton.addEventListener('click', getCurrentAccount);
@@ -211,27 +199,6 @@
         const response = await ethereum.request({
           method: 'wallet_invokeSnap',
           params: { snapId: snapId, request: { method: 'getAccounts' } },
-        });
-        alert(JSON.stringify(response));
-      } catch (err) {
-        alert('Problem happened: ' + err.message || err);
-      }
-    }
-
-    async function createAccount() {
-      try {
-        const response = await ethereum.request({
-          method: 'wallet_invokeSnap',
-          params: {
-            snapId: snapId,
-            request: {
-              method: 'createAccountByName',
-              params: {
-                name: document.querySelector('#accountName').value,
-                network: "local"
-              },
-            },
-          },
         });
         alert(JSON.stringify(response));
       } catch (err) {
