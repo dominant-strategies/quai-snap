@@ -9,15 +9,7 @@ export default class Accounts {
     this.currentAccountId = null;
     this.currentAccount = null;
     this.loaded = false;
-    this.bip44Code = 994;
-  }
-
-  async setTestnet(bool) {
-    if (bool) {
-      this.bip44Code = 1;
-    } else {
-      this.bip44Code = 994;
-    }
+    this.bip44Code = 1;
   }
 
   async load() {
@@ -26,8 +18,6 @@ export default class Accounts {
       method: 'snap_manageState',
       params: { operation: 'get' },
     });
-    console.log(storedAccounts);
-
     if (storedAccounts === null || Object.keys(storedAccounts).length === 0) {
       this.loaded = true;
       return {
@@ -38,7 +28,6 @@ export default class Accounts {
       this.accounts = storedAccounts.accounts;
       if (storedAccounts.currentAccountId === null) {
         this.currentAccount = this.accounts[this.accounts.length - 1];
-        console.log(this.currentAccount);
       } else {
         for (let i = 0; i < storedAccounts.accounts.length; i++) {
           if (
@@ -55,9 +44,9 @@ export default class Accounts {
     }
   }
 
-  async checkShardsToFind(shardsToFind) {
-    for (const [, value] of Object.entries(shardsToFind)) {
-      if (value[0] === false) {
+  async checkShardsToFind() {
+    for (const shard in shardsToFind) {
+      if (shardsToFind[shard].found === false) {
         return true;
       }
     }
@@ -82,34 +71,26 @@ export default class Accounts {
       },
     });
     let Account = {};
-    console.log('Account', Account);
-    console.log('addressPubKey: ', addressPubKey);
-    console.log('utils: ', quais.utils.computeAddress(addressPubKey));
     Account.addr = quais.utils.computeAddress(addressPubKey);
     Account.path = index;
-
-    console.log('Account', Account);
 
     return Account;
   }
 
   async generateAllAccounts() {
-    console.log('here');
     let i = 0;
-    let found = false;
     let Account = null;
     let address = null;
-    while (!found && (await this.checkShardsToFind(shardsToFind))) {
+    let found = false;
+    while (!found && (await this.checkShardsToFind())) {
       Account = await this.generateAccount(i);
-      console.log('here');
-      console.log('Account', Account);
       if (Account.addr !== null) {
-        address = Account.addr;
+        let address = Account.addr;
         const context = getShardContextForAddress(address);
         // If this address exists in a shard, check to see if we haven't found it yet.
         if (
           context[0] !== undefined &&
-          shardsToFind[context[0].value][0] === false
+          shardsToFind[context[0].value].found === false
         ) {
           this.currentAccount = Account;
           this.currentAccountId = Account.addr;
@@ -118,16 +99,17 @@ export default class Accounts {
           this.accounts.push({
             type: 'generated',
             path: i,
-            name: 'Account ' + shardsToFind[shard][1],
+            name: 'Account ' + i,
             addr: Account.addr,
             shard: readableShard,
             coinType: this.bip44Code,
           });
 
-          shardsToFind[context[0].value][0] = true;
+          shardsToFind[context[0].value].found = true;
+          shardsToFind[context[0].value].index = i;
           found = true;
-          for (const [, value] of Object.entries(shardsToFind)) {
-            if (value[0] === false) {
+          for (const shard in shardsToFind) {
+            if (shardsToFind[shard].found === false) {
               found = false;
             }
           }
@@ -135,7 +117,6 @@ export default class Accounts {
       }
       i++;
     }
-
     await snap.request({
       method: 'snap_manageState',
       params: {
@@ -146,7 +127,6 @@ export default class Accounts {
         },
       },
     });
-    console.log('accounts', this.accounts);
     return { currentAccountId: address, accounts: this.accounts };
   }
 
@@ -198,54 +178,6 @@ export default class Accounts {
     return false;
   }
 
-  async createNewAccount(name) {
-    if (!this.loaded) {
-      await this.load();
-    }
-    // If there is an account with such a name, return an error
-    const oldPath = this.accounts.length;
-    for (let i = 0; i < this.accounts.length; i++) {
-      if (this.accounts[i].name === name) {
-        return { error: 'account name already exists' };
-      }
-    }
-    let path = oldPath + 1;
-    if (name === undefined || name === '') {
-      name = 'Account ' + path;
-    }
-    const Account = await this.generateAccount(path);
-    const address = Account.addr;
-    let context = getShardContextForAddress(address);
-    while (context === undefined || context === null || context.length === 0) {
-      const Account = await this.generateAccount(path + 1);
-      const address = Account.addr;
-      context = getShardContextForAddress(address);
-      path++;
-    }
-    const shard = context[0].value;
-    const readableShard = shard.charAt(0).toUpperCase() + shard.slice(1);
-    this.accounts.push({
-      type: 'generated',
-      path,
-      name,
-      addr: address,
-      shard: readableShard,
-      coinType: this.bip44Code,
-    });
-
-    await snap.request({
-      method: 'snap_manageState',
-      params: {
-        operation: 'update',
-        newState: {
-          currentAccountId: this.currentAccountId,
-          accounts: this.accounts,
-        },
-      },
-    });
-    return { currentAccountId: address, accounts: this.accounts };
-  }
-
   async createNewAccountByChain(name, chain) {
     if (!this.loaded) {
       await this.load();
@@ -254,17 +186,12 @@ export default class Accounts {
     if (!chains.includes(chain)) {
       return { error: 'chain not found' };
     }
-    let oldPath = 0;
-    if (this.accounts.length > 0) {
-      oldPath = this.accounts[this.accounts.length - 1].path;
-    }
-
-    let i = 1;
+    let i = shardsToFind[chain].index + 1;
     let found = false;
     let Account = null;
     let shardName = null;
     while (!found) {
-      Account = await this.generateAccount(oldPath + i);
+      Account = await this.generateAccount(i);
       const addr = Account.addr;
       const context = getShardContextForAddress(addr);
       if (context[0] !== undefined) {
@@ -276,22 +203,25 @@ export default class Accounts {
             context[0].value.charAt(0).toUpperCase() +
             context[0].value.slice(1);
           found = true;
+          shardsToFind[context[0].value].index = i;
+          if (shardsToFind[context[0].value].found === false) {
+            shardsToFind[context[0].value].found = true;
+          }
           break;
         }
       }
       i++;
     }
-    const path = oldPath + i;
     if (!name) {
-      name = 'Account ' + path;
+      name = 'Account ' + i;
     }
     const address = Account.addr;
     this.currentAccountId = address;
     this.currentAccount = Account;
     const addedAccount = {
       type: 'generated',
-      path,
-      name,
+      path: i,
+      name: name,
       addr: address,
       shard: shardName,
       coinType: this.bip44Code,
@@ -309,53 +239,6 @@ export default class Accounts {
       },
     });
     return { addedAccount: addedAccount, accounts: this.accounts };
-  }
-
-  async generateNumAccounts(amount) {
-    if (!this.loaded) {
-      await this.load();
-    }
-    let oldPath = 0;
-    if (this.accounts.length !== 0) {
-      oldPath = this.accounts[this.accounts.length - 1].path;
-    }
-
-    let i = 0;
-    while (i < amount) {
-      const name = 'Account ' + (oldPath + 1);
-      const Account = await this.generateAccount(oldPath + 1);
-      const address = Account.addr;
-      const context = getShardContextForAddress(address);
-      if (context[0] !== undefined) {
-        const shard = context[0].value;
-        const readableShard = shard.charAt(0).toUpperCase() + shard.slice(1);
-        const path = oldPath + 1;
-        this.currentAccount = Account;
-        this.currentAccountId = address;
-        this.accounts.push({
-          type: 'generated',
-          path,
-          name,
-          addr: address,
-          shard: readableShard,
-          coinType: this.bip44Code,
-        });
-        i++;
-      }
-      oldPath++;
-    }
-
-    await snap.request({
-      method: 'snap_manageState',
-      params: {
-        operation: 'update',
-        newState: {
-          currentAccountId: this.currentAccountId,
-          accounts: this.accounts,
-        },
-      },
-    });
-    return { currentAccountId: this.currentAccountId, accounts: this.accounts };
   }
 
   async sendConfirmation(prompt, description, textAreaContent) {
@@ -391,25 +274,6 @@ export default class Accounts {
     }
     return false;
   }
-  async displayMnemonic() {
-    const bip44Code = 994;
-    const bip44Node = await snap.request({
-      method: 'snap_getBip44Entropy',
-      params: {
-        coinType: bip44Code,
-      },
-    });
-    const deriver = await getBIP44AddressKeyDeriver(bip44Node);
-    const privkey = await (await deriver(this.account.path)).privateKeyBuffer;
-    const mnemonic = await this.secretKeyToMnemonic(privkey);
-
-    if (confirm) {
-      this.sendConfirmation('mnemonic', this.account.addr, mnemonic);
-      return true;
-    } else {
-      return false;
-    }
-  }
 
   async getPrivateKeyByAddress(address) {
     const confirm = await this.sendConfirmation(
@@ -440,5 +304,35 @@ export default class Accounts {
     const deriver = await getBIP44AddressKeyDeriver(bip44Node);
     const privKey = (await deriver(account.path)).privateKey;
     return privKey;
+  }
+
+  // renameAccount renames an account by its address.
+  async renameAccount(address, name) {
+    // Check if account exists
+    let account = this.accounts.find((account) => account.addr === address);
+    if (!account) {
+      throw new Error('Account not found');
+    }
+    
+    // Update in place
+    this.accounts.map((account) => {
+      if (account.addr === address) {
+        account.name = name.toString();
+      }
+      return account;
+    });
+
+    // Save to state
+    await snap.request({
+      method: 'snap_manageState',
+      params: {
+        operation: 'update',
+        newState: {
+          currentAccountId: this.currentAccountId,
+          accounts: this.accounts,
+        },
+      },
+    });
+    return account;
   }
 }

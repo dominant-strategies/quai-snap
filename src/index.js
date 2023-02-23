@@ -7,18 +7,11 @@ export const onRpcRequest = async ({ origin, request }) => {
   const quaiSnap = new QuaiSnap(currentAccount);
 
   if (request.hasOwnProperty('params')) {
-    if (request.params.hasOwnProperty('devnet') != undefined) {
-      await quaiSnap.setDevnet(request.params.devnet);
+    if (request.params.hasOwnProperty('network') != undefined) {
+      await quaiSnap.setNetwork(request.params.network);
     }
     if (request.params.hasOwnProperty('overrideurl') != undefined) {
       await quaiSnap.setOverrideURL(request.params.overrideurl);
-    }
-    if (request.params.hasOwnProperty('testnet') != undefined) {
-      await quaiSnap.setTestnet(request.params.testnet);
-      await accountLib.setTestnet(request.params.testnet);
-    }
-    if (request.params.hasOwnProperty('local') != undefined) {
-      await quaiSnap.setLocal(request.params.local);
     }
   }
 
@@ -38,15 +31,11 @@ export const onRpcRequest = async ({ origin, request }) => {
       return await accountLib.getCurrentAccount();
     case 'setCurrentAccount':
       return await accountLib.setCurrentAccount(request.params.address);
-    case 'createAccountByName':
-      return await accountLib.createNewAccount(request.params.name);
     case 'createAccountByChain':
       return await accountLib.createNewAccountByChain(
         request.params.name,
         request.params.chain,
       );
-    case 'generateNumAccounts':
-      return await accountLib.generateNumAccounts(request.params.amount);
     case 'clearAccounts':
       return await accountLib.clearAccounts();
     case 'getPrivateKeyByAddress':
@@ -55,12 +44,11 @@ export const onRpcRequest = async ({ origin, request }) => {
       return await accountLib.getPrivateKeyByPath(request.params.path);
     case 'getBaseUrl':
       return await quaiSnap.getBaseUrl();
-    case 'getBalance':
-      return await quaiSnap.getBalance(request.params.address);
-    case 'getBlockHeight': {
-      const response = await quaiSnap.getBlockHeight();
-      return response.result.number;
-    }
+    case 'renameAccount':
+      return await accountLib.renameAccount(
+        request.params.address,
+        request.params.name,
+      );
     case 'sendTransaction':
       const isExternalTransaction = determineTypeOfTransaction(
         currentAccount,

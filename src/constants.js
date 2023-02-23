@@ -168,19 +168,19 @@ export const QUAI_OPTIONS = [
 ];
 
 export const shardsToFind = {
-  prime: [false, 1],
-  cyprus: [false, 2],
-  paxos: [false, 3],
-  hydra: [false, 4],
-  'cyprus-1': [false, 5],
-  'cyprus-2': [false, 6],
-  'cyprus-3': [false, 7],
-  'paxos-1': [false, 8],
-  'paxos-2': [false, 9],
-  'paxos-3': [false, 10],
-  'hydra-1': [false, 11],
-  'hydra-2': [false, 12],
-  'hydra-3': [false, 13],
+  prime: { found: false, index: 0 },
+  cyprus: { found: false, index: 0 },
+  paxos: { found: false, index: 0 },
+  hydra: { found: false, index: 0 },
+  'cyprus-1': { found: false, index: 0 },
+  'cyprus-2': { found: false, index: 0 },
+  'cyprus-3': { found: false, index: 0 },
+  'paxos-1': { found: false, index: 0 },
+  'paxos-2': { found: false, index: 0 },
+  'paxos-3': { found: false, index: 0 },
+  'hydra-1': { found: false, index: 0 },
+  'hydra-2': { found: false, index: 0 },
+  'hydra-3': { found: false, index: 0 },
 };
 
 export const QUAI_SHARD_INDEX_MAPPINGS = {
