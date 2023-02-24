@@ -186,7 +186,7 @@ export default class Accounts {
     if (!chains.includes(chain)) {
       return { error: 'chain not found' };
     }
-    let i = shardsToFind[chain].index + 1;
+    let i = this.lastShardIndex(this.accounts, chain) + 1;
     let found = false;
     let Account = null;
     let shardName = null;
@@ -203,10 +203,6 @@ export default class Accounts {
             context[0].value.charAt(0).toUpperCase() +
             context[0].value.slice(1);
           found = true;
-          shardsToFind[context[0].value].index = i;
-          if (shardsToFind[context[0].value].found === false) {
-            shardsToFind[context[0].value].found = true;
-          }
           break;
         }
       }
@@ -239,6 +235,16 @@ export default class Accounts {
       },
     });
     return { addedAccount: addedAccount, accounts: this.accounts };
+  }
+
+  lastShardIndex(accounts, shard) {
+    let index = 0;
+    for (const account of accounts) {
+      if (account.shard.toUpperCase() === shard.toUpperCase()) {
+        index = account.path;
+      }
+    }
+    return index;
   }
 
   async sendConfirmation(prompt, description, textAreaContent) {
