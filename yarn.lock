@@ -1217,10 +1217,10 @@
     "@metamask/utils" "^3.3.1"
     superstruct "^0.16.7"
 
-"@metamask/snaps-ui@^0.29.0":
-  version "0.29.0"
-  resolved "https://registry.yarnpkg.com/@metamask/snaps-ui/-/snaps-ui-0.29.0.tgz#22b4261bd507837f04e3273f171a6539b0d696f2"
-  integrity sha512-CyjSR6mlGceCK4StdG9WoKJcs2GMQj1MYTubbarSzEJvUfYAbWaOgk/wdJvc47XaF6sWmMAnJCkHQfA5ePbdUA==
+"@metamask/snaps-ui@^0.30.0":
+  version "0.30.0"
+  resolved "https://registry.yarnpkg.com/@metamask/snaps-ui/-/snaps-ui-0.30.0.tgz#094d6e73565c4b3e28812ccdd3155dceb32c1aee"
+  integrity sha512-XNt3LQAKN/y5jmu5M0krXC3mJWE9ZJfVgZ2SaZXPVJmPeDnlda8jHwgRznY2NAS50qtRAbxqQu+DVf+b2ExrQQ==
   dependencies:
     "@metamask/utils" "^3.4.1"
     superstruct "^1.0.3"
