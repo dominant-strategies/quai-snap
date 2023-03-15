@@ -267,8 +267,10 @@ export default class Accounts {
         method: 'snap_manageState',
         params: { operation: 'clear' },
       });
-      for (const [, value] of Object.entries(shardsToFind)) {
-        value[0] = false;
+      //Go through shards to find and reset
+      for (const shard in shardsToFind) {
+        shardsToFind[shard].found = false;
+        shardsToFind[shard].index = 0;
       }
       return true;
     }
@@ -313,7 +315,7 @@ export default class Accounts {
     if (!account) {
       throw new Error('Account not found');
     }
-    
+
     // Update in place
     this.accounts.map((account) => {
       if (account.addr === address) {
