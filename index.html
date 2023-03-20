@@ -138,7 +138,6 @@
             },
           },
         });
-        console.log(response);
         alert(JSON.stringify(response));
       } catch (err) {
         console.error(err);
@@ -201,8 +200,6 @@
           params: { snapId: snapId, request: { method: 'getAccounts' } },
         });
         alert(JSON.stringify(response));
-        console.log(JSON.stringify(response));
-        console.log(response.length + ' accounts');
       } catch (err) {
         alert('Problem happened: ' + err.message || err);
       }
