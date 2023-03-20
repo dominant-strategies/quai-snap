@@ -65,7 +65,7 @@
     <button class="sign btn hoverEffect">Sign Message</button>
     <br />
     <br />
-    <input id="createByChain" value="cyprus-1" type="'text" />
+    <input id="createByChain" placeholder="cyprus-1" type="'text" />
     <button class="createQuaiAccountByChain btn hoverEffect">Create Account by Chain</button>
     <br />
     <br />
@@ -201,6 +201,8 @@
           params: { snapId: snapId, request: { method: 'getAccounts' } },
         });
         alert(JSON.stringify(response));
+        console.log(JSON.stringify(response));
+        console.log(response.length + ' accounts');
       } catch (err) {
         alert('Problem happened: ' + err.message || err);
       }
@@ -215,8 +217,7 @@
             request: {
               method: 'createAccountByChain',
               params: {
-                name: document.querySelector('#accountName').value,
-                chain: document.getElementById('createByChain').value,
+                chain: document.querySelector('#createByChain').value,
                 network: "local"
               },
             },

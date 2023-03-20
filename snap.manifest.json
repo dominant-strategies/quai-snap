@@ -7,7 +7,7 @@
     "url": "https://github.com/spruce-solutions/quai-snap.git"
   },
   "source": {
-    "shasum": "/s5bIC13Vp82Abj+G/5kK6MSsUSPbS0e/y/BSu2CoBc=",
+    "shasum": "cBNFhCY3X6jJkZJnceeKYH7OAGrpWLCgAil+droHHXo=",
     "location": {
       "npm": {
         "filePath": "dist/bundle.js",
@@ -29,19 +29,11 @@
     ],
     "snap_getBip32PublicKey": [
       {
-        "path": [
-          "m",
-          "44'",
-          "994'"
-        ],
+        "path": ["m", "44'", "994'"],
         "curve": "secp256k1"
       },
       {
-        "path": [
-          "m",
-          "44'",
-          "1'"
-        ],
+        "path": ["m", "44'", "1'"],
         "curve": "secp256k1"
       }
     ],

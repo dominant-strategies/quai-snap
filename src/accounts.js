@@ -169,9 +169,8 @@ export default class Accounts {
 
   async doesAccountExist(addr) {
     const allAccounts = await this.getAccounts();
-    for (const address of allAccounts) {
-      const addrHash = Object.keys(address)[0];
-      if (addrHash === addr) {
+    for (const account of allAccounts) {
+      if (account.addr === addr) {
         return true;
       }
     }
@@ -194,11 +193,9 @@ export default class Accounts {
       Account = await this.generateAccount(i);
       const addr = Account.addr;
       const context = getShardContextForAddress(addr);
+      const doesAccountExist = await this.doesAccountExist(addr);
       if (context[0] !== undefined) {
-        if (
-          context[0].value === chain &&
-          !(await this.doesAccountExist(addr))
-        ) {
+        if (context[0].value === chain && doesAccountExist === false) {
           shardName =
             context[0].value.charAt(0).toUpperCase() +
             context[0].value.slice(1);
