@@ -1,5 +1,5 @@
 {
-  "version": "0.3.0-pre.1",
+  "version": "0.3.0-pre.2",
   "description": "QuaiSnap",
   "proposedName": "QuaiSnap",
   "repository": {
@@ -7,7 +7,7 @@
     "url": "https://github.com/spruce-solutions/quai-snap.git"
   },
   "source": {
-    "shasum": "cBNFhCY3X6jJkZJnceeKYH7OAGrpWLCgAil+droHHXo=",
+    "shasum": "KqPendZd4jYomCrk/nWf/Z5YUdzuf+znBCACGnEiGR4=",
     "location": {
       "npm": {
         "filePath": "dist/bundle.js",
@@ -29,11 +29,19 @@
     ],
     "snap_getBip32PublicKey": [
       {
-        "path": ["m", "44'", "994'"],
+        "path": [
+          "m",
+          "44'",
+          "994'"
+        ],
         "curve": "secp256k1"
       },
       {
-        "path": ["m", "44'", "1'"],
+        "path": [
+          "m",
+          "44'",
+          "1'"
+        ],
         "curve": "secp256k1"
       }
     ],
