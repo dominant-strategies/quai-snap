@@ -18,7 +18,11 @@ export default class Accounts {
       method: 'snap_manageState',
       params: { operation: 'get' },
     });
-    if (storedAccounts === null || Object.keys(storedAccounts).length === 0) {
+    if (
+      storedAccounts === null ||
+      storedAccounts === undefined ||
+      Object.keys(storedAccounts).length === 0
+    ) {
       this.loaded = true;
       return {
         currentAccountId: this.currentAccountId,
@@ -287,7 +291,7 @@ export default class Accounts {
         throw new Error('Account not found');
       }
       const privateKey = await this.getPrivateKeyByPath(account);
-      this.sendConfirmation('privateKey', account.addr, privateKey);
+      await this.sendConfirmation('privateKey', account.addr, privateKey);
     }
   }
 

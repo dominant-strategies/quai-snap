@@ -14,9 +14,13 @@ const sandbox = sinon.createSandbox();
 
 describe('Quai.js tests', () => {
   const mockWallet = new MockWallet();
+  let quai = new Quai(mockAccountsArray[2]);
+  global.snap = mockWallet;
 
   beforeEach(() => async () => {
+    quai = new Quai(mockAccountsArray[2]);
     mockWallet.rpcStubs.snap_getBip44Entropy.callsFake(getBip44EntropyStub);
+    global.snap = mockWallet;
   });
 
   afterEach(() => {
@@ -25,43 +29,41 @@ describe('Quai.js tests', () => {
   });
 
   it('should initialize the Quai class', () => {
-    let quai = new Quai(mockWallet, mockAccountsArray[2]);
-    expect(quai.wallet).to.equal(mockWallet);
     expect(quai.account).to.equal(mockAccountsArray[2]);
   });
 
-  it('should get chain from address', () => {
-    let quai = new Quai(mockWallet, mockAccountsArray[1]);
-    expect(quai.getChainFromAddr(mockAccountsArray[1].addr)).to.equal(
-      'cyprus-1',
-    );
-    expect(quai.getChainFromAddr(mockAccountsArray[0].addr)).to.equal('cyprus');
-  });
-
   it('should get base url', () => {
-    let quai = new Quai(mockWallet, mockAccountsArray[2]);
-    expect(quai.getBaseUrl()).to.equal('https://prime.rpc.quaiscan.io');
-    expect(quai.getBaseUrl('cyprus-1')).to.equal(
-      'https://cyprus-1.rpc.quaiscan.io',
+    expect(quai.getBaseUrl()).to.equal(
+      'https://rpc.prime.colosseum.quaiscan.io',
     );
-    quai.setNetwork("local");
     expect(quai.getBaseUrl('cyprus-1')).to.equal(
-      'http://localhost:8610',
+      'https://rpc.cyprus1.colosseum.quaiscan.io',
+    );
+    quai.setNetwork('local');
+    expect(quai.getBaseUrl('cyprus-1')).to.equal('http://localhost:8610');
+    quai.setNetwork('garden');
+    expect(quai.getBaseUrl('cyprus-1')).to.equal(
+      'https://rpc.cyprus1.garden.quaiscan.io',
     );
   });
 
   it('should get chain url', () => {
-    let quai = new Quai(mockWallet, mockAccountsArray[2]);
+    quai.setNetwork('colosseum');
     expect(quai.getChainUrl(mockAccountsArray[1].addr)).to.equal(
-      'https://cyprus1.rpc.quaiscan.io/',
+      'https://rpc.cyprus.colosseum.quaiscan.io',
     );
     expect(quai.getChainUrl(mockAccountsArray[0].addr)).to.equal(
-      'https://cyprus.rpc.quaiscan.io/',
+      'https://rpc.prime.colosseum.quaiscan.io',
+    );
+    quai.setNetwork('garden');
+    expect(quai.getChainUrl(mockAccountsArray[1].addr)).to.equal(
+      'https://rpc.cyprus.garden.quaiscan.io',
     );
   });
 
   it('should send a confirmation request', async () => {
-    let quai = new Quai(mockWallet, mockAccountsArray[2]);
+    global.snap = mockWallet;
+    //have snap_confirm resolve true
     mockWallet.rpcStubs.snap_confirm.resolves(true);
     let confirmationRequest = await quai.sendConfirmation(
       'test prompt',
@@ -72,49 +74,37 @@ describe('Quai.js tests', () => {
     expect(confirmationRequest).to.equal(true);
   });
 
-  it('should get the address of the account', () => {
-    let quai = new Quai(mockWallet, mockAccountsArray[2]);
-    expect(quai.getAddress()).to.equal(mockAccountsArray[2].addr);
-  });
-
-  it('should display mnemonic with a metamask confirmation', async () => {
-    let quai = new Quai(mockWallet, mockAccountsArray[13]);
-    mockWallet.rpcStubs.snap_confirm.resolves(true);
-    mockWallet.rpcStubs.snap_getBip44Entropy.resolves(bip44Entropy);
-    let req = await quai.displayMnemonic();
-    expect(mockWallet.rpcStubs.snap_confirm).to.have.been.calledTwice;
-    expect(req).to.equal(true);
-  });
-
   it('should be able to set devnet', () => {
-    let quai = new Quai(mockWallet, mockAccountsArray[2]);
-    quai.setNetwork("garden");
-    expect(quai.network).to.equal("garden");
+    quai.setNetwork('garden');
+    expect(quai.network).to.equal('garden');
   });
 
   it('should sign data and return a signature', async () => {
-    let quai = new Quai(mockWallet, mockAccountsArray[13]);
     mockWallet.rpcStubs.snap_confirm.resolves(true);
     mockWallet.rpcStubs.snap_getBip44Entropy.resolves(bip44Entropy);
     let data = 'test data';
     let signature = await quai.signData(data);
-    expect(signature).to.equal("0x645b6aa060b43f39600dc3f3a42fff811cd84b04662d14317d3fb50d2e5251412d65107bafec002614fa271312782b5a6879c1a03248370f7f5941631df088771c");
+    expect(signature).to.equal(
+      '0xbb299f575d34a5e614383b23bbae95933b9705cf879de4c20c60dff4b6625a6936be0e270f5532bcefeaead5de3921db0ee50dc74ddc28bfdf8862be5c83c3a91c',
+    );
     expect(mockWallet.rpcStubs.snap_confirm).to.have.been.calledOnce;
   });
 
-  it('should correctly compute checkSum, get a generic hash and derive a mnemonic phrase', async () => {
-    let quai = new Quai(mockWallet, mockAccountsArray[13]);
-    const myBuffer = Buffer.from("NDBiNmQ4ZmM1YWFiYjA1YjEyZjczNGVlZWYwNDFiYjFhMzdiZTZiZTVmZjQ1OWUwY2VjMWU5OGQ1OTRjYmMwYg==", 'base64');
-    let mnemonic = await quai.secretKeyToMnemonic(myBuffer);
-    expect(mnemonic).to.equal(
-      "alley match brass main small flee answer gesture era screen box bike good sunset often crouch protect night creek drink give obtain mention gentle toy match crawl casino skull minute creek crucial chase neutral oblige file short era sleep deal prosper tooth old change short metal adapt damp",
+  it('should send a transaction', async () => {
+    global.snap = mockWallet;
+    quai.getWallet = () => mockWallet;
+    mockWallet.sendTransaction.resolves(
+      '0x1234567890123456789012345678901234567890123456789012345678901234',
     );
+    mockWallet.rpcStubs.snap_confirm.resolves(true);
+    mockWallet.rpcStubs.snap_getBip44Entropy.callsFake(getBip44EntropyStub);
+    let txHash = await quai.SendTransaction(
+      '0x1234567890123456789012345678901234567890',
+      '0x1',
+    );
+    expect(txHash).to.equal(
+      '0x1234567890123456789012345678901234567890123456789012345678901234',
+    );
+    expect(mockWallet.rpcStubs.snap_confirm).to.have.been.calledOnce;
   });
-
-  it.skip('should get transactions for current account', async () => {
-    let quai = new Quai(mockWallet, mockAccountsArray[2]);
-    let transactions = await quai.getTransactions();
-  });
-
-  //Need to test transaction, blockheight, contracts
 });

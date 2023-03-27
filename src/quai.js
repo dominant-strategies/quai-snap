@@ -7,7 +7,7 @@ const quais = require('quais');
 export default class Quai {
   constructor(account) {
     this.account = account;
-    this.network = "colosseum";
+    this.network = 'colosseum';
     this.overrideURL = false;
     this.bip44Code = 1;
   }
@@ -16,23 +16,25 @@ export default class Quai {
     if (chain === undefined) {
       chain = 'prime';
     }
-    switch (this.network){
-      case "colosseum":
-        return 'https://rpc.' + chain.replace(/-/g, '') + '.colosseum.quaiscan.io';
-      case "garden":
+    switch (this.network) {
+      case 'colosseum':
+        return (
+          'https://rpc.' + chain.replace(/-/g, '') + '.colosseum.quaiscan.io'
+        );
+      case 'garden':
         return 'https://rpc.' + chain.replace(/-/g, '') + '.garden.quaiscan.io';
-      case "local":
+      case 'local':
         let chainData = getChainData(chain);
         return 'http://localhost:' + chainData.httpPort;
     }
   }
-  
+
   getChainUrl(addr) {
     if (this.overrideURL) {
       return this.overrideURL;
     }
     let context = getShardContextForAddress(addr);
-    return this.getBaseUrl(context[0].value)
+    return this.getBaseUrl(context[0].value);
   }
 
   setNetwork(network) {
@@ -41,29 +43,6 @@ export default class Quai {
 
   setOverrideURL(url) {
     this.overrideURL = url;
-  }
-
-  async getPrivateKey() {
-    const confirm = await this.sendConfirmation(
-      'Confirm action',
-      'Are you sure you want to display your private key?',
-      'anyone with this key can spend your funds.',
-    );
-    if (confirm) {
-      const bip44Node = await snap.request({
-        method: 'snap_getBip44Entropy',
-        params: {
-          coinType: this.bip44Code,
-        },
-      });
-
-      const deriver = await getBIP44AddressKeyDeriver(bip44Node);
-      const privKey = (await deriver(this.account.path)).privateKey;
-
-      return privKey;
-    } else {
-      return '';
-    }
   }
 
   async notify(message) {
@@ -94,9 +73,7 @@ export default class Quai {
       const currentAccountAddr = this.account.addr;
       const fromShard = getShardForAddress(currentAccountAddr)[0].value;
       const toShard = getShardForAddress(to)[0].value;
-
       const valueInQuai = value * 10 ** -18;
-
       let confirm;
       if (data !== null) {
         confirm = await this.sendConfirmation(
@@ -162,9 +139,10 @@ export default class Quai {
             data: data,
           };
         }
+
         const wallet = await this.getWallet();
         const tx = await wallet.sendTransaction(rawTx);
-        return JSON.stringify(tx);
+        return tx;
       }
     } catch (err) {
       console.log(err);
@@ -209,7 +187,8 @@ export default class Quai {
     });
     const deriver = await getBIP44AddressKeyDeriver(bip44Node);
     const privKey = (await deriver(this.account.path)).privateKey;
-    return new quais.Wallet(privKey, web3Provider);
+    const wallet = new quais.Wallet(privKey, web3Provider);
+    return wallet;
   }
 
   async checkConfirmation(to, value, data, abi) {
