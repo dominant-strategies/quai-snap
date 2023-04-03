@@ -35,7 +35,7 @@ jobs:
         registry-url: 'https://registry.npmjs.org'
 
     - name: get Version
-      run: echo "VERSION=$(sudo yq eval '.version' package.json)" >> $GITHUB_ENV
+      run: echo "VERSION=$(sudo yq eval '.version' package.json -o yaml)" >> $GITHUB_ENV
 
     - name: Sanity Check Branch
       run: ${{ inputs.rails }}
@@ -60,7 +60,7 @@ jobs:
         token: ${{ secrets.NPM }}
 
     - name: get Version
-      run: echo "VERSION=$(sudo yq eval '.version' package.json)" >> $GITHUB_ENV
+      run: echo "VERSION=$(sudo yq eval '.version' package.json -o yaml)" >> $GITHUB_ENV
 
     - name: git tag
       run: git tag ${{ env.VERSION }} && git push origin tag ${{ env.VERSION }}
