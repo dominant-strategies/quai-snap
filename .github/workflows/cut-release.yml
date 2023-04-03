@@ -11,7 +11,7 @@ jobs:
         ssh-key: ${{ secrets.GH_PAT }}
 
     - name: get Version
-      run: echo "VERSION=$(sudo yq eval '.version' package.json)" >> $GITHUB_ENV
+      run: echo "VERSION=$(sudo yq eval '.version' package.json -o yaml)" >> $GITHUB_ENV
 
     - name: Update version environment variable
       run: echo "VERSION=$(echo $VERSION | sed 's/pre/rc/g' | awk -F. '{print $1"."$2"."$3"."0}')" >> $GITHUB_ENV
@@ -40,7 +40,7 @@ jobs:
         ssh-key: ${{ secrets.GH_PAT }}
 
     - name: get Version
-      run: echo "VERSION=$(sudo yq eval '.version' package.json)" >> $GITHUB_ENV
+      run: echo "VERSION=$(sudo yq eval '.version' package.json -o yaml)" >> $GITHUB_ENV
 
     - name: Update version environment variable
       run: echo "VERSION=$(echo $VERSION | sed "s/-.*//g" | awk -F. '{print $1"."$2+1"."0"-pre.0"}')" >> $GITHUB_ENV
