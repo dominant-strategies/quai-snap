@@ -7,7 +7,7 @@
     "url": "https://github.com/spruce-solutions/quai-snap.git"
   },
   "source": {
-    "shasum": "sSAU6ek9m296jNoRhHJx2OXTYQJtLBlUrUiE/C1HMfM=",
+    "shasum": "uZpjgtV01Sow6BWV/h619/mDzkG6etoftYzVjMAXmvM=",
     "location": {
       "npm": {
         "filePath": "dist/bundle.js",
@@ -51,6 +51,7 @@
       "snaps": true
     },
     "snap_notify": {},
+    "snap_dialog": {},
     "snap_manageState": {}
   },
   "manifestVersion": "0.1"

@@ -64,13 +64,13 @@ describe('Quai.js tests', () => {
   it('should send a confirmation request', async () => {
     global.snap = mockWallet;
     //have snap_confirm resolve true
-    mockWallet.rpcStubs.snap_confirm.resolves(true);
+    mockWallet.rpcStubs.snap_dialog.resolves(true);
     let confirmationRequest = await quai.sendConfirmation(
       'test prompt',
       'test description',
       'test text area content',
     );
-    expect(mockWallet.rpcStubs.snap_confirm).to.have.been.calledOnce;
+    expect(mockWallet.rpcStubs.snap_dialog).to.have.been.calledOnce;
     expect(confirmationRequest).to.equal(true);
   });
 
@@ -80,14 +80,14 @@ describe('Quai.js tests', () => {
   });
 
   it('should sign data and return a signature', async () => {
-    mockWallet.rpcStubs.snap_confirm.resolves(true);
+    mockWallet.rpcStubs.snap_dialog.resolves(true);
     mockWallet.rpcStubs.snap_getBip44Entropy.resolves(bip44Entropy);
     let data = 'test data';
     let signature = await quai.signData(data);
     expect(signature).to.equal(
       '0xbb299f575d34a5e614383b23bbae95933b9705cf879de4c20c60dff4b6625a6936be0e270f5532bcefeaead5de3921db0ee50dc74ddc28bfdf8862be5c83c3a91c',
     );
-    expect(mockWallet.rpcStubs.snap_confirm).to.have.been.calledOnce;
+    expect(mockWallet.rpcStubs.snap_dialog).to.have.been.calledOnce;
   });
 
   it('should send a transaction', async () => {
@@ -96,15 +96,15 @@ describe('Quai.js tests', () => {
     mockWallet.sendTransaction.resolves(
       '0x1234567890123456789012345678901234567890123456789012345678901234',
     );
-    mockWallet.rpcStubs.snap_confirm.resolves(true);
+    mockWallet.rpcStubs.snap_dialog.resolves(true);
     mockWallet.rpcStubs.snap_getBip44Entropy.callsFake(getBip44EntropyStub);
     let txHash = await quai.SendTransaction(
       '0x1234567890123456789012345678901234567890',
       '0x1',
     );
     expect(txHash).to.equal(
-      '0x1234567890123456789012345678901234567890123456789012345678901234',
+      '"0x1234567890123456789012345678901234567890123456789012345678901234"',
     );
-    expect(mockWallet.rpcStubs.snap_confirm).to.have.been.calledOnce;
+    expect(mockWallet.rpcStubs.snap_dialog).to.have.been.calledOnce;
   });
 });
