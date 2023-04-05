@@ -142,7 +142,7 @@ export default class Quai {
 
         const wallet = await this.getWallet();
         const tx = await wallet.sendTransaction(rawTx);
-        return tx;
+        return JSON.stringify(tx);
       }
     } catch (err) {
       console.log(err);
