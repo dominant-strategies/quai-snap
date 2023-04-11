@@ -64,11 +64,15 @@
   },
   "dependencies": {
     "@metamask/key-tree": "6.0.0",
+    "@sinonjs/referee-sinon": "^11.0.0",
+    "Blob": "^0.10.0",
     "@metamask/snaps-ui": "^0.32.2",
     "js-sha256": "^0.9.0",
     "js-sha512": "^0.8.0",
+    "jsverify": "^0.8.4",
+    "knuth-shuffle": "^1.0.8",
     "quais": "0.1.8",
-    "sinon": "^14.0.1",
+    "sinon": "^15.0.3",
     "sinon-chai": "^3.7.0"
   }
 }

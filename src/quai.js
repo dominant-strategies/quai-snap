@@ -67,8 +67,8 @@ export default class Quai {
     externalGasLimit = 110000,
     externalGasPrice = 2000000000,
     externalGasTip = 2000000000,
-    data = null,
-    abi = null,
+    data,
+    abi,
   ) {
     try {
       const currentAccountAddr = this.account.addr;
