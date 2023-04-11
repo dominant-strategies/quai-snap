@@ -1,6 +1,6 @@
 {
   "name": "@quainetwork/quai-snap",
-  "version": "0.3.0-pre.4",
+  "version": "0.3.0-pre.5",
   "description": "QuaiSnap",
   "repository": {
     "type": "git",
@@ -64,9 +64,9 @@
   },
   "dependencies": {
     "@metamask/key-tree": "6.0.0",
-    "@metamask/snaps-ui": "^0.29.0",
     "@sinonjs/referee-sinon": "^11.0.0",
     "Blob": "^0.10.0",
+    "@metamask/snaps-ui": "^0.32.2",
     "js-sha256": "^0.9.0",
     "js-sha512": "^0.8.0",
     "jsverify": "^0.8.4",

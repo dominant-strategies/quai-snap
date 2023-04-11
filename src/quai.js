@@ -1,6 +1,7 @@
 import { getChainData, getShardContextForAddress } from './constants';
 import { getBIP44AddressKeyDeriver } from '@metamask/key-tree';
 import { getShardForAddress } from './utils';
+import { panel, text, heading } from '@metamask/snaps-ui';
 
 const quais = require('quais');
 
@@ -97,21 +98,17 @@ export default class Quai {
       } else {
         confirm = await this.sendConfirmation(
           'Confirm Transaction',
-          'Are you sure you want to sign the following transaction?',
           'From: (' +
             fromShard +
-            ') ' +
+            ')\n' +
             currentAccountAddr +
             '\n\n' +
             'To: (' +
             toShard +
-            ') ' +
+            ') \n' +
             to +
-            '\n\n' +
-            'Amount: ' +
-            value +
-            ' QWEI',
-          '\n\n' + valueInQuai + ' QUAI',
+            '\n\n',
+          'Amount: ' + value + ' QUAI',
         );
       }
       if (confirm) {
@@ -152,14 +149,8 @@ export default class Quai {
   async signData(data) {
     const confirm = await this.sendConfirmation(
       'Sign Data',
-      'Sign "' +
-        data +
-        '" using account address:  ' +
-        this.account.addr +
-        ' (' +
-        this.account.shard +
-        ')' +
-        ' ?',
+      'Data: "' + data + '"',
+      'Account: ' + ' (' + this.account.shard + ')\n' + this.account.addr,
     );
 
     if (!confirm) {
@@ -234,14 +225,15 @@ export default class Quai {
 
   async sendConfirmation(prompt, description, textAreaContent) {
     const result = await snap.request({
-      method: 'snap_confirm',
-      params: [
-        {
-          prompt: prompt,
-          description: description,
-          textAreaContent: textAreaContent,
-        },
-      ],
+      method: 'snap_dialog',
+      params: {
+        type: 'Confirmation',
+        content: panel([
+          heading(prompt),
+          text(description),
+          text(textAreaContent),
+        ]),
+      },
     });
     return result;
   }

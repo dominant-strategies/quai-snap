@@ -6,6 +6,7 @@ export default class MockWallet {
   sendTransaction = sinon.stub();
   rpcStubs = {
     snap_confirm: sinon.stub(),
+    snap_dialog: sinon.stub(),
     snap_getBip44Entropy: sinon.stub(),
     snap_manageState: sinon.stub(),
     web3_clientVersion: sinon.stub(),
