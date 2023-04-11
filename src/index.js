@@ -50,30 +50,19 @@ export const onRpcRequest = async ({ origin, request }) => {
         request.params.name,
       );
     case 'sendTransaction':
-      const isExternalTransaction = determineTypeOfTransaction(
-        currentAccount,
+      return quaiSnap.SendTransaction(
         request.params.toAddress,
+        request.params.value,
+        request.params.gasLimit,
+        request.params.maxFeePerGas,
+        request.params.maxPriorityFeePerGas,
+        request.params.externalGasLimit,
+        request.params.externalGasPrice,
+        request.params.externalGasTip,
+        request.params.data,
+        request.params.abi
       );
-      if (isExternalTransaction) {
-        return quaiSnap.SendTransaction(
-          request.params.toAddress,
-          request.params.value,
-          request.params.gasLimit,
-          request.params.maxFeePerGas,
-          request.params.maxPriorityFeePerGas,
-          request.params.externalGasLimit,
-          request.params.externalGasPrice,
-          request.params.externalGasTip,
-        );
-      } else {
-        return quaiSnap.SendTransaction(
-          request.params.toAddress,
-          request.params.value,
-          request.params.gasLimit,
-          request.params.maxFeePerGas,
-          request.params.maxPriorityFeePerGas,
-        );
-      }
+
     case 'signData':
       return quaiSnap.signData(request.params.data);
     case 'getChainURL':
