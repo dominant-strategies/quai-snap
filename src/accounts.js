@@ -1,4 +1,5 @@
 import { getBIP44AddressKeyDeriver } from '@metamask/key-tree';
+import { panel, text, heading } from '@metamask/snaps-ui';
 
 import { getShardContextForAddress, shardsToFind } from './constants';
 const quais = require('quais');
@@ -244,16 +245,16 @@ export default class Accounts {
 
   async sendConfirmation(prompt, description, textAreaContent) {
     const result = await snap.request({
-      method: 'snap_confirm',
-      params: [
-        {
-          prompt: prompt,
-          description: description,
-          textAreaContent: textAreaContent,
-        },
-      ],
+      method: 'snap_dialog',
+      params: {
+        type: 'confirmation',
+        content: panel([
+          heading(prompt),
+          text(description),
+          text(textAreaContent),
+        ]),
+      },
     });
-
     return result;
   }
 
@@ -285,13 +286,19 @@ export default class Accounts {
       'Anyone with this private key can spend your funds',
     );
     if (confirm) {
+      // remove whitespace in entered address
+      address = address.replace(/\s/g, '');
       // find account
       const account = this.accounts.find((account) => account.addr === address);
       if (!account) {
         throw new Error('Account not found');
       }
       const privateKey = await this.getPrivateKeyByPath(account);
-      await this.sendConfirmation('privateKey', account.addr, privateKey);
+      await this.sendConfirmation(
+        'Private Key',
+        privateKey,
+        `for address ${account.addr}`,
+      );
     }
   }
 
@@ -311,6 +318,8 @@ export default class Accounts {
 
   // renameAccount renames an account by its address.
   async renameAccount(address, name) {
+    // remove whitespace in entered address
+    address = address.replace(/\s/g, '');
     // Check if account exists
     let account = this.accounts.find((account) => account.addr === address);
     if (!account) {

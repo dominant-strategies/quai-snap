@@ -182,52 +182,11 @@ export default class Quai {
     return wallet;
   }
 
-  async checkConfirmation(to, value, data, abi) {
-    let confirm = undefined;
-    if (data.length > 0 && abi !== undefined) {
-      try {
-        const iface = new quais.utils.Interface(abi);
-        const decodedData = iface.parseTransaction({
-          data: data,
-          value: value,
-        });
-        confirm = await this.sendConfirmation(
-          'Confirm Contract Call',
-          'Interact with ' +
-            to +
-            ' ?\n' +
-            'This interaction will ' +
-            decodedData.functionFragment.name +
-            ' with args ' +
-            decodedData.args,
-        );
-      } catch (err) {
-        console.error(`Problem found: ${err}`);
-        throw err;
-      }
-    } else if (data.length > 0) {
-      confirm = await this.sendConfirmation(
-        'Confirm Contract Call',
-        'Interact with ' +
-          to +
-          ' ?\n' +
-          'This interaction does provided an ABI to decode payload',
-      );
-    } else {
-      // user confirmation
-      confirm = await this.sendConfirmation(
-        'confirm Spend',
-        'send' + value + ' QUAI to ' + to + '?',
-      );
-    }
-    return confirm;
-  }
-
   async sendConfirmation(prompt, description, textAreaContent) {
     const result = await snap.request({
       method: 'snap_dialog',
       params: {
-        type: 'Confirmation',
+        type: 'confirmation',
         content: panel([
           heading(prompt),
           text(description),

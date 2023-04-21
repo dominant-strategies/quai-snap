@@ -83,7 +83,7 @@
     <br />
   </body>
   <script>
-    const snapId = `local:${location.href}`;
+    const snapId = `local:${window.location.href}`;
     const connectButton = document.querySelector('button.connect');
     const genAllAccountsButton = document.querySelector(
       'button.genAllAccounts',
@@ -119,7 +119,7 @@
       await ethereum.request({
         method: 'wallet_requestSnaps',
         params: {
-          [snapId]: {},
+          [snapId]: { version: 'latest' },
         },
       });
     }
