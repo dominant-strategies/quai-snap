@@ -5,7 +5,6 @@ import MockWallet from '../testingResources/mockWallet';
 import {
   mockAccountsArray,
   getBip44EntropyStub,
-  bip32PublicKeyStub,
 } from '../testingResources/testConstantsAndHelpers';
 import { shardsToFind } from '../src/constants';
 import Accounts from '../src/accounts';
@@ -21,7 +20,6 @@ describe('Accounts.js Tests', function () {
 
   beforeEach(async function () {
     mockWallet.rpcStubs.snap_getBip44Entropy.callsFake(getBip44EntropyStub);
-    // mockWallet.rpcStubs.snap_getBip32PublicKey.callsFake(bip32PublicKeyStub);
     testShardsToFind = { ...emptyShardsToFind };
 
     global.snap = mockWallet;
@@ -318,14 +316,14 @@ describe('Accounts.js Tests', function () {
     mockWallet.rpcStubs.snap_manageState
       .withArgs({ operation: 'get' })
       .resolves(mockStateWithAccounts);
-    mockWallet.rpcStubs.snap_confirm.resolves(true);
+    mockWallet.rpcStubs.snap_dialog.resolves(true);
     const accountsClass = new Accounts();
     accountsClass.accounts = mockAccountsArray;
     accountsClass.currentAccount = mockAccountsArray[3];
     accountsClass.currentAccountId = mockAccountsArray[3].addr;
     accountsClass.load();
     await accountsClass.getPrivateKeyByAddress(mockAccountsArray[3].addr);
-    expect(mockWallet.rpcStubs.snap_confirm).to.have.been.calledTwice;
+    expect(mockWallet.rpcStubs.snap_dialog).to.have.been.calledTwice;
   });
 
   it('should rename an account', async function () {

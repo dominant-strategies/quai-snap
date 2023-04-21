@@ -15,13 +15,6 @@ export const onRpcRequest = async ({ origin, request }) => {
     }
   }
 
-  const determineTypeOfTransaction = (currentAccount, toAddress) => {
-    const fromAddress = currentAccount.addr;
-    const fromAddressShard = getShardForAddress(fromAddress)[0].value;
-    const toAddressShard = getShardForAddress(toAddress)[0].value;
-    return fromAddressShard !== toAddressShard;
-  };
-
   switch (request.method) {
     case 'generateAllAccounts':
       return await accountLib.generateAllAccounts();
@@ -60,7 +53,7 @@ export const onRpcRequest = async ({ origin, request }) => {
         request.params.externalGasPrice,
         request.params.externalGasTip,
         request.params.data,
-        request.params.abi
+        request.params.abi,
       );
 
     case 'signData':
