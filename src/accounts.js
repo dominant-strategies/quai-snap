@@ -2,6 +2,7 @@ import { getBIP44AddressKeyDeriver } from '@metamask/key-tree';
 import { panel, text, heading } from '@metamask/snaps-ui';
 
 import { getShardContextForAddress, shardsToFind } from './constants';
+import { removeWhitespace } from './utils';
 const quais = require('quais');
 
 export default class Accounts {
@@ -59,24 +60,30 @@ export default class Accounts {
   }
 
   async generateAccount(index) {
+    const path = [
+      'm',
+      "44'",
+      this.bip44Code.toString() + "'",
+      "0'",
+      '0',
+      index.toString(),
+    ];
+
     const addressPubKey = await snap.request({
       method: 'snap_getBip32PublicKey',
       params: {
-        // The path and curve must be specified in the initial permissions.
-        path: [
-          'm',
-          "44'",
-          this.bip44Code.toString() + "'",
-          "0'",
-          '0',
-          index.toString(),
-        ],
+        path,
         curve: 'secp256k1',
         compressed: false,
       },
     });
+    if (addressPubKey === null || addressPubKey === undefined) {
+      throw new Error(
+        'Could not generate account, addressPubKey is null or undefined',
+      );
+    }
     let Account = {};
-    Account.addr = quais.utils.computeAddress(addressPubKey);
+    Account.addr = quais.computeAddress(addressPubKey);
     Account.path = index;
 
     return Account;
@@ -100,7 +107,9 @@ export default class Accounts {
           this.currentAccount = Account;
           this.currentAccountId = Account.addr;
           const shard = context[0].value;
-          const readableShard = shard.charAt(0).toUpperCase() + shard.slice(1);
+          const readableShard = removeWhitespace(
+            shard.charAt(0).toUpperCase() + shard.slice(1),
+          );
           this.accounts.push({
             type: 'generated',
             path: i,
