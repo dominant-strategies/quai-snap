@@ -169,7 +169,7 @@ export default class Quai {
 
   async getWallet() {
     const chainURL = this.getChainUrl(this.account.addr);
-    const web3Provider = new quais.providers.JsonRpcProvider(chainURL);
+    const web3Provider = new quais.JsonRpcProvider(chainURL);
     const bip44Node = await snap.request({
       method: 'snap_getBip44Entropy',
       params: {
