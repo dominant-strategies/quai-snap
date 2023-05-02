@@ -7,3 +7,7 @@ export const getShardForAddress = (address) => {
     return num >= start && num <= end;
   });
 };
+
+export const removeWhitespace = (str) => {
+  return str.replace(/\s/g, '');
+};
