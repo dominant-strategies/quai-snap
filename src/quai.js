@@ -71,10 +71,10 @@ export default class Quai {
     abi,
   ) {
     try {
-      const currentAccountAddr = this.account.addr;
-      const fromShard = getShardForAddress(currentAccountAddr)[0].value;
-      const toShard = getShardForAddress(to)[0].value;
       const valueInQuai = value * 10 ** -18;
+      const fromAddress = this.account.addr;
+      const fromShard = getShardForAddress(fromAddress)[0].value;
+      const toShard = getShardForAddress(to)[0].value;
       let confirm;
       if (data !== null) {
         confirm = await this.sendConfirmation(
@@ -83,7 +83,7 @@ export default class Quai {
           'From: (' +
             fromShard +
             ') ' +
-            currentAccountAddr +
+            fromAddress +
             '\n\n' +
             'To: (' +
             toShard +
@@ -91,8 +91,8 @@ export default class Quai {
             to +
             '\n\n' +
             'Amount: ' +
-            value +
-            ' QWEI',
+            valueInQuai +
+            ' QUAI',
           '\n\n' + 'Data: ' + data + '\n\n' + 'ABI: ' + abi,
         );
       } else {
@@ -101,45 +101,65 @@ export default class Quai {
           'From: (' +
             fromShard +
             ')\n' +
-            currentAccountAddr +
+            fromAddress +
             '\n\n' +
             'To: (' +
             toShard +
             ') \n' +
             to +
             '\n\n',
-          'Amount: ' + value + ' QUAI',
+          'Amount: ' + valueInQuai + ' QUAI',
         );
       }
       if (confirm) {
-        let rawTx = {
+        const chainURL = this.getChainUrl(fromAddress);
+        const wallet = await this.getWallet();
+
+        let rawTransaction = {
           to: to,
-          from: this.account.addr,
-          value: value,
-          maxFeePerGas: maxFeePerGas,
+          value: BigInt(value),
+          nonce: 0,
+          gasLimit: BigInt(42000),
+          maxFeePerGas: BigInt(Number(maxFeePerGas) * 2),
           maxPriorityFeePerGas: maxPriorityFeePerGas,
-          gasLimit: gasLimit,
-          data: data,
+          type: 0,
+          chainId: BigInt(9000),
         };
+
         if (fromShard !== toShard) {
-          rawTx = {
-            to: to,
-            from: this.account.addr,
-            value: value,
-            externalGasLimit: externalGasLimit,
-            externalGasPrice: externalGasPrice,
-            externalGasTip: externalGasTip,
-            gasLimit: gasLimit,
-            maxFeePerGas: maxFeePerGas,
-            maxPriorityFeePerGas: maxPriorityFeePerGas,
-            type: 2,
-            data: data,
-          };
+          rawTransaction.externalGasLimit = BigInt(100000);
+          rawTransaction.externalGasPrice = BigInt(Number(maxFeePerGas) * 2);
+          rawTransaction.externalGasTip = BigInt(
+            Number(maxPriorityFeePerGas) * 2,
+          );
+          rawTransaction.type = 2;
         }
 
-        const wallet = await this.getWallet();
-        const tx = await wallet.sendTransaction(rawTx);
-        return JSON.stringify(tx);
+        const signedTransaction = await wallet.signTransaction(rawTransaction);
+
+        try {
+          const response = await fetch(chainURL, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              jsonrpc: '2.0',
+              method: 'quai_sendRawTransaction',
+              params: [signedTransaction],
+              id: 1,
+            }),
+          });
+
+          const result = await response.json();
+          if (result.error) {
+            return JSON.stringify('ERROR: ' + result.error.message);
+          } else {
+            return JSON.stringify('SUCCESS: ' + result.result);
+          }
+        } catch (error) {
+          return JSON.stringify('ERROR: ' + error.message);
+        }
       }
     } catch (err) {
       console.log(err);
@@ -167,9 +187,14 @@ export default class Quai {
     return this.getChainUrl(this.account.addr);
   }
 
-  async getWallet() {
+  async getProvider() {
     const chainURL = this.getChainUrl(this.account.addr);
     const web3Provider = new quais.JsonRpcProvider(chainURL);
+    return web3Provider;
+  }
+
+  async getWallet() {
+    const web3Provider = await this.getProvider();
     const bip44Node = await snap.request({
       method: 'snap_getBip44Entropy',
       params: {
