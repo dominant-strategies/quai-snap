@@ -2,6 +2,7 @@ import { getChainData, getShardContextForAddress } from './constants';
 import { getBIP44AddressKeyDeriver } from '@metamask/key-tree';
 import { getShardForAddress } from './utils';
 import { panel, text, heading } from '@metamask/snaps-ui';
+import axios from 'axios';
 
 const quais = require('quais');
 
@@ -74,7 +75,8 @@ export default class Quai {
       const currentAccountAddr = this.account.addr;
       const fromShard = getShardForAddress(currentAccountAddr)[0].value;
       const toShard = getShardForAddress(to)[0].value;
-      const valueInQuai = value * 10 ** -18;
+      // const valueInQuai = value * 10 ** -18;
+      const valueInQuai = 1000;
       let confirm;
       if (data !== null) {
         confirm = await this.sendConfirmation(
@@ -115,7 +117,7 @@ export default class Quai {
         let rawTx = {
           to: to,
           from: this.account.addr,
-          value: value,
+          value: valueInQuai,
           maxFeePerGas: maxFeePerGas,
           maxPriorityFeePerGas: maxPriorityFeePerGas,
           gasLimit: gasLimit,
@@ -125,7 +127,7 @@ export default class Quai {
           rawTx = {
             to: to,
             from: this.account.addr,
-            value: value,
+            value: valueInQuai,
             externalGasLimit: externalGasLimit,
             externalGasPrice: externalGasPrice,
             externalGasTip: externalGasTip,
@@ -139,7 +141,28 @@ export default class Quai {
 
         const wallet = await this.getWallet();
         const tx = await wallet.sendTransaction(rawTx);
-        return JSON.stringify(tx);
+        console.log(tx);
+        // const signedTranscation = await wallet.signTransaction(rawTx);
+        // console.log('signedtx: ', signedTranscation);
+
+        // const chainURL = this.getChainUrl(this.account.addr);
+
+        // try {
+        //   const result = await axios.post(chainURL, {
+        //     jsonrpc: '2.0',
+        //     method: 'quai_sendRawTransaction',
+        //     params: [signedTranscation],
+        //     id: 1,
+        //   });
+        //   console.log('result: ', result);
+        //   if (result.data.error) {
+        //     console.log('Error: ', result.data.error.message);
+        //   } else {
+        //     console.log('Success: ', result.data.result);
+        //   }
+        // } catch (error) {
+        //   console.log('Error: ', error);
+        // }
       }
     } catch (err) {
       console.log(err);
