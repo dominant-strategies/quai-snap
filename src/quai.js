@@ -58,91 +58,29 @@ export default class Quai {
     });
   }
 
-  async SendTransaction(
-    to,
-    value,
-    gasLimit = 21000,
-    maxFeePerGas = 1,
-    maxPriorityFeePerGas = 1,
-    externalGasLimit = 110000,
-    externalGasPrice = 2000000000,
-    externalGasTip = 2000000000,
-    data,
-    abi,
-  ) {
+  async sendRawTxFetchRequest(chainURL, signedTransaction) {
     try {
-      const currentAccountAddr = this.account.addr;
-      const fromShard = getShardForAddress(currentAccountAddr)[0].value;
-      const toShard = getShardForAddress(to)[0].value;
-      const valueInQuai = value * 10 ** -18;
-      let confirm;
-      if (data !== null) {
-        confirm = await this.sendConfirmation(
-          'Confirm Contract Transaction',
-          'Are you sure you want to sign the following transaction?',
-          'From: (' +
-            fromShard +
-            ') ' +
-            currentAccountAddr +
-            '\n\n' +
-            'To: (' +
-            toShard +
-            ') ' +
-            to +
-            '\n\n' +
-            'Amount: ' +
-            value +
-            ' QWEI',
-          '\n\n' + 'Data: ' + data + '\n\n' + 'ABI: ' + abi,
-        );
-      } else {
-        confirm = await this.sendConfirmation(
-          'Confirm Transaction',
-          'From: (' +
-            fromShard +
-            ')\n' +
-            currentAccountAddr +
-            '\n\n' +
-            'To: (' +
-            toShard +
-            ') \n' +
-            to +
-            '\n\n',
-          'Amount: ' + value + ' QUAI',
-        );
-      }
-      if (confirm) {
-        let rawTx = {
-          to: to,
-          from: this.account.addr,
-          value: value,
-          maxFeePerGas: maxFeePerGas,
-          maxPriorityFeePerGas: maxPriorityFeePerGas,
-          gasLimit: gasLimit,
-          data: data,
-        };
-        if (fromShard !== toShard) {
-          rawTx = {
-            to: to,
-            from: this.account.addr,
-            value: value,
-            externalGasLimit: externalGasLimit,
-            externalGasPrice: externalGasPrice,
-            externalGasTip: externalGasTip,
-            gasLimit: gasLimit,
-            maxFeePerGas: maxFeePerGas,
-            maxPriorityFeePerGas: maxPriorityFeePerGas,
-            type: 2,
-            data: data,
-          };
-        }
+      const response = await fetch(chainURL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          jsonrpc: '2.0',
+          method: 'quai_sendRawTransaction',
+          params: [signedTransaction],
+          id: 1,
+        }),
+      });
 
-        const wallet = await this.getWallet();
-        const tx = await wallet.sendTransaction(rawTx);
-        return JSON.stringify(tx);
+      const result = await response.json();
+      if (result.error) {
+        return JSON.stringify('ERROR: ' + result.error.message);
+      } else {
+        return JSON.stringify('SUCCESS: ' + result.result);
       }
-    } catch (err) {
-      console.log(err);
+    } catch (error) {
+      return JSON.stringify('ERROR: ' + error.message);
     }
   }
 
@@ -167,9 +105,14 @@ export default class Quai {
     return this.getChainUrl(this.account.addr);
   }
 
-  async getWallet() {
-    const chainURL = this.getChainUrl(this.account.addr);
+  async buildProviderWalletAndGetNonce(address) {
+    const chainURL = this.getChainUrl(address);
+    console.log('chainURL: ' + chainURL);
     const web3Provider = new quais.JsonRpcProvider(chainURL);
+
+    if (chainURL === undefined) {
+      return;
+    }
     const bip44Node = await snap.request({
       method: 'snap_getBip44Entropy',
       params: {
@@ -178,8 +121,16 @@ export default class Quai {
     });
     const deriver = await getBIP44AddressKeyDeriver(bip44Node);
     const privKey = (await deriver(this.account.path)).privateKey;
+    console.log('privKey: ' + privKey);
     const wallet = new quais.Wallet(privKey, web3Provider);
-    return wallet;
+    console.log('wallet: ' + JSON.stringify(wallet));
+    const nonce = await web3Provider.getTransactionCount(address, 'pending');
+
+    console.log('web3Provider: ' + web3Provider);
+
+    console.log('nonce: ' + nonce);
+
+    return { wallet, nonce };
   }
 
   async sendConfirmation(prompt, description, textAreaContent) {
@@ -195,5 +146,110 @@ export default class Quai {
       },
     });
     return result;
+  }
+
+  async SendTransaction(
+    to,
+    value,
+    gasLimit = 42000,
+    maxFeePerGas = 1,
+    maxPriorityFeePerGas = 1,
+    externalGasLimit = 110000,
+    externalGasPrice = 2000000000,
+    externalGasTip = 2000000000,
+    data = null,
+    abi,
+    chainID = 9000,
+  ) {
+    try {
+      const valueInQuai = value * 10 ** -18;
+      const sendingAddress = this.account.addr;
+      const fromShard = getShardForAddress(sendingAddress)[0].value;
+      const toShard = getShardForAddress(to)[0].value;
+      let confirm;
+
+      if (data !== null) {
+        confirm = await this.sendConfirmation(
+          'Confirm Contract Transaction',
+          'Are you sure you want to sign the following transaction?',
+          'From: (' +
+            fromShard +
+            ') ' +
+            sendingAddress +
+            '\n\n' +
+            'To: (' +
+            toShard +
+            ') ' +
+            to +
+            '\n\n' +
+            'Amount: ' +
+            valueInQuai +
+            ' QUAI',
+          '\n\n' + 'Data: ' + data + '\n\n' + 'ABI: ' + abi,
+        );
+      } else {
+        confirm = await this.sendConfirmation(
+          'Confirm Transaction',
+          'From: (' +
+            fromShard +
+            ')\n' +
+            sendingAddress +
+            '\n\n' +
+            'To: (' +
+            toShard +
+            ') \n' +
+            to +
+            '\n\n',
+          'Amount: ' + valueInQuai + ' QUAI',
+        );
+      }
+
+      console.log('sendingAddress: ' + sendingAddress);
+
+      // const { wallet, nonce } = await this.buildProviderWalletAndGetNonce(
+      //   sendingAddress,
+      // );
+
+      const provider = new quais.JsonRpcProvider(
+        'https://rpc.cyprus1.colosseum.quaiscan.io',
+      );
+      const nonce = await provider.getTransactionCount(
+        sendingAddress,
+        'pending',
+      );
+
+      console.log('provider from send: ' + provider);
+      console.log('nonce from send: ' + nonce);
+
+      if (confirm && nonce !== null) {
+        let rawTransaction = {
+          to: to,
+          value: BigInt(value),
+          nonce: nonce,
+          gasLimit: BigInt(gasLimit),
+          maxFeePerGas: BigInt(Number(maxFeePerGas) * 2),
+          maxPriorityFeePerGas: BigInt(maxPriorityFeePerGas),
+          type: 0,
+          chainId: BigInt(chainID),
+        };
+
+        if (fromShard != toShard) {
+          rawTransaction.externalGasLimit = BigInt(100000);
+          rawTransaction.externalGasPrice = BigInt(Number(maxFeePerGas) * 2);
+          rawTransaction.externalGasTip = BigInt(
+            Number(maxPriorityFeePerGas) * 2,
+          );
+          rawTransaction.type = 2;
+        }
+
+        console.log('rawTx: ', rawTransaction);
+
+        // const tx = await wallet.sendTransaction(rawTx);
+        // console.log('tx result: ', tx);
+        // return JSON.stringify(tx);
+      }
+    } catch (error) {
+      return JSON.stringify('ERROR: ' + error.message);
+    }
   }
 }
