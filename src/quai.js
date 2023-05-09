@@ -18,7 +18,6 @@ export default class Quai {
       chain = 'prime';
     }
     let chainData = getChainData(chain);
-    console.log("this.network: " + this.network)
     switch (this.network) {
       case 'colosseum':
         return (
@@ -27,21 +26,17 @@ export default class Quai {
       case 'garden':
         return 'https://rpc.' + chain.replace(/-/g, '') + '.garden.quaiscan.io';
       case 'local':
-        console.log("chain: " + chain)
         return 'http://localhost:' + chainData.httpPort;
       case 'localhost':
-          console.log("chain: " + chain)
-          return 'http://localhost:' + chainData.httpPort;
+        return 'http://localhost:' + chainData.httpPort;
     }
   }
 
   getChainUrl(addr) {
-    console.log("overrideURL: " + this.overrideURL)
     if (this.overrideURL) {
       return this.overrideURL;
     }
     let context = getShardContextForAddress(addr);
-    console.log("context: " + context[0].value)
     return this.getBaseUrl(context[0].value);
   }
 
@@ -114,8 +109,7 @@ export default class Quai {
 
   async buildProviderWalletAndGetNonce(address) {
     const chainURL = this.getChainUrl(address);
-    console.log('chainURL: ' + chainURL);
-    const web3Provider = new quais.JsonRpcProvider(chainURL);
+    const web3Provider = new quais.providers.JsonRpcProvider(chainURL);
 
     if (chainURL === undefined) {
       return;
@@ -128,16 +122,8 @@ export default class Quai {
     });
     const deriver = await getBIP44AddressKeyDeriver(bip44Node);
     const privKey = (await deriver(this.account.path)).privateKey;
-    console.log('privKey: ' + privKey);
     const wallet = new quais.Wallet(privKey, web3Provider);
-    console.log('wallet: ' + JSON.stringify(wallet));
-    const nonce = await web3Provider.getTransactionCount(address);
-
-    console.log('web3Provider: ' + web3Provider);
-
-    console.log('nonce: ' + nonce);
-
-    return { wallet, nonce };
+    return wallet;
   }
 
   async sendConfirmation(prompt, description, textAreaContent) {
@@ -166,7 +152,6 @@ export default class Quai {
     externalGasTip = 2000000000,
     data = null,
     abi,
-    chainID = 9000,
   ) {
     try {
       const valueInQuai = value * 10 ** -18;
@@ -213,54 +198,28 @@ export default class Quai {
 
       console.log('sendingAddress: ' + sendingAddress);
 
-      const { wallet, nonce } = await this.buildProviderWalletAndGetNonce(
-        sendingAddress,
-      );
-    //   let option = {
-    //     batchMaxCount: 1
-    // };
-    //   const provider = new quais.JsonRpcProvider(
-    //     'http://localhost:8610',
-    //     undefined,
-    //     option
-    //   );
+      const wallet = await this.buildProviderWalletAndGetNonce(sendingAddress);
 
-    //   await provider.ready;
-
-    //   console.log("Good before nonce")
-    //   const nonce = await provider.getTransactionCount(
-    //     sendingAddress,
-    //     'pending',
-    //   );
-
-    //   console.log('provider from send: ' + provider);
-    //   console.log('nonce from send: ' + nonce);
-
-      if (confirm && nonce !== null) {
+      if (confirm) {
         let rawTransaction = {
           to: to,
           value: BigInt(value),
-          nonce: nonce,
           gasLimit: BigInt(gasLimit),
           maxFeePerGas: BigInt(Number(maxFeePerGas) * 2),
           maxPriorityFeePerGas: BigInt(maxPriorityFeePerGas),
           type: 0,
-          chainId: BigInt(chainID),
         };
 
         if (fromShard != toShard) {
-          rawTransaction.externalGasLimit = BigInt(100000);
-          rawTransaction.externalGasPrice = BigInt(Number(maxFeePerGas) * 2);
+          rawTransaction.externalGasLimit = BigInt(externalGasLimit);
+          rawTransaction.externalGasPrice = BigInt(Number(externalGasPrice));
           rawTransaction.externalGasTip = BigInt(
-            Number(maxPriorityFeePerGas) * 2,
+            Number(externalGasTip),
           );
           rawTransaction.type = 2;
         }
 
-        console.log('rawTx: ', rawTransaction);
-
         const tx = await wallet.sendTransaction(rawTransaction);
-        console.log('tx result: ', tx);
         return JSON.stringify(tx);
       }
     } catch (error) {

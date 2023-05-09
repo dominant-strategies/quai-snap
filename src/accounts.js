@@ -83,7 +83,7 @@ export default class Accounts {
       );
     }
     let Account = {};
-    Account.addr = quais.computeAddress(addressPubKey);
+    Account.addr = quais.utils.computeAddress(addressPubKey);
     Account.path = index;
 
     return Account;

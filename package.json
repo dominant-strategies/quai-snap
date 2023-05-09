@@ -73,7 +73,7 @@
     "js-sha512": "^0.8.0",
     "jsverify": "^0.8.4",
     "knuth-shuffle": "^1.0.8",
-    "quais": "0.2.2",
+    "quais": "0.1.9",
     "sinon": "^15.0.3",
     "sinon-chai": "^3.7.0"
   }
