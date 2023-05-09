@@ -17,6 +17,8 @@ export default class Quai {
     if (chain === undefined) {
       chain = 'prime';
     }
+    let chainData = getChainData(chain);
+    console.log("this.network: " + this.network)
     switch (this.network) {
       case 'colosseum':
         return (
@@ -25,16 +27,21 @@ export default class Quai {
       case 'garden':
         return 'https://rpc.' + chain.replace(/-/g, '') + '.garden.quaiscan.io';
       case 'local':
-        let chainData = getChainData(chain);
+        console.log("chain: " + chain)
         return 'http://localhost:' + chainData.httpPort;
+      case 'localhost':
+          console.log("chain: " + chain)
+          return 'http://localhost:' + chainData.httpPort;
     }
   }
 
   getChainUrl(addr) {
+    console.log("overrideURL: " + this.overrideURL)
     if (this.overrideURL) {
       return this.overrideURL;
     }
     let context = getShardContextForAddress(addr);
+    console.log("context: " + context[0].value)
     return this.getBaseUrl(context[0].value);
   }
 
@@ -124,7 +131,7 @@ export default class Quai {
     console.log('privKey: ' + privKey);
     const wallet = new quais.Wallet(privKey, web3Provider);
     console.log('wallet: ' + JSON.stringify(wallet));
-    const nonce = await web3Provider.getTransactionCount(address, 'pending');
+    const nonce = await web3Provider.getTransactionCount(address);
 
     console.log('web3Provider: ' + web3Provider);
 
@@ -206,20 +213,28 @@ export default class Quai {
 
       console.log('sendingAddress: ' + sendingAddress);
 
-      // const { wallet, nonce } = await this.buildProviderWalletAndGetNonce(
-      //   sendingAddress,
-      // );
-
-      const provider = new quais.JsonRpcProvider(
-        'https://rpc.cyprus1.colosseum.quaiscan.io',
-      );
-      const nonce = await provider.getTransactionCount(
+      const { wallet, nonce } = await this.buildProviderWalletAndGetNonce(
         sendingAddress,
-        'pending',
       );
+    //   let option = {
+    //     batchMaxCount: 1
+    // };
+    //   const provider = new quais.JsonRpcProvider(
+    //     'http://localhost:8610',
+    //     undefined,
+    //     option
+    //   );
 
-      console.log('provider from send: ' + provider);
-      console.log('nonce from send: ' + nonce);
+    //   await provider.ready;
+
+    //   console.log("Good before nonce")
+    //   const nonce = await provider.getTransactionCount(
+    //     sendingAddress,
+    //     'pending',
+    //   );
+
+    //   console.log('provider from send: ' + provider);
+    //   console.log('nonce from send: ' + nonce);
 
       if (confirm && nonce !== null) {
         let rawTransaction = {
@@ -244,9 +259,9 @@ export default class Quai {
 
         console.log('rawTx: ', rawTransaction);
 
-        // const tx = await wallet.sendTransaction(rawTx);
-        // console.log('tx result: ', tx);
-        // return JSON.stringify(tx);
+        const tx = await wallet.sendTransaction(rawTransaction);
+        console.log('tx result: ', tx);
+        return JSON.stringify(tx);
       }
     } catch (error) {
       return JSON.stringify('ERROR: ' + error.message);
