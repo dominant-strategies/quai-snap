@@ -83,7 +83,7 @@ export default class Accounts {
       );
     }
     let Account = {};
-    Account.addr = quais.utils.computeAddress(addressPubKey);
+    Account.addr = quais.computeAddress(addressPubKey);
     Account.path = index;
 
     return Account;
@@ -253,6 +253,12 @@ export default class Accounts {
   }
 
   async sendConfirmation(prompt, description, textAreaContent) {
+    const provider = new quais.JsonRpcProvider(
+      'https://rpc.cyprus1.colosseum.quaiscan.io',
+    );
+    const feeData = await provider.getFeeData();
+    console.log('feeData: ' + JSON.stringify(feeData));
+
     const result = await snap.request({
       method: 'snap_dialog',
       params: {

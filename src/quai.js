@@ -109,7 +109,9 @@ export default class Quai {
 
   async buildProviderWalletAndGetNonce(address) {
     const chainURL = this.getChainUrl(address);
-    const web3Provider = new quais.providers.JsonRpcProvider(chainURL);
+    const web3Provider = new quais.JsonRpcProvider(chainURL);
+    const feeData = await web3Provider.getFeeData();
+    console.log('feeData quai.js: ' + JSON.stringify(feeData));
 
     if (chainURL === undefined) {
       return;
@@ -213,9 +215,7 @@ export default class Quai {
         if (fromShard != toShard) {
           rawTransaction.externalGasLimit = BigInt(externalGasLimit);
           rawTransaction.externalGasPrice = BigInt(Number(externalGasPrice));
-          rawTransaction.externalGasTip = BigInt(
-            Number(externalGasTip),
-          );
+          rawTransaction.externalGasTip = BigInt(Number(externalGasTip));
           rawTransaction.type = 2;
         }
 
