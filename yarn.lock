@@ -1345,11 +1345,11 @@
     yargs-parser "^20.2.2"
 
 "@metamask/snaps-registry@^1.2.0":
-  version "1.2.0"
-  resolved "https://registry.yarnpkg.com/@metamask/snaps-registry/-/snaps-registry-1.2.0.tgz#a2495a8cabbd30a497e2ac39cf47a73b08ae3ec0"
-  integrity sha512-VxDdus5/+7Ki5h253RRB6M6lQJXp83ZS0h8LeYpCl4vi35Bz9RbDU72mPjmAG+tM4ZZUIWdJp/uYTvxMDxbKDw==
+  version "1.2.1"
+  resolved "https://registry.yarnpkg.com/@metamask/snaps-registry/-/snaps-registry-1.2.1.tgz#534f6b0a04be0ae2a54a72b903ea3ce976902453"
+  integrity sha512-o7thG9p8+pijmEcJCWLMNLKEqQzac9ihTZ0BbSFuuyGEfCxK6oiVf2GDmZoldmmwC8u7u3VHjqMwgbblIM9eSg==
   dependencies:
-    "@metamask/utils" "^5.0.0"
+    "@metamask/utils" "^6.0.0"
     "@noble/secp256k1" "^1.7.1"
     superstruct "^1.0.3"
 
@@ -1405,6 +1405,17 @@
   version "5.0.2"
   resolved "https://registry.yarnpkg.com/@metamask/utils/-/utils-5.0.2.tgz#140ba5061d90d9dac0280c19cab101bc18c8857c"
   integrity sha512-yfmE79bRQtnMzarnKfX7AEJBwFTxvTyw3nBQlu/5rmGXrjAeAMltoGxO62TFurxrQAFMNa/fEjIHNvungZp0+g==
+  dependencies:
+    "@ethereumjs/tx" "^4.1.2"
+    "@types/debug" "^4.1.7"
+    debug "^4.3.4"
+    semver "^7.3.8"
+    superstruct "^1.0.3"
+
+"@metamask/utils@^6.0.0":
+  version "6.0.0"
+  resolved "https://registry.yarnpkg.com/@metamask/utils/-/utils-6.0.0.tgz#9eb9c76050f0a465a10186fdc9b25b4fddda523f"
+  integrity sha512-/0GkcKBFok7ZMwScYef/4YbsJYqFBzTPoQHp+oUF9HFikx1OJe7joG0J8Rnpcbr5NB2dhvAY/aOjZqyJN8yDBQ==
   dependencies:
     "@ethereumjs/tx" "^4.1.2"
     "@types/debug" "^4.1.7"
