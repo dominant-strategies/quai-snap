@@ -65,7 +65,7 @@
     "node": ">=14.0.0"
   },
   "dependencies": {
-    "@metamask/key-tree": "6.0.0",
+    "@metamask/key-tree": "9.0.0",
     "@metamask/snaps-ui": "^0.33.0-flask.1",
     "@sinonjs/referee-sinon": "^11.0.0",
     "Blob": "^0.10.0",
