@@ -1,8 +1,6 @@
-# TypeScript Example Snap
+# Quai Wallet Snap
 
-This snap demonstrates how to develop a snap with TypeScript. It is a simple
-snap that displays a confirmation dialog when the `hello` JSON-RPC method is
-called.
+This is a wallet for Quai Network built as a Metamask Snap.
 
 ## Testing
 
