@@ -1,5 +1,5 @@
 import type { OnRpcRequestHandler } from '@metamask/snaps-sdk';
-import { Box, Text, Bold } from '@metamask/snaps-sdk/jsx';
+import { Box, Text, Bold, Copyable, Row, Address } from '@metamask/snaps-sdk/jsx';
 import { quais } from 'quais';
 import { getQuaiWallet } from './home';
 export * from "./home";          // re-export the handler so MetaMask can find it
@@ -43,13 +43,17 @@ export const onRpcRequest: OnRpcRequestHandler = async ({ origin, request }) => 
       return wallet.address;
 
     case 'quai_sendTransaction':
-      const params = request.params as [{ to: string; value: string; data?: string }];
+      const params = request.params as [{ to: string; from: string; value?: string; data?: string }];
       if (!params?.[0]) {
         throw new Error('Missing transaction parameters');
       }
-      const { to, value, data } = params[0];
+      console.log(JSON.stringify(params));
+      const { to, from, value, data } = params[0];
       let quaiWallet = await getQuaiWallet();
-      quaiWallet = quaiWallet.connect(new quais.JsonRpcProvider('https://rpc.quai.network'));
+
+      if (!to) {
+        throw new Error('Invalid recipient: Address must start with 0x00 for shard 0');
+      }
 
       // Prompt user to confirm transaction
       const confirmed = await snap.request({
@@ -58,7 +62,18 @@ export const onRpcRequest: OnRpcRequestHandler = async ({ origin, request }) => 
           type: 'confirmation',
           content: (
             <Box>
-              <Text>Send {value} QUAI to {to}?</Text>
+              <Text>
+                Sending {value??"0"} QUAI to
+              </Text>
+              <Row label="Address">
+                <Address address={to as `0x${string}`} />
+              </Row>
+              {data && data !== '0x' ? (
+                <Box>
+                  <Text>Contract call data</Text>
+                  <Copyable value={data} />
+                </Box>
+              ) : null}
             </Box>
           ),
         },
@@ -71,24 +86,28 @@ export const onRpcRequest: OnRpcRequestHandler = async ({ origin, request }) => 
       // Construct the transaction
       const tx = {
         to,
-        value: quais.parseQuai(value),
+        value: BigInt(value || 0),
         data: data || '0x',
-        from: quaiWallet.address,
+        from,
       };
       try {
         // Sign and send the transaction
         const txResponse = await quaiWallet.sendTransaction(tx);
         return txResponse.hash;
-      } catch (error) {
+      } catch (error: any) {
         console.log(error);
-          await snap.request({
-            method: "snap_dialog",
-            params: {
-              type: "alert",
-              content: <Box><Text>{`Error: ${error}`}</Text></Box>,
-            },
-          });
-          throw error;
+        await snap.request({
+          method: 'snap_dialog',
+          params: {
+            type: 'alert',
+            content: (
+              <Box>
+                <Text>Error: {error.message || 'Transaction failed'}</Text>
+              </Box>
+            ),
+          },
+        });
+        throw error;
         }
 
     default:

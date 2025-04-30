@@ -12,7 +12,10 @@ import {
   Input,
   Spinner,
   Text,
-  Copyable
+  Copyable,
+  Section,
+  Link,
+  Image
 } from '@metamask/snaps-sdk/jsx';
 import { formatQuai, Ledger, quais, Wallet as QuaisWallet, Zone, getAddressDetails } from "quais";
 
@@ -26,7 +29,7 @@ type QuaiWalletState = {
 export const onHomePage: OnHomePageHandler = async () => {
   const wallet = await getQuaiWallet();
   const bal    = await wallet.provider!.getBalance(wallet.address);
-
+  const history = await buildTxHistory(wallet.address);
   return {
     // MetaMask will keep this UI alive until the user closes the panel
     content: (
@@ -37,11 +40,13 @@ export const onHomePage: OnHomePageHandler = async () => {
         <Copyable value={wallet.address} />
         <Heading>Quai Wallet</Heading>
         <Row label="Balance">
-          <Value value={formatQuai(bal)} extra="QUAI" />
+          <Value value={Number(formatQuai(bal)).toFixed(4).replace(/\.?0+$/, '')} extra="QUAI" />
         </Row>
 
         {/* ──► CLICK => openSendDialog() ◄── */}
         <Button name="open-send">Send&nbsp;QUAI</Button>
+
+        {history}
       </Box>
     ),
   };
@@ -157,6 +162,7 @@ async function showSendForm(existingId?: string) {
 async function renderOverview(id: string) {
   const wallet  = await getQuaiWallet();
   const balance = await wallet.provider!.getBalance(wallet.address);
+  const history = await buildTxHistory(wallet.address);
 
   const ui = (
     <Box>
@@ -168,11 +174,13 @@ async function renderOverview(id: string) {
       <Heading>Quai Wallet</Heading>
 
       <Row label="Balance">
-        <Value value={formatQuai(balance)} extra="QUAI" />
+        <Value value={Number(formatQuai(balance)).toFixed(4).replace(/\.?0+$/, '')} extra="QUAI" />
       </Row>
 
       {/* clicking this recreates the send-form in the SAME interface */}
       <Button name="open-send">Send&nbsp;QUAI</Button>
+
+      {history}
     </Box>
   );
 
@@ -257,7 +265,7 @@ export async function getQuaiWallet() {
   
     // Derive keys iteratively to find shard 0 address
     let index = 0;
-    const maxAttempts = 100000;
+    const maxAttempts = 1000000;
     let wallet: QuaisWallet;
   
     while (index < maxAttempts) {
@@ -315,6 +323,55 @@ export async function getQuaiWallet() {
     throw new Error('Could not find a shard 0 address after 10000 attempts');
   }
 
+  async function buildTxHistory(addr: string) {
+    const url = `https://quaiscan.io/api/v2/addresses/${addr}/transactions?filter=to`;
+    let items: any[] = [];
+  
+    try {
+      const r = await fetch(url).then(r => r.json());
+      items = (r.items ?? [])
+        .sort((a: any, b: any) => Date.parse(b.timestamp) - Date.parse(a.timestamp))
+        .slice(0, 10);                          // newest → oldest, max 10
+    } catch (e) {
+      console.log("history-fetch failed:", e);
+      return (
+        <Section>
+          <Text color="muted">Can't fetch history.</Text>
+        </Section>
+      );
+    }
+  
+    return (
+      <Section>
+        <Heading size="sm">Latest incoming</Heading>
+  
+        {items.map((tx: any) => {
+          const from = tx.from?.hash as `0x${string}`;
+          return (
+            <Box key={tx.hash}>
+  
+              {/* line #1 – time-ago & amount */}
+              <Row label={timeAgo(tx.timestamp)}>
+                <Value value={Number(formatQuai(tx.value)).toFixed(4).replace(/\.?0+$/, '')} extra="QUAI" />
+              </Row>
+  
+              {/* line #2 – sender */}
+              <Row label="From">
+                <Address address={from} truncate />
+              </Row>
+  
+              {/* line #3 – link to QuaiScan */}
+              <Row label="">
+                <Link href={`https://quaiscan.io/tx/${tx.hash}`}>Quaiscan&nbsp;↗</Link>
+              </Row>
+  
+            </Box>
+          );
+        })}
+      </Section>
+    );
+  }
+
   export function isQuaiAddress(address: string) {
     if (typeof address !== 'string' || !/^0x[0-9a-fA-F]{40}$/.test(address)) {
       throw new Error('Invalid address format');
@@ -329,3 +386,12 @@ export async function getQuaiWallet() {
     // bit 0 == 0 → Quai, 1 → Qi
     return (fifthDigit & 1) === 0;
   }
+  
+  // Pretty "5 min ago", "3 h", "2 d" …
+function timeAgo(tsIso: string): string {
+  const sec = (Date.now() - Date.parse(tsIso)) / 1_000;
+  if (sec < 120)          return `${Math.floor(sec)} seconds ago`;
+  if (sec < 3600)         return `${Math.floor(sec / 60)} minutes ago`;
+  if (sec < 86_400)       return `${Math.floor(sec / 3600)} hours ago`;
+  return `${Math.floor(sec / 86_400)} days ago`;
+}
