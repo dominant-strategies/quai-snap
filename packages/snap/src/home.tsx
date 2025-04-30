@@ -43,8 +43,10 @@ export const onHomePage: OnHomePageHandler = async () => {
           <Value value={Number(formatQuai(bal)).toFixed(4).replace(/\.?0+$/, '')} extra="QUAI" />
         </Row>
 
-        {/* ──► CLICK => openSendDialog() ◄── */}
-        <Button name="open-send">Send&nbsp;QUAI</Button>
+        <Section>
+            <Button name="open-send" variant="primary">Send QUAI</Button>
+        </Section>
+          <Button name="refresh">Refresh</Button>
 
         {history}
       </Box>
@@ -68,7 +70,6 @@ export const onUserInput: OnUserInputHandler = async ({ id, event }) => {
       to: string;
       amount: string;
     };
-    console.log(`Sending ${amount} QUAI to ${to}`);
 
     // ── Validation ─────────────────────────────────────────────────────────
     if (!quais.isAddress(to)) {
@@ -91,17 +92,35 @@ export const onUserInput: OnUserInputHandler = async ({ id, event }) => {
         from: wallet.address,
       });
 
+      const st = (await snap.request({
+        method: 'snap_manageState',
+        params: { operation: 'get' },
+      })) as any ?? {};
+      st.sentTxs ??= [];
+      st.sentTxs.unshift({
+        hash:  tx.hash,
+        to,
+        value: quais.parseQuai(amount).toString(),
+        timestamp:    new Date().toISOString(),
+        type: 'Transfer',
+      });
+      st.sentTxs = st.sentTxs.slice(0, 100);          // keep max 100
+      await snap.request({
+        method: 'snap_manageState',
+        params: { operation: 'update', newState: st },
+      });
+
       await successScreen(
         id,
-        `Tx sent!`,
-        <Text color="muted">{tx.hash}</Text>,
+        `Tx sent! Hash: ${tx.hash}`,
+        <Link href={`https://quaiscan.io/tx/${tx.hash}`}>View on QuaiScan ↗</Link>
       );
     } catch (err: any) {
       await errorScreen(id, String(err?.message ?? err));
     }
   }
 
-  if (event.type === UserInputEventType.ButtonClickEvent && event.name === 'back') {
+  if (event.type === UserInputEventType.ButtonClickEvent && (event.name === 'back' || event.name === 'refresh')) {
     await renderOverview(id); // <- reuse same interface id
     return;
   }
@@ -177,9 +196,10 @@ async function renderOverview(id: string) {
         <Value value={Number(formatQuai(balance)).toFixed(4).replace(/\.?0+$/, '')} extra="QUAI" />
       </Row>
 
-      {/* clicking this recreates the send-form in the SAME interface */}
-      <Button name="open-send">Send&nbsp;QUAI</Button>
-
+      <Section>
+            <Button name="open-send" variant="primary">Send QUAI</Button>
+        </Section>
+      <Button name="refresh">Refresh</Button>
       {history}
     </Box>
   );
@@ -237,7 +257,6 @@ async function errorScreen(id: string, msg: string) {
 }
 
 export async function getQuaiWallet() {
-    console.log('Getting Quai wallet');
     // Check Snap state for cached wallet
     let state = (await snap.request({
       method: 'snap_manageState',
@@ -245,7 +264,6 @@ export async function getQuaiWallet() {
     }) || {}) as { quaiWallet?: QuaiWalletState };
   
     if (state.quaiWallet?.address) {
-      console.log('Using cached Quai wallet');
       const bip32Node = await snap.request({
         method: 'snap_getBip32Entropy',
         params: {
@@ -259,7 +277,6 @@ export async function getQuaiWallet() {
       // Reuse cached private key
       let wallet = new QuaisWallet(bip32Node.privateKey);
       wallet = wallet.connect(new quais.JsonRpcProvider('https://rpc.quai.network'));
-      console.log(`Using cached wallet address: ${wallet.address}`);
       return wallet
     }
   
@@ -281,10 +298,8 @@ export async function getQuaiWallet() {
       if (!bip32Node.privateKey) {
         throw new Error('Failed to get private key');
       }
-      console.log(`Attempting index ${index} key ${bip32Node.privateKey.toString()}`);
       // Create wallet from private key
       wallet = new QuaisWallet(bip32Node.privateKey);
-      console.log(`Wallet address: ${wallet.address}`);
       let details;
       try {
         // Check if address is valid
@@ -295,7 +310,6 @@ export async function getQuaiWallet() {
         details!.ledger = isQuaiAddress(wallet.address) ? Ledger.Quai : Ledger.Qi;
       }
       catch (error) {
-        console.log(`Error: ${error}`);
         // Handle invalid address error
         index++;
         continue;
@@ -313,7 +327,6 @@ export async function getQuaiWallet() {
           params: { operation: 'update', newState: state },
         });
         wallet = wallet.connect(new quais.JsonRpcProvider('https://rpc.quai.network'));
-        console.log(`Found shard 0 address: ${wallet.address}`);
         return wallet;
       }
   
@@ -329,11 +342,27 @@ export async function getQuaiWallet() {
   
     try {
       const r = await fetch(url).then(r => r.json());
-      items = (r.items ?? [])
-        .sort((a: any, b: any) => Date.parse(b.timestamp) - Date.parse(a.timestamp))
-        .slice(0, 10);                          // newest → oldest, max 10
+      const incoming = (r.items ?? [])
+
+        const st = (await snap.request({
+          method: 'snap_manageState',
+          params: { operation: 'get' },
+        })) as any ?? {};
+        const outgoing = (st.sentTxs ?? [])
+          .filter((tx: any) => tx.from !== undefined ? tx.from.toLowerCase() === addr.toLowerCase() : true)
+          .map((tx: any) => ({
+            hash: tx.hash,
+            from: addr,
+            to:   tx.to,
+            value: tx.value,
+            timestamp: tx.timestamp,
+            type: tx.type,
+            _outgoing: true,
+          }));
+          items = [...incoming, ...outgoing]
+          .sort((a: any, b: any) => Date.parse(b.timestamp) - Date.parse(a.timestamp))
+          .slice(0, 10);            // show last 10
     } catch (e) {
-      console.log("history-fetch failed:", e);
       return (
         <Section>
           <Text color="muted">Can't fetch history.</Text>
@@ -343,21 +372,24 @@ export async function getQuaiWallet() {
   
     return (
       <Section>
-        <Heading size="sm">Latest incoming</Heading>
+        <Heading size="sm">Latest transactions</Heading>
   
         {items.map((tx: any) => {
-          const from = tx.from?.hash as `0x${string}`;
+          const peer = tx._outgoing ? tx.to : tx.from?.hash;
+          const sentReceived = tx._outgoing ? 'Sent' : 'Received';
+          const toFrom = tx._outgoing ? 'To' : 'From';
+          const isContract = tx.type === 'Contract Call';
           return (
             <Box key={tx.hash}>
   
               {/* line #1 – time-ago & amount */}
-              <Row label={timeAgo(tx.timestamp)}>
+              <Row label={`${sentReceived} ${timeAgo(tx.timestamp)}`}>
                 <Value value={Number(formatQuai(tx.value)).toFixed(4).replace(/\.?0+$/, '')} extra="QUAI" />
               </Row>
   
               {/* line #2 – sender */}
-              <Row label="From">
-                <Address address={from} truncate />
+              <Row label={`${toFrom} ${isContract ? '(Contract)' : ''}`}>
+                <Address address={peer as `0x${string}`} truncate />
               </Row>
   
               {/* line #3 – link to QuaiScan */}

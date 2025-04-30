@@ -43,11 +43,10 @@ export const onRpcRequest: OnRpcRequestHandler = async ({ origin, request }) => 
       return wallet.address;
 
     case 'quai_sendTransaction':
-      const params = request.params as [{ to: string; from: string; value?: string; data?: string }];
+      const params = request.params as [{ to: string; from?: string; value?: string; data?: string }];
       if (!params?.[0]) {
         throw new Error('Missing transaction parameters');
       }
-      console.log(JSON.stringify(params));
       const { to, from, value, data } = params[0];
       let quaiWallet = await getQuaiWallet();
 
@@ -88,14 +87,30 @@ export const onRpcRequest: OnRpcRequestHandler = async ({ origin, request }) => 
         to,
         value: BigInt(value || 0),
         data: data || '0x',
-        from,
+        from: from??quaiWallet.address,
       };
       try {
         // Sign and send the transaction
         const txResponse = await quaiWallet.sendTransaction(tx);
+        const st = (await snap.request({
+          method: 'snap_manageState',
+          params: { operation: 'get' },
+        })) as any ?? {};
+        st.sentTxs ??= [];
+        st.sentTxs.unshift({
+          hash:  txResponse.hash,
+          to,
+          value: tx.value.toString(),
+          timestamp:    new Date().toISOString(),
+          type: data && data !== '0x' ? 'Contract Call' : 'Transfer',
+        });
+        st.sentTxs = st.sentTxs.slice(0, 100);          // keep max 100
+        await snap.request({
+          method: 'snap_manageState',
+          params: { operation: 'update', newState: st },
+        });
         return txResponse.hash;
       } catch (error: any) {
-        console.log(error);
         await snap.request({
           method: 'snap_dialog',
           params: {
