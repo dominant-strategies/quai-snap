@@ -140,7 +140,6 @@ const Index = () => {
         },
       },
     })
-    console.log(addr);
     const data = new quais.Interface(contractAbi).encodeFunctionData("transfer", [toAddr, quais.parseQuai(amount)]);
     const txParams = {
       to: contractAddress,
@@ -156,7 +155,6 @@ const Index = () => {
         },
       },
     })
-    console.log(txHash);
   };
 
   return (
