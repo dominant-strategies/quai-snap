@@ -1,7 +1,7 @@
 import type { OnRpcRequestHandler } from '@metamask/snaps-sdk';
-import { Box, Text, Bold, Copyable, Row, Address } from '@metamask/snaps-sdk/jsx';
-import { quais } from 'quais';
-import { getQuaiWallet } from './home';
+import { Box, Text, Bold, Copyable, Row, Address, Link, Heading } from '@metamask/snaps-sdk/jsx';
+import { id, quais } from 'quais';
+import { getQuaiWallet, successScreen } from './home';
 export * from "./home";          // re-export the handler so MetaMask can find it
 
 /**
@@ -108,6 +108,20 @@ export const onRpcRequest: OnRpcRequestHandler = async ({ origin, request }) => 
         await snap.request({
           method: 'snap_manageState',
           params: { operation: 'update', newState: st },
+        });
+        await snap.request({
+          method: 'snap_dialog',
+          params: {
+            type: 'alert',
+            content: (
+              <Box>
+                <Heading>Tx sent! Hash: {txResponse.hash}</Heading>
+                <Link href={`https://quaiscan.io/tx/${txResponse.hash}`}>
+                  View on QuaiScan ↗
+                </Link>
+              </Box>
+            ),
+          },
         });
         return txResponse.hash;
       } catch (error: any) {

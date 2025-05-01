@@ -23,7 +23,7 @@ const contractAbi = [
   'function transfer(address recipient, uint256 amount) returns (bool)',
 ];
 const contractAddress = '0x0072a42C55B1B0d23002291Edd58192BE3a8Ee05';
-const toAddr = "0x0016DC01cADF0a2D65511B0Dbf9ABa2b4950231F"
+const toAddr = "0x001F4b4A1f8967e6F0A254c627451CE04807C0Bd"
 const amount = "100";
 
 const Container = styled.div`

@@ -38,7 +38,6 @@ export const onHomePage: OnHomePageHandler = async () => {
           <Address address={wallet.address as `0x${string}`} />
         </Row>
         <Copyable value={wallet.address} />
-        <Heading>Quai Wallet</Heading>
         <Row label="Balance">
           <Value value={Number(formatQuai(bal)).toFixed(4).replace(/\.?0+$/, '')} extra="QUAI" />
         </Row>
@@ -225,7 +224,7 @@ async function loadingScreen(id: string, title = 'Loading…') {
   });
 }
 
-async function successScreen(id: string, title: string, extra?: any) {
+export async function successScreen(id: string, title: string, extra?: any) {
   await snap.request({
     method: 'snap_updateInterface',
     params: {
