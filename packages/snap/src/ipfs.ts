@@ -1,0 +1,114 @@
+import { Interface, JsonRpcProvider, Provider, quais } from "quais";
+import { decode } from 'cbor-x';
+import bs58 from 'bs58';
+import { arrayify } from "@ethersproject/bytes";
+import { splitAuxdata, AuxdataStyle } from '@ethereum-sourcify/bytecode-utils';
+
+export const getABIFromAddress = async (address: string, provider: Provider, depth = 0): Promise<Interface | undefined> => {
+    let ipfsUrl = 'https://ipfs.qu.ai';
+    try {
+      const resolvedAddress = quais.getAddress(address)
+      const bytecode = await provider.getCode(resolvedAddress);
+      if (bytecode === '0x' || bytecode === '0x0' || bytecode.length === 0) throw new Error('No contract found at this address');
+      const metadataSections = await decodeMultipleMetadataSections(bytecode);
+      console.log("metadataSections", metadataSections);
+      if (metadataSections.length > 1) {
+        console.log(`Found ${metadataSections.length} metadata sections for address ${address}, using the first one`);
+      } else if (metadataSections.length === 0) {
+        const impl = getImplementationFrom1167(bytecode);
+        if (impl && depth < 5) {
+            return getABIFromAddress(impl, provider, depth + 1);  // recurse once
+        }
+
+        throw new Error('ABI not found (no metadata, not a proxy)');
+      }
+      const ipfsCid = metadataSections[0]?.ipfs;
+      if (!ipfsCid) throw new Error('No IPFS metadata found in bytecode');
+      // Fetch ABI from IPFS
+      const url = `${ipfsUrl}/ipfs/${ipfsCid}`
+      const response = await fetch(url);
+      if (response.status < 200 || response.status >= 300) {
+        throw new Error(`Failed to fetch metadata: ${response.statusText} (Status: ${response.status})`);
+      }
+      const metadata = await response.json();
+      console.log("metadata", metadata);
+      return metadata.output.abi; // Return the ABI
+    } catch (e) {
+      console.error(e)
+    }
+};
+
+/**
+ * If `code` is an EIP‑1167 minimal‑proxy return the embedded implementation
+ * address, otherwise return `undefined`.
+ */
+export function getImplementationFrom1167(code: string): string | undefined {
+    // minimal‑proxy is always 45 bytes (0x2d) long
+    const cleaned = code.replace(/^0x/, '').toLowerCase();
+    if (cleaned.length !== 2 * 45) return;
+  
+    // opcode layout: … 36 3d 73 <20‑byte‑impl> 5a f4 3d 82 …
+    const prefix  = '363d3d373d3d3d363d73';
+    const suffix  = '5af43d82803e903d91602b57fd5bf3';
+  
+    if (!cleaned.startsWith(prefix) || !cleaned.endsWith(suffix)) return;
+  
+    const implHex = cleaned.slice(prefix.length, prefix.length + 40);
+    return quais.getAddress('0x' + implHex);   // checksums & validates
+  }
+
+export const decodeMultipleMetadataSections = async (bytecode: string): Promise<Array<any>> => {
+
+    if (!bytecode || bytecode.length === 0) {
+        throw new Error('Bytecode cannot be empty');
+    }
+  
+    const metadataSections = [];
+    let remainingBytecode = bytecode;
+  
+    while (remainingBytecode.length > 0) {
+        try {
+            const [executionBytecode, auxdata] = splitAuxdata(remainingBytecode, AuxdataStyle.SOLIDITY);
+  
+            if (auxdata) {
+                const decodedMetadata = decode(arrayify(`0x${auxdata}`));
+                metadataSections.push(decodedMetadata);
+                remainingBytecode = executionBytecode ?? '';
+            } else {
+                break;
+            }
+        } catch (error: any) {
+            console.error('Failed to decode metadata section:', error);
+            break;
+        }
+    }
+  
+    return metadataSections.map((metadata) => ({
+        ...metadata,
+        ipfs: metadata.ipfs ? bs58.encode(metadata.ipfs) : undefined,
+    }));
+  };
+
+  export async function getAbiFromIpfsWithTimeout(
+    address: string,
+    provider: Provider,
+    timeoutMs = 5_000          // <‑‑ adjust to taste
+  ): Promise<Interface | undefined> {
+    const abort = new AbortController();
+  
+    const fetchPromise = getABIFromAddress(address, provider)
+      .catch(() => undefined);               // swallow all errors
+  
+    // A "sleep" that rejects after N ms
+    const timer = new Promise<never>((_, rej) =>
+      setTimeout(() => {
+        abort.abort();                       // cancel http request
+        console.log("ipfs-timeout");
+        rej(new Error("ipfs-timeout"));
+      }, timeoutMs)
+    );
+  
+    // whichever settles first "wins"
+    return Promise.race([fetchPromise, timer]).catch(() => undefined);
+  }
+
