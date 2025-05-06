@@ -22,7 +22,7 @@ import { quais } from 'quais';
 const contractAbi = [
   'function transfer(address recipient, uint256 amount) returns (bool)',
 ];
-const contractAddress = '0x0072a42C55B1B0d23002291Edd58192BE3a8Ee05';
+const contractAddress = '0x0072a42C55B1B0d23002291Edd58192BE3a8Ee05'; // '0x002190E8FdCC9770018Cd37d83B26eb793285b66'
 const toAddr = "0x001F4b4A1f8967e6F0A254c627451CE04807C0Bd"
 const amount = "100";
 
@@ -125,12 +125,6 @@ const Index = () => {
   };
 
   const handleSendTokenClick = async () => {
-    /*await window.ethereum.request({
-      method: "wallet_requestSnaps",
-      params: {
-        [defaultSnapOrigin]: {},
-      },
-    })*/
     let addr = await window.ethereum.request({
       method: "wallet_invokeSnap",
       params: {
