@@ -57,5 +57,8 @@
       "@lavamoat/preinstall-always-fail": false,
       "sharp": true
     }
+  },
+  "dependencies": {
+    "quais": "^1.0.0-alpha.45"
   }
 }

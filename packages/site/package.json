@@ -27,6 +27,7 @@
   },
   "dependencies": {
     "@metamask/providers": "^21.0.0",
+    "quais": "^1.0.0-alpha.45",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-is": "^18.2.0",
