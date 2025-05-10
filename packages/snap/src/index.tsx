@@ -165,10 +165,8 @@ type DecodedCall = {
   params: { name: string; type: string; value: unknown }[];
 };  
 
-async function updateInterfaceWithDecodedCall(uiId: string, abi: Interface, data: string, baseUi: JSX.Element) {
+async function updateInterfaceWithDecodedCall(uiId: string, abi: Array<any>, data: string, baseUi: JSX.Element) {
   let decoded: DecodedCall | undefined;
-  console.log("iface", abi);  
-  console.log("data", data);
 try {
   const iface = Interface.from(abi);
   const parsed = iface.parseTransaction({ data });
@@ -208,7 +206,6 @@ await snap.request({
         </Row>
 
         {decoded.params.map((p) => {
-          console.log(p)
           const isAddr  = p.type === 'address';
           const is18Dec = ['amountIn', 'amountOutMin', 'amountMin', 'amountOut', 'amountInMax', 'amountOutMax'].includes(p.name) || (['approve', 'transfer', 'transferFrom'].includes(decoded.name) && p.name === 'amount');
 

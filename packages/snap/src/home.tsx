@@ -38,6 +38,7 @@ export const onHomePage: OnHomePageHandler = async () => {
           <Address address={wallet.address as `0x${string}`} />
         </Row>
         <Copyable value={wallet.address} />
+        <Link href={`https://quaiscan.io/address/${wallet.address}`}>View on Quaiscan ↗</Link>
         <Row label="Balance">
           <Value value={Number(formatQuai(bal)).toFixed(4).replace(/\.?0+$/, '')} extra="QUAI" />
         </Row>
@@ -112,7 +113,7 @@ export const onUserInput: OnUserInputHandler = async ({ id, event }) => {
       await successScreen(
         id,
         `Tx sent! Hash: ${tx.hash}`,
-        <Link href={`https://quaiscan.io/tx/${tx.hash}`}>View on QuaiScan ↗</Link>
+        <Link href={`https://quaiscan.io/tx/${tx.hash}`}>View on Quaiscan ↗</Link>
       );
     } catch (err: any) {
       await errorScreen(id, String(err?.message ?? err));
@@ -120,7 +121,7 @@ export const onUserInput: OnUserInputHandler = async ({ id, event }) => {
   }
 
   if (event.type === UserInputEventType.ButtonClickEvent && (event.name === 'back' || event.name === 'refresh')) {
-    await renderOverview(id); // <- reuse same interface id
+    await reRenderOverview(id); // <- reuse same interface id
     return;
   }
 };
@@ -177,7 +178,7 @@ async function showSendForm(existingId?: string) {
   return id;
 }
 
-async function renderOverview(id: string) {
+async function reRenderOverview(id: string) {
   const wallet  = await getQuaiWallet();
   const balance = await wallet.provider!.getBalance(wallet.address);
   const history = await buildTxHistory(wallet.address);
@@ -188,6 +189,7 @@ async function renderOverview(id: string) {
         <Address address={wallet.address as `0x${string}`} />
       </Row>
       <Copyable value={wallet.address} />
+      <Link href={`https://quaiscan.io/address/${wallet.address}`}>View on Quaiscan ↗</Link>
 
       <Heading>Quai Wallet</Heading>
 
