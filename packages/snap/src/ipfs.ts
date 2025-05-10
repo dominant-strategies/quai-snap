@@ -4,17 +4,17 @@ import bs58 from 'bs58';
 import { arrayify } from "@ethersproject/bytes";
 import { splitAuxdata, AuxdataStyle } from '@ethereum-sourcify/bytecode-utils';
 
-export const getABIFromAddress = async (address: string, provider: Provider, depth = 0): Promise<Interface | undefined> => {
+export const getABIFromAddress = async (address: string, provider: Provider, depth = 0): Promise<Array<any> | undefined> => {
     let ipfsUrl = 'https://ipfs.qu.ai';
     try {
       const resolvedAddress = quais.getAddress(address)
       const bytecode = await provider.getCode(resolvedAddress);
       if (bytecode === '0x' || bytecode === '0x0' || bytecode.length === 0) throw new Error('No contract found at this address');
       const metadataSections = await decodeMultipleMetadataSections(bytecode);
-      console.log("metadataSections", metadataSections);
       if (metadataSections.length > 1) {
         console.log(`Found ${metadataSections.length} metadata sections for address ${address}, using the first one`);
       } else if (metadataSections.length === 0) {
+        // If no metadata is found, try to get the implementation from the bytecode (if it's a proxy)
         const impl = getImplementationFrom1167(bytecode);
         if (impl && depth < 5) {
             return getABIFromAddress(impl, provider, depth + 1);  // recurse once
@@ -31,7 +31,13 @@ export const getABIFromAddress = async (address: string, provider: Provider, dep
         throw new Error(`Failed to fetch metadata: ${response.statusText} (Status: ${response.status})`);
       }
       const metadata = await response.json();
-      console.log("metadata", metadata);
+      if (looksLikeTransparentProxyAbi(Interface.from(metadata.output.abi))) {
+        // If the ABI is a transparent proxy, try to get the implementation from the storage slot
+        const impl = await getImplementationFrom1967(provider, resolvedAddress);
+        if (impl && depth < 5) {
+          return getABIFromAddress(impl, provider, depth + 1);  // recurse once
+        }
+      }
       return metadata.output.abi; // Return the ABI
     } catch (e) {
       console.error(e)
@@ -89,11 +95,40 @@ export const decodeMultipleMetadataSections = async (bytecode: string): Promise<
     }));
   };
 
+
+// Get the implementation address from a transparent proxy (EIP-1967)
+  async function getImplementationFrom1967(
+    provider: Provider,
+    proxy: string,
+  ): Promise<string | undefined> {
+    // bytes32(uint256(keccak256('eip1967.proxy.implementation'))‑1)
+    const slot =
+      '0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc';
+    const raw = await provider.getStorage(proxy, slot);
+    const addr = quais.getAddress('0x' + raw.slice(26)); // last 20 bytes
+    if (addr === quais.ZeroAddress) return;
+    // extra sanity: there must be *some* code at impl
+    return (await provider.getCode(addr)) !== '0x' ? addr : undefined;
+  }
+  
+  function looksLikeTransparentProxyAbi(abi: Interface | undefined): boolean {
+    if (!abi) return false;
+  
+    // “function” fragments are the ones that can actually be *called*
+    // through `CALLDATA`.  A transparent proxy exposes no such functions
+    // (the upgrade‑to‑and‑call selector is dispatched via `fallback`).
+    const hasCallableFns = abi.fragments.some((f) => f.type === 'function');
+  
+    // true  → proxy  (needs another hop)
+    // false → implementation
+    return !hasCallableFns;
+  }
+
   export async function getAbiFromIpfsWithTimeout(
     address: string,
     provider: Provider,
-    timeoutMs = 5_000          // <‑‑ adjust to taste
-  ): Promise<Interface | undefined> {
+    timeoutMs = 5_000          // max amount of time to wait for the ABI to be fetched from IPFS
+  ): Promise<Array<any> | undefined> {
     const abort = new AbortController();
   
     const fetchPromise = getABIFromAddress(address, provider)
