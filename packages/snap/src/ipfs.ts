@@ -3,9 +3,22 @@ import { decode } from 'cbor-x';
 import bs58 from 'bs58';
 import { arrayify } from "@ethersproject/bytes";
 import { splitAuxdata, AuxdataStyle } from '@ethereum-sourcify/bytecode-utils';
+import { CONFIG } from './config';
 
-export const getABIFromAddress = async (address: string, provider: Provider, depth = 0): Promise<Array<any> | undefined> => {
-    let ipfsUrl = 'https://ipfs.qu.ai';
+export type ContractABI = Array<{
+  type: string;
+  name?: string;
+  inputs?: Array<{ name: string; type: string }>;
+  outputs?: Array<{ name: string; type: string }>;
+  stateMutability?: string;
+}>;
+
+type MetadataSection = {
+  ipfs?: Uint8Array | string;
+  [key: string]: unknown;
+};
+
+export const getABIFromAddress = async (address: string, provider: Provider, depth = 0): Promise<ContractABI | undefined> => {
     try {
       const resolvedAddress = quais.getAddress(address)
       const bytecode = await provider.getCode(resolvedAddress);
@@ -23,9 +36,9 @@ export const getABIFromAddress = async (address: string, provider: Provider, dep
         throw new Error('ABI not found (no metadata, not a proxy)');
       }
       const ipfsCid = metadataSections[0]?.ipfs;
-      if (!ipfsCid) throw new Error('No IPFS metadata found in bytecode');
+      if (!ipfsCid || typeof ipfsCid !== 'string') throw new Error('No IPFS metadata found in bytecode');
       // Fetch ABI from IPFS
-      const url = `${ipfsUrl}/ipfs/${ipfsCid}`
+      const url = CONFIG.IPFS_URL(ipfsCid);
       const response = await fetch(url);
       if (response.status < 200 || response.status >= 300) {
         throw new Error(`Failed to fetch metadata: ${response.statusText} (Status: ${response.status})`);
@@ -63,13 +76,12 @@ export function getImplementationFrom1167(code: string): string | undefined {
     return quais.getAddress('0x' + implHex);   // checksums & validates
   }
 
-export const decodeMultipleMetadataSections = async (bytecode: string): Promise<Array<any>> => {
-
+export const decodeMultipleMetadataSections = async (bytecode: string): Promise<Array<MetadataSection>> => {
     if (!bytecode || bytecode.length === 0) {
         throw new Error('Bytecode cannot be empty');
     }
   
-    const metadataSections = [];
+    const metadataSections: MetadataSection[] = [];
     let remainingBytecode = bytecode;
   
     while (remainingBytecode.length > 0) {
@@ -77,7 +89,7 @@ export const decodeMultipleMetadataSections = async (bytecode: string): Promise<
             const [executionBytecode, auxdata] = splitAuxdata(remainingBytecode, AuxdataStyle.SOLIDITY);
   
             if (auxdata) {
-                const decodedMetadata = decode(arrayify(`0x${auxdata}`));
+                const decodedMetadata = decode(arrayify(`0x${auxdata}`)) as MetadataSection;
                 metadataSections.push(decodedMetadata);
                 remainingBytecode = executionBytecode ?? '';
             } else {
@@ -91,9 +103,9 @@ export const decodeMultipleMetadataSections = async (bytecode: string): Promise<
   
     return metadataSections.map((metadata) => ({
         ...metadata,
-        ipfs: metadata.ipfs ? bs58.encode(metadata.ipfs) : undefined,
+        ipfs: metadata.ipfs ? bs58.encode(metadata.ipfs as Uint8Array) : undefined,
     }));
-  };
+};
 
 
 // Get the implementation address from a transparent proxy (EIP-1967)
@@ -114,7 +126,7 @@ export const decodeMultipleMetadataSections = async (bytecode: string): Promise<
   function looksLikeTransparentProxyAbi(abi: Interface | undefined): boolean {
     if (!abi) return false;
   
-    // “function” fragments are the ones that can actually be *called*
+    // "function" fragments are the ones that can actually be *called*
     // through `CALLDATA`.  A transparent proxy exposes no such functions
     // (the upgrade‑to‑and‑call selector is dispatched via `fallback`).
     const hasCallableFns = abi.fragments.some((f) => f.type === 'function');
@@ -128,7 +140,7 @@ export const decodeMultipleMetadataSections = async (bytecode: string): Promise<
     address: string,
     provider: Provider,
     timeoutMs = 5_000          // max amount of time to wait for the ABI to be fetched from IPFS
-  ): Promise<Array<any> | undefined> {
+  ): Promise<ContractABI | undefined> {
     const abort = new AbortController();
   
     const fetchPromise = getABIFromAddress(address, provider)

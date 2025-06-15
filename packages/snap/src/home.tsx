@@ -18,6 +18,7 @@ import {
   Image
 } from '@metamask/snaps-sdk/jsx';
 import { formatQuai, Ledger, quais, Wallet as QuaisWallet, Zone, getAddressDetails } from "quais";
+import { CONFIG } from './config';
 
 type QuaiWalletState = {
   [key: string]: string | number;
@@ -25,6 +26,29 @@ type QuaiWalletState = {
   derivationPath: string;
   index: number;
 }
+
+type AddressParam = {
+  hash: string;
+  implementation_name?: string;
+  is_contract?: boolean;
+  is_verified?: boolean;
+  name?: string;
+};
+
+type Transaction = {
+  hash: string;
+  from?: AddressParam;
+  to: AddressParam;
+  value: string;
+  timestamp: string;
+  type: 'Transfer' | 'Contract Call';
+  _outgoing?: boolean;
+};
+
+export type SnapState = {
+  quaiWallet?: QuaiWalletState;
+  sentTxs?: Transaction[];
+};
 
 export const onHomePage: OnHomePageHandler = async () => {
   const wallet = await getQuaiWallet();
@@ -38,7 +62,7 @@ export const onHomePage: OnHomePageHandler = async () => {
           <Address address={wallet.address as `0x${string}`} />
         </Row>
         <Copyable value={wallet.address} />
-        <Link href={`https://quaiscan.io/address/${wallet.address}`}>View on Quaiscan ↗</Link>
+        <Link href={CONFIG.EXPLORER_ADDRESS_URL(wallet.address)}>View on Quaiscan ↗</Link>
         <Row label="Balance">
           <Value value={Number(formatQuai(bal)).toFixed(4).replace(/\.?0+$/, '')} extra="QUAI" />
         </Row>
@@ -95,13 +119,14 @@ export const onUserInput: OnUserInputHandler = async ({ id, event }) => {
       const st = (await snap.request({
         method: 'snap_manageState',
         params: { operation: 'get' },
-      })) as any ?? {};
+      })) as SnapState ?? {};
       st.sentTxs ??= [];
       st.sentTxs.unshift({
-        hash:  tx.hash,
-        to,
+        hash: tx.hash,
+        from: { hash: wallet.address },
+        to: { hash: to },
         value: quais.parseQuai(amount).toString(),
-        timestamp:    new Date().toISOString(),
+        timestamp: new Date().toISOString(),
         type: 'Transfer',
       });
       st.sentTxs = st.sentTxs.slice(0, 100);          // keep max 100
@@ -113,7 +138,7 @@ export const onUserInput: OnUserInputHandler = async ({ id, event }) => {
       await successScreen(
         id,
         `Tx sent! Hash: ${tx.hash}`,
-        <Link href={`https://quaiscan.io/tx/${tx.hash}`}>View on Quaiscan ↗</Link>
+        <Link href={CONFIG.EXPLORER_TX_URL(tx.hash)}>View on Quaiscan ↗</Link>
       );
     } catch (err: any) {
       await errorScreen(id, String(err?.message ?? err));
@@ -189,9 +214,7 @@ async function reRenderOverview(id: string) {
         <Address address={wallet.address as `0x${string}`} />
       </Row>
       <Copyable value={wallet.address} />
-      <Link href={`https://quaiscan.io/address/${wallet.address}`}>View on Quaiscan ↗</Link>
-
-      <Heading>Quai Wallet</Heading>
+      <Link href={CONFIG.EXPLORER_ADDRESS_URL(wallet.address)}>View on Quaiscan ↗</Link>
 
       <Row label="Balance">
         <Value value={Number(formatQuai(balance)).toFixed(4).replace(/\.?0+$/, '')} extra="QUAI" />
@@ -338,31 +361,31 @@ export async function getQuaiWallet() {
   }
 
   async function buildTxHistory(addr: string) {
-    const url = `https://quaiscan.io/api/v2/addresses/${addr}/transactions?filter=to`;
-    let items: any[] = [];
+    const url = CONFIG.QUAISCAN_API_TXS(addr);
+    let items: Transaction[] = [];
   
     try {
       const r = await fetch(url).then(r => r.json());
-      const incoming = (r.items ?? [])
+      const incoming = (r.items ?? []) as Transaction[];
 
-        const st = (await snap.request({
-          method: 'snap_manageState',
-          params: { operation: 'get' },
-        })) as any ?? {};
-        const outgoing = (st.sentTxs ?? [])
-          .filter((tx: any) => tx.from !== undefined ? tx.from.toLowerCase() === addr.toLowerCase() : true)
-          .map((tx: any) => ({
-            hash: tx.hash,
-            from: addr,
-            to:   tx.to,
-            value: tx.value,
-            timestamp: tx.timestamp,
-            type: tx.type,
-            _outgoing: true,
-          }));
-          items = [...incoming, ...outgoing]
-          .sort((a: any, b: any) => Date.parse(b.timestamp) - Date.parse(a.timestamp))
-          .slice(0, 10);            // show last 10
+      const st = (await snap.request({
+        method: 'snap_manageState',
+        params: { operation: 'get' },
+      })) as SnapState ?? {};
+      const outgoing = (st.sentTxs ?? [])
+        .filter((tx) => tx.from !== undefined ? tx.from.hash.toLowerCase() === addr.toLowerCase() : true)
+        .map((tx) => ({
+          hash: tx.hash,
+          from: { hash: addr as `0x${string}` },
+          to: { hash: tx.to.hash },
+          value: tx.value,
+          timestamp: tx.timestamp,
+          type: tx.type,
+          _outgoing: true,
+        }));
+        items = [...incoming, ...outgoing]
+        .sort((a: Transaction, b: Transaction) => Date.parse(b.timestamp) - Date.parse(a.timestamp))
+        .slice(0, 10);            // show last 10
     } catch (e) {
       return (
         <Section>
@@ -375,8 +398,8 @@ export async function getQuaiWallet() {
       <Section>
         <Heading size="sm">Latest transactions</Heading>
   
-        {items.map((tx: any) => {
-          const peer = tx._outgoing ? tx.to : tx.from?.hash;
+        {items.map((tx: Transaction) => {
+          const peer = tx._outgoing ? tx.to.hash : tx.from?.hash;
           const sentReceived = tx._outgoing ? 'Sent' : 'Received';
           const toFrom = tx._outgoing ? 'To' : 'From';
           const isContract = tx.type === 'Contract Call';
@@ -395,7 +418,7 @@ export async function getQuaiWallet() {
   
               {/* line #3 – link to QuaiScan */}
               <Row label="">
-                <Link href={`https://quaiscan.io/tx/${tx.hash}`}>Quaiscan&nbsp;↗</Link>
+                <Link href={CONFIG.EXPLORER_TX_URL(tx.hash)}>Quaiscan&nbsp;↗</Link>
               </Row>
   
             </Box>

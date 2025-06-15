@@ -9,7 +9,10 @@
     "noEmit": true,
     "noErrorTruncation": true,
     "noUncheckedIndexedAccess": true,
-    "skipLibCheck": true,
+    "noImplicitAny": true,
+    "strictBindCallApply": true,
+    "alwaysStrict": true,
+    "skipLibCheck": false,
     "strict": true,
     "target": "es2020"
   }
