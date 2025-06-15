@@ -3,7 +3,10 @@ import { Box, Text, Bold, Copyable, Row, Address, Link, Heading, Section } from 
 import { formatQuai, id, Interface, quais } from 'quais';
 import { getQuaiWallet, successScreen } from './home';
 import { getAbiFromIpfsWithTimeout } from './ipfs';
+import { CONFIG } from './config';
+import { SnapState } from './home';
 export * from "./home";          // re-export the handler so MetaMask can find it
+import { ContractABI } from './ipfs';
 
 /**
  * Handle incoming JSON-RPC requests, sent through `wallet_invokeSnap`.
@@ -16,9 +19,20 @@ export * from "./home";          // re-export the handler so MetaMask can find i
  * @throws If the request method is not valid for this snap.
  */
 export const onRpcRequest: OnRpcRequestHandler = async ({ origin, request }) => {
+  // Validate origin is a string and not empty
+  if (typeof origin !== 'string' || !origin) {
+    throw new Error('Invalid origin');
+  }
+
+  // Only allow specific methods
+  const allowedMethods = ['hello', 'quai_getAddress', 'quai_sendTransaction'];
+  if (!allowedMethods.includes(request.method)) {
+    throw new Error(`Method ${request.method} not allowed`);
+  }
+
   switch (request.method) {
     case 'hello':
-      return snap.request({
+      const helloConfirmed = await snap.request({
         method: 'snap_dialog',
         params: {
           type: 'confirmation',
@@ -28,16 +42,17 @@ export const onRpcRequest: OnRpcRequestHandler = async ({ origin, request }) => 
                 Hello, <Bold>{origin}</Bold>!
               </Text>
               <Text>
-                This custom confirmation is just for display purposes.
-              </Text>
-              <Text>
-                But you can edit the snap source code to make it do something,
-                if you want to!
+                This demonstrates proper confirmation handling for secure wallet interactions.
               </Text>
             </Box>
           ),
         },
       });
+
+      if (!helloConfirmed) {
+        throw new Error('User rejected the hello request');
+      }
+      return 'Hello request confirmed';
 
     case 'quai_getAddress':
       const wallet = await getQuaiWallet();
@@ -110,11 +125,12 @@ export const onRpcRequest: OnRpcRequestHandler = async ({ origin, request }) => 
         const st = (await snap.request({
           method: 'snap_manageState',
           params: { operation: 'get' },
-        })) as any ?? {};
+        })) as SnapState ?? {};
         st.sentTxs ??= [];
         st.sentTxs.unshift({
           hash:  txResponse.hash,
-          to,
+          from: { hash: quaiWallet.address as `0x${string}` },
+          to: { hash: to },
           value: tx.value.toString(),
           timestamp:    new Date().toISOString(),
           type: data && data !== '0x' ? 'Contract Call' : 'Transfer',
@@ -131,7 +147,7 @@ export const onRpcRequest: OnRpcRequestHandler = async ({ origin, request }) => 
             content: (
               <Box>
                 <Heading>Tx sent! Hash: {txResponse.hash}</Heading>
-                <Link href={`https://quaiscan.io/tx/${txResponse.hash}`}>
+                <Link href={CONFIG.EXPLORER_TX_URL(txResponse.hash)}>
                   View on QuaiScan ↗
                 </Link>
               </Box>
@@ -165,7 +181,7 @@ type DecodedCall = {
   params: { name: string; type: string; value: unknown }[];
 };  
 
-async function updateInterfaceWithDecodedCall(uiId: string, abi: Array<any>, data: string, baseUi: JSX.Element) {
+async function updateInterfaceWithDecodedCall(uiId: string, abi: ContractABI, data: string, baseUi: JSX.Element) {
   let decoded: DecodedCall | undefined;
 try {
   const iface = Interface.from(abi);
