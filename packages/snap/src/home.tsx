@@ -15,7 +15,8 @@ import {
   Copyable,
   Section,
   Link,
-  Image
+  Nestable,
+  GenericSnapElement
 } from '@metamask/snaps-sdk/jsx';
 import { formatQuai, Ledger, quais, Wallet as QuaisWallet, Zone, getAddressDetails } from "quais";
 import { CONFIG } from './config';
@@ -96,8 +97,16 @@ export const onUserInput: OnUserInputHandler = async ({ id, event }) => {
     };
 
     // ── Validation ─────────────────────────────────────────────────────────
-    if (!quais.isAddress(to)) {
-      await errorScreen(id, 'Invalid "to" address');
+    try {
+      quais.getAddress(to);
+      const details = quais.getAddressDetails(to);
+      if (details?.ledger !== quais.Ledger.Quai) {
+        throw new Error('Invalid recipient: Address must be a Quai address');
+      } else if (details?.zone !== quais.Zone.Cyprus1) {
+        throw new Error('Invalid recipient: Address must be a Cyprus1 address');
+      }
+    } catch (e) {
+      await errorScreen(id, 'Is that a valid Quai address? ' + e);
       return;
     }
     if (+amount <= 0) {
@@ -249,7 +258,7 @@ async function loadingScreen(id: string, title = 'Loading…') {
   });
 }
 
-export async function successScreen(id: string, title: string, extra?: any) {
+export async function successScreen(id: string, title: string, extra?: Nestable<boolean | GenericSnapElement | null>) {
   await snap.request({
     method: 'snap_updateInterface',
     params: {
@@ -257,7 +266,7 @@ export async function successScreen(id: string, title: string, extra?: any) {
       ui: (
         <Box>
           <Heading>{title}</Heading>
-          {extra}
+          {extra ?? null}
         </Box>
       ),
     },
