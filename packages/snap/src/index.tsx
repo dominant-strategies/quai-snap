@@ -1,7 +1,7 @@
 import type { OnRpcRequestHandler } from '@metamask/snaps-sdk';
 import { Box, Text, Bold, Copyable, Row, Address, Link, Heading, Section } from '@metamask/snaps-sdk/jsx';
-import { formatQuai, id, Interface, quais } from 'quais';
-import { getQuaiWallet, successScreen } from './home';
+import { formatQuai, Interface, quais } from 'quais';
+import { getQuaiWallet } from './home';
 import { getAbiFromIpfsWithTimeout } from './ipfs';
 import { CONFIG } from './config';
 import { SnapState } from './home';
@@ -68,6 +68,18 @@ export const onRpcRequest: OnRpcRequestHandler = async ({ origin, request }) => 
 
       if (!to) {
         throw new Error('Invalid recipient: Address must start with 0x00 for shard 0');
+      }
+      // Address validation
+      try {
+        quais.getAddress(to);
+        const details = quais.getAddressDetails(to);
+        if (details?.ledger !== quais.Ledger.Quai) {
+          throw new Error('Invalid recipient: Address must be a Quai address');
+        } else if (details?.zone !== quais.Zone.Cyprus1) {
+          throw new Error('Invalid recipient: Address must be a Cyprus1 address');
+        }
+      } catch (e) {
+        throw new Error('Invalid recipient: ' + e);
       }
 
       const isContract = data && data !== '0x';
