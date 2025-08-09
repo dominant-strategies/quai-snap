@@ -21,17 +21,15 @@ describe('onRpcRequest', () => {
           <Text>
             Hello, <Bold>{origin}</Bold>!
           </Text>
-          <Text>This custom confirmation is just for display purposes.</Text>
           <Text>
-            But you can edit the snap source code to make it do something, if
-            you want to!
+            This demonstrates proper confirmation handling for secure wallet interactions.
           </Text>
         </Box>,
       );
 
       await ui.ok();
 
-      expect(await response).toRespondWith(true);
+      expect(await response).toRespondWith('Hello request confirmed');
     });
   });
 
@@ -44,7 +42,7 @@ describe('onRpcRequest', () => {
 
     expect(response).toRespondWithError({
       code: -32603,
-      message: 'Method not found.',
+      message: 'Method foo not allowed',
       stack: expect.any(String),
     });
   });
