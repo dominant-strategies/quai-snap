@@ -1,6 +1,6 @@
 {
   "name": "quai-snap",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "description": "A wallet for Quai Network.",
   "repository": {
     "type": "git",
