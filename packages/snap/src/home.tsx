@@ -18,7 +18,7 @@ import {
   Nestable,
   GenericSnapElement
 } from '@metamask/snaps-sdk/jsx';
-import { formatQuai, Ledger, quais, Wallet as QuaisWallet, Zone, getAddressDetails } from "quais";
+import { formatQuai, Ledger, quais, Wallet as QuaisWallet, Zone, getAddressDetails, getAddress } from "quais";
 import { CONFIG } from './config';
 
 type QuaiWalletState = {
@@ -297,20 +297,33 @@ export async function getQuaiWallet() {
     }) || {}) as { quaiWallet?: QuaiWalletState };
   
     if (state.quaiWallet?.address) {
-      const bip32Node = await snap.request({
-        method: 'snap_getBip32Entropy',
-        params: {
-          path: ["m", "44'", "994'", "0'", `${state.quaiWallet.index}`], // Quai coin type 994
-          curve: 'secp256k1',
-        },
-      });
-      if (!bip32Node.privateKey) {
-        throw new Error('Failed to get private key');
+      // Check if the stored address is actually a valid Quai address in Cyprus1
+      const storedAddressDetails = getAddressDetails(getAddress(state.quaiWallet.address));
+      if (storedAddressDetails?.ledger === Ledger.Quai && storedAddressDetails?.zone === Zone.Cyprus1) {
+        // Valid Quai address, use the stored wallet
+        const bip32Node = await snap.request({
+          method: 'snap_getBip32Entropy',
+          params: {
+            path: ["m", "44'", "994'", "0'", `${state.quaiWallet.index}`], // Quai coin type 994
+            curve: 'secp256k1',
+          },
+        });
+        if (!bip32Node.privateKey) {
+          throw new Error('Failed to get private key');
+        }
+        // Reuse cached private key
+        let wallet = new QuaisWallet(bip32Node.privateKey);
+        wallet = wallet.connect(new quais.JsonRpcProvider('https://rpc.quai.network'));
+        return wallet
+      } else {
+        // Invalid address stored (wrong ledger or zone), clear it and regenerate
+        console.log('Stored address  %s is not a valid Quai address in Cyprus1, regenerating...', state.quaiWallet.address);
+        await snap.request({
+          method: 'snap_manageState',
+          params: { operation: 'clear' },
+        });
+        state = {}; // Reset local state reference
       }
-      // Reuse cached private key
-      let wallet = new QuaisWallet(bip32Node.privateKey);
-      wallet = wallet.connect(new quais.JsonRpcProvider('https://rpc.quai.network'));
-      return wallet
     }
   
     // Derive keys iteratively to find shard 0 address
@@ -340,7 +353,6 @@ export async function getQuaiWallet() {
           throw new Error('Invalid address');
         }
         details = getAddressDetails(wallet.address);
-        details!.ledger = isQuaiAddress(wallet.address) ? Ledger.Quai : Ledger.Qi;
       }
       catch (error) {
         // Handle invalid address error
@@ -435,21 +447,6 @@ export async function getQuaiWallet() {
         })}
       </Section>
     );
-  }
-
-  export function isQuaiAddress(address: string) {
-    if (typeof address !== 'string' || !/^0x[0-9a-fA-F]{40}$/.test(address)) {
-      throw new Error('Invalid address format');
-    }
-  
-    // strip the 0x prefix and normalise case
-    const hex = address.slice(2).toLowerCase();
-  
-    // The 5-th hex digit (index 4) contains bit-8 (LSB decides the ledger)
-      const fifthDigit = parseInt(hex[4]!, 16);
-  
-    // bit 0 == 0 → Quai, 1 → Qi
-    return (fifthDigit & 1) === 0;
   }
   
   // Pretty "5 min ago", "3 h", "2 d" …
