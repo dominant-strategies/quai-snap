@@ -23,7 +23,7 @@ jobs:
         shell: bash
 
   build-lint-test:
-    name: Build, lint, and test
+    name: Build and test
     uses: ./.github/workflows/build-lint-test.yml
 
   all-jobs-completed:
