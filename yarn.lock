@@ -1531,6 +1531,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@babel/runtime@npm:^7.26.0":
+  version: 7.28.2
+  resolution: "@babel/runtime@npm:7.28.2"
+  checksum: 8673eb2311752929f5b0167f42cff4cc1d5fadddd0394baca27d06c1618680ffcf95e9f01061f5c4dc3f6a32b6bbf500e7762c02dc22bcd273c2947b9774ddad
+  languageName: node
+  linkType: hard
+
 "@babel/template@npm:^7.20.7, @babel/template@npm:^7.25.9, @babel/template@npm:^7.26.9, @babel/template@npm:^7.27.0, @babel/template@npm:^7.3.3":
   version: 7.27.0
   resolution: "@babel/template@npm:7.27.0"
@@ -17118,25 +17125,31 @@ __metadata:
   languageName: node
   linkType: hard
 
-"quais@npm:^1.0.0-alpha.49":
-  version: 1.0.0-alpha.49
-  resolution: "quais@npm:1.0.0-alpha.49"
+"quais@npm:^1.0.0-alpha.51":
+  version: 1.0.0-alpha.51
+  resolution: "quais@npm:1.0.0-alpha.51"
   dependencies:
+    "@babel/runtime": ^7.26.0
     "@bitcoinerlab/secp256k1": ^1.1.1
     "@brandonblack/musig": ^0.0.1-alpha.1
-    "@ethereum-sourcify/bytecode-utils": 1.3.1
-    "@ethersproject/bytes": ^5.7.0
     "@noble/curves": 1.2.0
     "@noble/hashes": 1.3.2
     "@scure/base": ^1.1.9
     aes-js: 4.0.0-beta.5
-    bs58: ^6.0.0
-    cbor-x: ^1.6.0
+    buffer: ^6.0.3
     dotenv: ^16.4.1
     google-protobuf: ^3.21.4
-    tslib: ^2.6.2
+    tslib: ^2.8.1
     ws: ^8.17.1
-  checksum: 9c5ba9518ffd97655ecb63d6969206436f5e45e738bf481cd56abfbc83d17d236da8571def6768f48788a60f469da16e3410354061aaadfc4eabbda7282f014f
+  peerDependencies:
+    "@quai/react-native-quick-crypto": ^1.0.0-beta.19
+    react-native-fast-crypto: ^2.2.0
+  peerDependenciesMeta:
+    "@quai/react-native-quick-crypto":
+      optional: true
+    react-native-fast-crypto:
+      optional: true
+  checksum: 898521784729115abf4b30ab17a8d0ac44fb2d2408c771ec96832354ee763d7bba845fd3307762ec9e0ef2562dbe76693870fc0a3e940c0d9818fc9ab28960cf
   languageName: node
   linkType: hard
 
@@ -17872,7 +17885,7 @@ __metadata:
     eslint-plugin-promise: ^7.1.0
     prettier: ^3.3.3
     prettier-plugin-packagejson: ^2.2.18
-    quais: ^1.0.0-alpha.49
+    quais: ^1.0.0-alpha.51
     sharp: ^0.32.6
     typescript: ~5.7.3
     typescript-eslint: ^8.6.0
