@@ -55,7 +55,8 @@
   "lavamoat": {
     "allowScripts": {
       "@lavamoat/preinstall-always-fail": false,
-      "sharp": true
+      "sharp": true,
+      "eslint-plugin-import-x>unrs-resolver": false
     }
   },
   "dependencies": {
