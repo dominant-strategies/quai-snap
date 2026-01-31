@@ -7,7 +7,7 @@
     "url": "https://github.com/dominant-strategies/quai-snap.git"
   },
   "source": {
-    "shasum": "cVEIXTwG1rrkVRzRl7GQo5NN90YYbJQY9Sr50O4GEag=",
+    "shasum": "RulCQXeKc7LwpKnjDVU47y+zU+ioClcJ9Ya0xe4KJsw=",
     "location": {
       "npm": {
         "filePath": "dist/bundle.js",
@@ -33,6 +33,6 @@
       }
     ]
   },
-  "platformVersion": "6.18.0",
+  "platformVersion": "10.3.0",
   "manifestVersion": "0.1"
 }

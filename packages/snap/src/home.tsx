@@ -19,7 +19,23 @@ import {
   GenericSnapElement
 } from '@metamask/snaps-sdk/jsx';
 import { formatQuai, Ledger, quais, Wallet as QuaisWallet, Zone, getAddressDetails, getAddress } from "quais";
+import { HDKey } from '@scure/bip32';
 import { CONFIG } from './config';
+
+function hexToBytes(hex: string): Uint8Array {
+  const h = hex.startsWith('0x') ? hex.slice(2) : hex;
+  if (h.length % 2 !== 0) throw new Error('Invalid hex string length');
+  if (!/^[0-9a-fA-F]*$/.test(h)) throw new Error('Invalid hex characters');
+  const bytes = new Uint8Array(h.length / 2);
+  for (let i = 0; i < bytes.length; i++) {
+    bytes[i] = parseInt(h.substring(i * 2, i * 2 + 2), 16);
+  }
+  return bytes;
+}
+
+function bytesToHex(bytes: Uint8Array): string {
+  return '0x' + Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('');
+}
 
 type QuaiWalletState = {
   [key: string]: string | number;
@@ -69,9 +85,9 @@ export const onHomePage: OnHomePageHandler = async () => {
         </Row>
 
         <Section>
-            <Button name="open-send" variant="primary">Send QUAI</Button>
+          <Button name="open-send" variant="primary">Send QUAI</Button>
         </Section>
-          <Button name="refresh">Refresh</Button>
+        <Button name="refresh">Refresh</Button>
 
         {history}
       </Box>
@@ -83,18 +99,23 @@ export const onHomePage: OnHomePageHandler = async () => {
 //  2. LISTEN FOR THE BUTTON (“open-send”) AND SHOW THE FORM
 // ---------------------------------------------------------------------------
 export const onUserInput: OnUserInputHandler = async ({ id, event }) => {
+
   // User clicked "Send QUAI" on the home-page
   if (event.type === UserInputEventType.ButtonClickEvent && event.name === 'open-send') {
-    await showSendForm(id);          // 👈 show modal with the form
+    await showSendForm(id);
     return;
   }
 
-  // User submitted the send form
-  if (event.type === UserInputEventType.FormSubmitEvent && event.name === 'send-form') {
-    const { to, amount } = event.value as {
-      to: string;
-      amount: string;
-    };
+  // User clicked "Send" on the send form
+  if (event.type === UserInputEventType.ButtonClickEvent && event.name === 'send-action') {
+    // Read form values via snap_getInterfaceState (avoids FormSubmitEvent phantom crash)
+    const ifaceState = await snap.request({
+      method: 'snap_getInterfaceState',
+      params: { id },
+    });
+    const formState = (ifaceState as Record<string, any>)?.['send-form'] ?? ifaceState;
+    const to = String(formState?.to ?? '');
+    const amount = String(formState?.amount ?? '');
 
     // ── Validation ─────────────────────────────────────────────────────────
     try {
@@ -154,8 +175,9 @@ export const onUserInput: OnUserInputHandler = async ({ id, event }) => {
     }
   }
 
-  if (event.type === UserInputEventType.ButtonClickEvent && (event.name === 'back' || event.name === 'refresh')) {
-    await reRenderOverview(id); // <- reuse same interface id
+  if (event.type === UserInputEventType.ButtonClickEvent &&
+      (event.name === 'back' || event.name === 'refresh')) {
+    await reRenderOverview(id);
     return;
   }
 };
@@ -171,22 +193,20 @@ export const onUserInput: OnUserInputHandler = async ({ id, event }) => {
 // ────────────────────────────────────────────────────────────────
 async function showSendForm(existingId?: string) {
   const ui = (
-    <Form name="send-form">
+    <Box>
       <Heading>Send&nbsp;QUAI</Heading>
+      <Form name="send-form">
+        <Field label="To">
+          <Input name="to" placeholder="0x…" />
+        </Field>
 
-      <Field label="To">
-        <Input name="to" placeholder="0x…" />
-      </Field>
-
-      <Field label="Amount">
-        <Input name="amount" type="number" placeholder="0.0" />
-      </Field>
-
-      <Box direction="horizontal" alignment="space-between">
-        <Button name="back"  variant="destructive">Back</Button>
-        <Button type="submit">Send</Button>
-      </Box>
-    </Form>
+        <Field label="Amount">
+          <Input name="amount" type="number" placeholder="0.0" />
+        </Field>
+      </Form>
+      <Button name="send-action" variant="primary">Send</Button>
+      <Button name="back" variant="destructive">Back</Button>
+    </Box>
   );
 
   if (existingId) {
@@ -230,8 +250,8 @@ async function reRenderOverview(id: string) {
       </Row>
 
       <Section>
-            <Button name="open-send" variant="primary">Send QUAI</Button>
-        </Section>
+        <Button name="open-send" variant="primary">Send QUAI</Button>
+      </Section>
       <Button name="refresh">Refresh</Button>
       {history}
     </Box>
@@ -267,6 +287,7 @@ export async function successScreen(id: string, title: string, extra?: Nestable<
         <Box>
           <Heading>{title}</Heading>
           {extra ?? null}
+          <Button name="back">Back</Button>
         </Box>
       ),
     },
@@ -282,7 +303,7 @@ async function errorScreen(id: string, msg: string) {
         <Box>
           <Heading>Error</Heading>
           <Text color="error">{msg}</Text>
-          <Button name="back"  variant="destructive">Back</Button>
+          <Button name="back" variant="destructive">Back</Button>
         </Box>
       ),
     },
@@ -295,29 +316,38 @@ export async function getQuaiWallet() {
       method: 'snap_manageState',
       params: { operation: 'get' },
     }) || {}) as { quaiWallet?: QuaiWalletState };
-  
+
+    // Request the parent key ONCE — all child keys are derived locally
+    const parentNode = await snap.request({
+      method: 'snap_getBip32Entropy',
+      params: {
+        path: ["m", "44'", "994'", "0'"], // Quai coin type 994
+        curve: 'secp256k1',
+      },
+    });
+    if (!parentNode.privateKey || !parentNode.chainCode) {
+      throw new Error('Failed to get parent key from snap_getBip32Entropy');
+    }
+    const parentHDKey = new HDKey({
+      privateKey: hexToBytes(parentNode.privateKey),
+      chainCode: hexToBytes(parentNode.chainCode),
+    });
+
     if (state.quaiWallet?.address) {
       // Check if the stored address is actually a valid Quai address in Cyprus1
       const storedAddressDetails = getAddressDetails(getAddress(state.quaiWallet.address));
       if (storedAddressDetails?.ledger === Ledger.Quai && storedAddressDetails?.zone === Zone.Cyprus1) {
-        // Valid Quai address, use the stored wallet
-        const bip32Node = await snap.request({
-          method: 'snap_getBip32Entropy',
-          params: {
-            path: ["m", "44'", "994'", "0'", `${state.quaiWallet.index}`], // Quai coin type 994
-            curve: 'secp256k1',
-          },
-        });
-        if (!bip32Node.privateKey) {
-          throw new Error('Failed to get private key');
+        // Valid Quai address — derive the child key locally
+        const childKey = parentHDKey.deriveChild(state.quaiWallet.index);
+        if (!childKey.privateKey) {
+          throw new Error('Failed to derive child key');
         }
-        // Reuse cached private key
-        let wallet = new QuaisWallet(bip32Node.privateKey);
+        let wallet = new QuaisWallet(bytesToHex(childKey.privateKey));
         wallet = wallet.connect(new quais.JsonRpcProvider('https://rpc.quai.network'));
-        return wallet
+        return wallet;
       } else {
         // Invalid address stored (wrong ledger or zone), clear it and regenerate
-        console.log('Stored address  %s is not a valid Quai address in Cyprus1, regenerating...', state.quaiWallet.address);
+        console.log('Stored address %s is not a valid Quai address in Cyprus1, regenerating...', state.quaiWallet.address);
         await snap.request({
           method: 'snap_manageState',
           params: { operation: 'clear' },
@@ -325,46 +355,31 @@ export async function getQuaiWallet() {
         state = {}; // Reset local state reference
       }
     }
-  
-    // Derive keys iteratively to find shard 0 address
-    let index = 0;
+
+    // Derive keys locally to find a Cyprus1 Quai address
     const maxAttempts = 1000000;
     let wallet: QuaisWallet;
-  
-    while (index < maxAttempts) {
-      // Request key for path m/44'/994'/0'/0/index
-      const bip32Node = await snap.request({
-        method: 'snap_getBip32Entropy',
-        params: {
-          path: ["m", "44'", "994'", "0'", `${index}`], // Quai coin type 994
-          curve: 'secp256k1',
-        },
-      });
-  
-      if (!bip32Node.privateKey) {
-        throw new Error('Failed to get private key');
-      }
-      // Create wallet from private key
-      wallet = new QuaisWallet(bip32Node.privateKey);
-      let details;
-      try {
-        // Check if address is valid
-        if (!quais.isAddress(wallet.address)) {
-          throw new Error('Invalid address');
-        }
-        details = getAddressDetails(wallet.address);
-      }
-      catch (error) {
-        // Handle invalid address error
-        index++;
+
+    for (let index = 0; index < maxAttempts; index++) {
+      const childKey = parentHDKey.deriveChild(index);
+      if (!childKey.privateKey) {
         continue;
       }
-      // Check if address starts with 0x00 (shard 0)
+      wallet = new QuaisWallet(bytesToHex(childKey.privateKey));
+      let details;
+      try {
+        if (!quais.isAddress(wallet.address)) {
+          continue;
+        }
+        details = getAddressDetails(wallet.address);
+      } catch {
+        continue;
+      }
+      // Check if address is in Cyprus1 zone on the Quai ledger
       if (details?.zone === Zone.Cyprus1 && details?.ledger === Ledger.Quai) {
-        // Store wallet details in Snap state
         state.quaiWallet = {
           address: wallet.address.toString(),
-          derivationPath: `m/44'/994'/0'/0/${index}`,
+          derivationPath: `m/44'/994'/0'/${index}`,
           index: index,
         };
         await snap.request({
@@ -374,11 +389,9 @@ export async function getQuaiWallet() {
         wallet = wallet.connect(new quais.JsonRpcProvider('https://rpc.quai.network'));
         return wallet;
       }
-  
-      index++;
     }
-  
-    throw new Error('Could not find a shard 0 address after 10000 attempts');
+
+    throw new Error('Could not find a Cyprus1 Quai address after 1000000 attempts');
   }
 
   async function buildTxHistory(addr: string) {
