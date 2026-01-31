@@ -1,5 +1,5 @@
 {
-  "version": "0.1.8",
+  "version": "0.1.9",
   "description": "A wallet for Quai Network.",
   "proposedName": "Quai Wallet",
   "repository": {
@@ -7,7 +7,7 @@
     "url": "https://github.com/dominant-strategies/quai-snap.git"
   },
   "source": {
-    "shasum": "RulCQXeKc7LwpKnjDVU47y+zU+ioClcJ9Ya0xe4KJsw=",
+    "shasum": "FQjjUGvt7d6SgqBNiuTTJUPtMGlKie4VOmxzsviZmbc=",
     "location": {
       "npm": {
         "filePath": "dist/bundle.js",
