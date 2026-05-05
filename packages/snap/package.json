@@ -36,7 +36,7 @@
   "devDependencies": {
     "@jest/globals": "29.5.0",
     "@metamask/snaps-cli": "^8.4.0",
-    "@metamask/snaps-jest": "^9.0.0",
+    "@metamask/snaps-jest": "^10.1.2",
     "@types/react": "18.2.4",
     "@types/react-dom": "18.2.4",
     "eslint": "9.11.0",
